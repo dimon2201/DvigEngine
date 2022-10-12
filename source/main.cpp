@@ -46,13 +46,13 @@ int main()
     auto hashMap = engine->Create<HashMap>("hashmap0", &hashMapData);
     hashMap->Insert(s, mem);
 
-    void* key0Val = hashMap->Find(s);
+    String* key0Val = (String*)hashMap->Find(s);
     std::cout << (dvmachword)mem << std::endl;
     std::cout << (dvmachword)key0Val << std::endl;
     
     // std::cout << "Core Address             : " << (dvmachword)engine->GetData() << std::endl;
 
-    // Engine::Free();
+    Engine::Free();
 
     return 0;
 }
