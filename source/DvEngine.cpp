@@ -1,4 +1,4 @@
-#include "../include/DvigEngine.h"
+#include "../include/DvigEngine.hpp"
 
 #include <iostream>
 #include <typeinfo>
@@ -38,20 +38,21 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_USER_DATA* engineUserData)
     dvmachint reservedMemoryPoolID = engineUserData->m_ReservedMemoryPoolID;
     DvigEngine::MEMORY_POOL_DATA* reservedMemoryPoolInfo = &memoryPoolsInfos[reservedMemoryPoolID];
 
-
     // Memory allocation for Engine
-    m_Instance = (DvigEngine::Engine*)DvigEngine::Engine::AllocateWithInfo(reservedMemoryPoolInfo, sizeof(DvigEngine::Engine));
+    m_Instance = (DvigEngine::Engine*)DvigEngine::Engine::AllocateUsingData(reservedMemoryPoolInfo, sizeof(DvigEngine::Engine));
     
-    // Allocate memory for memory pools infos
-    // usize allocInfoByteWidth = (1 + memoryPoolsCount) * sizeof(DvigEngine::MEMORY_POOL_DATA);
-    // DvigEngine::MEMORY_POOL_DATA* allocMemoryPoolsInfos = (DvigEngine::MEMORY_POOL_DATA*)DvigEngine::Engine::AllocateWithInfo(reservedMemoryPoolInfo, allocInfoByteWidth);
+    // Memory allocation for Command Queue
+    m_Instance->m_Data.m_CommandQueue = (DvigEngine::CommandQueue*)DvigEngine::Engine::AllocateUsingData(reservedMemoryPoolInfo, sizeof(DvigEngine::CommandQueue));
+    
+    // Instantiate Command Queue
+    m_Instance->m_Data.m_CommandQueue->m_Data.m_InstructionCount = 0;
 
     // Allocate memory for memory pools classes
     dvusize allocClassByteWidth = (1 + memoryPoolsCount) * sizeof(DvigEngine::MemoryPool);
-    DvigEngine::MemoryPool* allocMemoryPools = (DvigEngine::MemoryPool*)DvigEngine::Engine::AllocateWithInfo(reservedMemoryPoolInfo, allocClassByteWidth);
+    DvigEngine::MemoryPool* allocMemoryPools = (DvigEngine::MemoryPool*)DvigEngine::Engine::AllocateUsingData(reservedMemoryPoolInfo, allocClassByteWidth);
 
-    // Assign info for each memory pool in EnginengineInfoe
-    m_Instance->m_MemoryPools = allocMemoryPools;
+    // Assign info for each memory pool in EngineData
+    m_Instance->m_Data.m_MemoryPools = allocMemoryPools;
     for (dvisize i = 0; i < memoryPoolsCount; ++i)
     {
         DvigEngine::MEMORY_POOL_DATA* curMemoryPoolInfo = (DvigEngine::MEMORY_POOL_DATA*)m_Instance->GetMemoryPoolByID(i)->GetData();
@@ -74,7 +75,7 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_USER_DATA* engineUserData)
 
     // Allocate memory for Component storage
     dvusize componentStorageByteWidth = reservedMemoryPoolInfo->m_ByteWidth - ((dvusize)reservedMemoryPoolInfo->m_AddressOffset - (dvusize)reservedMemoryPoolInfo->m_Address);
-    engineData->m_ComponentStorage = DvigEngine::Engine::AllocateWithInfo(reservedMemoryPoolInfo, componentStorageByteWidth);
+    engineData->m_ComponentStorage = DvigEngine::Engine::AllocateUsingData(reservedMemoryPoolInfo, componentStorageByteWidth);
     engineData->m_ComponentStorageOffset = (void*)((dvusize)engineData->m_ComponentStorage + componentStorageByteWidth);
     engineData->m_ComponentStorageByteWidth = componentStorageByteWidth;
 }
@@ -121,7 +122,7 @@ DvigEngine::MemoryChunk* DvigEngine::Engine::AllocateChunk(dvusize memoryPoolID,
     return memoryChunk;
 }
 
-void* DvigEngine::Engine::AllocateWithInfo(MEMORY_POOL_DATA* memoryPool, dvusize byteWidth)
+void* DvigEngine::Engine::AllocateUsingData(MEMORY_POOL_DATA* memoryPool, dvusize byteWidth)
 {
     DV_ASSERT(byteWidth)
     DV_ASSERT_PTR(memoryPool)

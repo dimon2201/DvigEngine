@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../include/DvigEngine.h"
+#include "../include/DvigEngine.hpp"
 
 using namespace DvigEngine;
 
@@ -30,28 +30,12 @@ int main()
 
     Engine::Init(&engineUserData);
     Engine* engine = Engine::GetInstance();
+
+    String* myString;
+    engine->Create<String>((const void** const)&myString, "MyStringUniqueID", nullptr);
     
-    STRING_DATA stringData[4];
-    stringData[0] = STRING_DATA("id0");
-    stringData[1] = STRING_DATA("brick");
-    stringData[2] = STRING_DATA("prop_box01");
-    stringData[3] = STRING_DATA("prop_papers01");
-    void* mem = Engine::Allocate(0, sizeof(String));
-    String* s = engine->Create<String>("id0", &stringData[0]);
-    memcpy(mem, s, sizeof(String));
-
-    HASH_MAP_DATA hashMapData = HASH_MAP_DATA();
-    hashMapData.m_AssocAddress = mem;
-    hashMapData.m_AssocEntrySize = sizeof(String);
-    auto hashMap = engine->Create<HashMap>("hashmap0", &hashMapData);
-    hashMap->Insert(s, mem);
-
-    String* key0Val = (String*)hashMap->Find(s);
-    std::cout << (dvmachword)mem << std::endl;
-    std::cout << (dvmachword)key0Val << std::endl;
+    std::cout << "Success!" << std::endl;
     
-    // std::cout << "Core Address             : " << (dvmachword)engine->GetData() << std::endl;
-
     Engine::Free();
 
     return 0;

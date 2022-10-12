@@ -5,7 +5,7 @@
 #include <iostream>
 #include <typeinfo>
 
-#include "DvigEngineMacros.h"
+#include "DvigEngineMacros.hpp"
 
 namespace DvigEngine
 {
@@ -114,8 +114,8 @@ namespace DvigEngine
     struct HASH_MAP_DATA : IData
     {
         public:
-            HASH_MAP_DATA() {};
-            HASH_MAP_DATA(dvusize assocEntrySize) : m_AssocEntrySize(assocEntrySize) {};
+            HASH_MAP_DATA() {}
+            HASH_MAP_DATA(dvusize assocEntrySize) : m_AssocEntrySize(assocEntrySize) {}
 
             void* m_AssocAddress;
             dvusize m_AssocEntrySize;
@@ -152,8 +152,7 @@ namespace DvigEngine
             DV_XMACRO_GETTER_DATA(MEMORY_CHUNK_DATA)
 
             template<typename T>
-            DV_FUNCTION_INLINE T* Unwrap()
-            {
+            DV_FUNCTION_INLINE T* Unwrap() {
                 return (T*)m_Data.m_Address;
             }
 
@@ -164,7 +163,7 @@ namespace DvigEngine
     struct ENTITY_DATA : IData
     {
         public:
-            void* m_Offset = nullptr;
+            void* m_Offset;
             dvuint32 m_ComponentsBits[DV_COMPONENT_BIT_MASK_BYTE_WIDTH];
     };
 
@@ -176,6 +175,30 @@ namespace DvigEngine
         
         private:
             ENTITY_DATA m_Data;
+    };
+
+    enum COMMAND_TYPE
+    {
+        CREATE = 0u
+    };
+
+    struct COMMAND_QUEUE_DATA : IData
+    {
+        dvusize m_InstructionCount;
+        dvmachword m_Instructions[DV_MAX_COMMAND_QUEUE_INSTRUCTION_COUNT];
+    };
+    
+    class CommandQueue : IObject
+    {
+        public:
+            DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
+            DV_XMACRO_GETTER_DATA(COMMAND_QUEUE_DATA)
+            
+            void Push(void* argumentMemory, const dvisize argumentCount);
+            void Execute();
+
+        private:
+            COMMAND_QUEUE_DATA m_Data;
     };
 
     struct ENGINE_USER_DATA : IData
@@ -196,16 +219,8 @@ namespace DvigEngine
             void* m_ComponentStorage;
             void* m_ComponentStorageOffset;
             dvusize m_ComponentStorageByteWidth;
-    };
-
-    class Component : IObject
-    {
-
-    };
-
-    class System : IObject
-    {
-        
+            MemoryPool* m_MemoryPools;
+            CommandQueue* m_CommandQueue;
     };
 
     /***   Engine class declaration   ***/
@@ -220,11 +235,24 @@ namespace DvigEngine
             static void Free();
             static void* Allocate(dvusize memoryPoolID, dvusize byteWidth);
             static MemoryChunk* AllocateChunk(dvusize memoryPoolID, dvusize byteWidth);
-            static void* AllocateWithInfo(MEMORY_POOL_DATA* memoryPool, dvusize byteWidth);
+            static void* AllocateUsingData(MEMORY_POOL_DATA* memoryPool, dvusize byteWidth);
             static void CopyMemory(void* destAddress, void* srcAddress, dvusize byteWidth);
-            
+
             template<typename T>
-            DV_FUNCTION_INLINE T* Create(const char* stringID, IData* data) {
+            DV_FUNCTION_INLINE void Create(const void** const result, const char* stringID, IData* data) {
+                DV_MACRO_PUSH_COMMAND(COMMAND_TYPE::CREATE, result, stringID, data)
+            }
+
+            DV_FUNCTION_INLINE MemoryPool* GetMemoryPoolByID(dvusize memoryPoolID) {
+                DV_ASSERT_PTR(m_Instance)
+                DV_ASSERT_PTR(m_Instance->m_Data.m_MemoryPools)
+                return &(m_Instance->m_Data.m_MemoryPools[memoryPoolID]);
+            }
+
+        private:
+            // Command call functions
+            template<typename T>
+            DV_FUNCTION_INLINE T* CallCreate(const char* stringID, IData* data) {
                 MemoryChunk* object = AllocateChunk(0, sizeof(T));
                 T* unwObject = object->Unwrap<T>();
                 dvuchar* stringIDPtr = (dvuchar*)stringID;
@@ -236,15 +264,8 @@ namespace DvigEngine
                 return unwObject;
             }
 
-            DV_FUNCTION_INLINE MemoryPool* GetMemoryPoolByID(dvusize memoryPoolID) {
-                DV_ASSERT_PTR(m_Instance)
-                DV_ASSERT_PTR(m_MemoryPools)
-                return &(m_Instance->m_MemoryPools[memoryPoolID]);
-            }
-
         private:
             ENGINE_USER_DATA m_UserData;
             ENGINE_DATA m_Data;
-            MemoryPool* m_MemoryPools;
     };
 }

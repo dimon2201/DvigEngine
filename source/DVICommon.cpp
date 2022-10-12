@@ -1,4 +1,4 @@
-#include "../include/DvigEngine.h"
+#include "../include/DvigEngine.hpp"
 
 DvigEngine::ICommon::ICommon(const char* stringID)
 {

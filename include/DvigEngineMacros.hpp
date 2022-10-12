@@ -60,9 +60,10 @@
 #define DV_MEMORY_POOL_COMPONENT_STORAGE_BYTE_WIDTH     DV_MEMORY_POOL_BYTE_WIDTH / 2
 
 #define DV_MAX_HASH_MAP_LIST_ENTRY_COUNT                100
-#define DV_MAX_REGISTERED_COMPONENTS_COUNT              512
+#define DV_MAX_REGISTERED_COMPONENT_COUNT               512
+#define DV_MAX_COMMAND_QUEUE_INSTRUCTION_COUNT          128
 
-#define DV_COMPONENT_BIT_MASK_BYTE_WIDTH                (DV_MAX_REGISTERED_COMPONENTS_COUNT >> 5)
+#define DV_COMPONENT_BIT_MASK_BYTE_WIDTH                (DV_MAX_REGISTERED_COMPONENT_COUNT >> 5)
 
 #define DV_ASSERT(E) \
     if (E == DV_FALSE) \
@@ -150,6 +151,19 @@
 #define DV_XMACRO_FRIENDS_SEQ_6(_0, _1, _2, _3, _4, _5, ...) DV_XMACRO_FRIEND_TEMPLATE _0 ; DV_XMACRO_FRIEND_TEMPLATE _1 ; DV_XMACRO_FRIEND_TEMPLATE _2 ; DV_XMACRO_FRIEND_TEMPLATE _3 ; DV_XMACRO_FRIEND_TEMPLATE _4 ; DV_XMACRO_FRIEND_TEMPLATE _5 ;
 #define DV_XMACRO_XFRIENDS(...) DV_MACRO_CONCATE(DV_XMACRO_FRIENDS_SEQ_, DV_MACRO_ARGS_CNT(__VA_ARGS__))(__VA_ARGS__, DV_XMACRO_FRIEND_BLANK)
 #define DV_MACRO_FRIENDS(...) DV_XMACRO_XFRIENDS(__VA_ARGS__)
+
+#define DV_XMACRO_PUSH_COMMAND_ARGS_1(_0, ...) argumentMemory[0] = (dvmachword)_0 ;
+#define DV_XMACRO_PUSH_COMMAND_ARGS_2(_0, _1, ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ;
+#define DV_XMACRO_PUSH_COMMAND_ARGS_3(_0, _1, _2, ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ; argumentMemory[2] = (dvmachword)_2 ;
+#define DV_XMACRO_PUSH_COMMAND_ARGS_4(_0, _1, _2, _3, ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ; argumentMemory[2] = (dvmachword)_2 ; argumentMemory[3] = (dvmachword)_3 ;
+#define DV_XMACRO_PUSH_COMMAND_ARGS_5(_0, _1, _2, _3, _4, ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ; argumentMemory[2] = (dvmachword)_2 ; argumentMemory[3] = (dvmachword)_3 ; argumentMemory[4] = (dvmachword)_4 ;
+#define DV_XMACRO_PUSH_COMMAND_ARGS_6(_0, _1, _2, _3, _4, _5 ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ; argumentMemory[2] = (dvmachword)_2 ; argumentMemory[3] = (dvmachword)_3 ; argumentMemory[4] = (dvmachword)_4 ; argumentMemory[5] = (dvmachword)_5 ;
+#define DV_XMACRO_PUSH_COMMAND(T, ...) DV_MACRO_CONCATE(DV_XMACRO_PUSH_COMMAND_ARGS_, DV_MACRO_ARGS_CNT(__VA_ARGS__))(__VA_ARGS__)
+#define DV_MACRO_PUSH_COMMAND(T, ...) \
+    const dvisize argumentCount = DV_MACRO_ARGS_CNT(__VA_ARGS__); \
+    dvmachword argumentMemory[argumentCount]; \
+    DV_XMACRO_PUSH_COMMAND(T, __VA_ARGS__) \
+    m_Instance->m_Data.m_CommandQueue->Push(&argumentMemory[0], argumentCount);
 
 _DV_EOF
 

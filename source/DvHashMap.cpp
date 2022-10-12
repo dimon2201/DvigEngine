@@ -1,6 +1,6 @@
 #include <cstring>
 
-#include "../include/DvigEngine.h"
+#include "../include/DvigEngine.hpp"
 
 DvigEngine::HASH_MAP_DATA_SLOT::HASH_MAP_DATA_SLOT(DvigEngine::String* key, void* value)
 {
