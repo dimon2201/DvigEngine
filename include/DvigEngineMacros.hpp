@@ -164,7 +164,10 @@
     const dvisize argumentCount = DV_MACRO_ARGS_CNT(__VA_ARGS__); \
     dvmachword argumentMemory[argumentCount]; \
     DV_XMACRO_XPUSH_JOB(__VA_ARGS__) \
-    m_Instance->m_Data.m_JobQueues[0].Push(T, &argumentMemory[0], argumentCount);
+    m_Instance->m_Data.m_CurrentJobQueueCursor++; \
+    std::cout << "Cursor id : " << m_Instance->m_Data.m_CurrentJobQueueCursor - 1 << std::endl; \
+    if (m_Instance->m_Data.m_CurrentJobQueueCursor >= m_Instance->m_Data.m_RequestedThreadCount) { m_Instance->m_Data.m_CurrentJobQueueCursor = 0; } \
+    m_Instance->m_Data.m_JobQueues[m_Instance->m_Data.m_CurrentJobQueueCursor].Push(T, &argumentMemory[0], argumentCount);
 
 _DV_EOF
 

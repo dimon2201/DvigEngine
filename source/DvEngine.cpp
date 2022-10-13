@@ -155,7 +155,7 @@ void DvigEngine::Engine::CopyMemory(void* dstAddress, void* srcAddress, dvusize 
 }
 
 void DvigEngine::Engine::StartThreads() {
-    for (dvisize i = 0; i < 1; ++i)
+    for (dvisize i = 0; i < m_Data.m_RequestedThreadCount; ++i)
     {
         m_Data.m_JobQueues[i].m_Data.m_Thread = std::thread(
             &DvigEngine::JobQueue::Start, &m_Data.m_JobQueues[i]
@@ -164,7 +164,7 @@ void DvigEngine::Engine::StartThreads() {
 }
 
 void DvigEngine::Engine::StopThreads() {
-    for (dvisize i = 0; i < 1; ++i)
+    for (dvisize i = 0; i < m_Data.m_RequestedThreadCount; ++i)
     {
         m_Data.m_JobQueues[i].Stop();
         m_Data.m_JobQueues[i].m_Data.m_Thread.join();

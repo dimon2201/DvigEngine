@@ -13,8 +13,6 @@
 
 #include "DvigEngineMacros.hpp"
 
-void funcx(unsigned i);
-
 namespace DvigEngine
 {
     /***   Typenames   ***/
@@ -41,12 +39,14 @@ namespace DvigEngine
     typedef dvuint32            dvdword;
     typedef dvuint64            dvqword;
     typedef dvmachword          dvresult;
-    typedef void                (*dvcallback)(unsigned);
+    typedef void                (*dvcallback)(void);
 
     /***   Forward declaration & Prototypes  ***/
     class IShell;
     class String;
     class Engine;
+
+    void DvigEngineEngineCreate();
 
     /***   Declaration & Definition   ***/
     class ICommon
@@ -264,7 +264,8 @@ namespace DvigEngine
 
             template<typename T>
             DV_FUNCTION_INLINE void Create(const void** const result, const char* stringID, IData* data) {
-                DV_XMACRO_PUSH_JOB(funcx, result, stringID, data)
+                dvcallback f = &DvigEngine::DvigEngineEngineCreate;
+                DV_XMACRO_PUSH_JOB(f, result, stringID, data)
             }
 
             void StartThreads();

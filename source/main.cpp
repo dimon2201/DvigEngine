@@ -46,7 +46,7 @@ int main()
     engineUserData.m_MemoryPoolsCount = 2u;
     engineUserData.m_MemoryPoolsData = memoryPoolsData;
     engineUserData.m_ReservedMemoryPoolID = 1;
-    engineUserData.m_RequestedThreadCount = 1;
+    engineUserData.m_RequestedThreadCount = 2;
 
     Engine::Init(&engineUserData);
     Engine* engine = Engine::GetInstance();
