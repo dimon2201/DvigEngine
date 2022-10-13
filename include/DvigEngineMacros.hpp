@@ -161,13 +161,13 @@
 #define DV_XMACRO_PUSH_JOB_ARGS_6(_0, _1, _2, _3, _4, _5 ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ; argumentMemory[2] = (dvmachword)_2 ; argumentMemory[3] = (dvmachword)_3 ; argumentMemory[4] = (dvmachword)_4 ; argumentMemory[5] = (dvmachword)_5 ;
 #define DV_XMACRO_XPUSH_JOB(...) DV_MACRO_CONCATE(DV_XMACRO_PUSH_JOB_ARGS_, DV_MACRO_ARGS_CNT(__VA_ARGS__))(__VA_ARGS__)
 #define DV_XMACRO_PUSH_JOB(T, ...) \
+    auto l = [] (Engine* engine) { engine->T("id_0", nullptr); }; \
     const dvisize argumentCount = DV_MACRO_ARGS_CNT(__VA_ARGS__); \
     dvmachword argumentMemory[argumentCount]; \
     DV_XMACRO_XPUSH_JOB(__VA_ARGS__) \
     m_Instance->m_Data.m_CurrentJobQueueCursor++; \
-    std::cout << "Cursor id : " << m_Instance->m_Data.m_CurrentJobQueueCursor - 1 << std::endl; \
     if (m_Instance->m_Data.m_CurrentJobQueueCursor >= m_Instance->m_Data.m_RequestedThreadCount) { m_Instance->m_Data.m_CurrentJobQueueCursor = 0; } \
-    m_Instance->m_Data.m_JobQueues[m_Instance->m_Data.m_CurrentJobQueueCursor].Push(T, &argumentMemory[0], argumentCount);
+    m_Instance->m_Data.m_JobQueues[m_Instance->m_Data.m_CurrentJobQueueCursor].Push(l, &argumentMemory[0], argumentCount);
 
 _DV_EOF
 

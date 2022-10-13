@@ -15,7 +15,12 @@
 
 namespace DvigEngine
 {
-    /***   Typenames   ***/
+    /*** Forward declaration & Prototypes ***/
+    class IShell;
+    class String;
+    class Engine;
+
+    /*** Typenames ***/
     typedef int8_t              dvint8;
     typedef uint8_t             dvuint8;
     typedef int16_t             dvint16;
@@ -39,16 +44,17 @@ namespace DvigEngine
     typedef dvuint32            dvdword;
     typedef dvuint64            dvqword;
     typedef dvmachword          dvresult;
-    typedef void                (*dvcallback)(void);
+    typedef void                (*dvcallback)(Engine* engine);
 
-    /***   Forward declaration & Prototypes  ***/
-    class IShell;
-    class String;
-    class Engine;
+    /*** Job function wrappers ***/
+    namespace WrapperFunctions
+    {
+        DV_FUNCTION_INLINE void EngineCreate(Engine* engine) {
+            
+        }
+    }
 
-    void DvigEngineEngineCreate();
-
-    /***   Declaration & Definition   ***/
+    /*** Declaration & Definition ***/
     class ICommon
     {
         public:
@@ -241,13 +247,13 @@ namespace DvigEngine
             dvusize m_MaxThreadCount;
     };
 
-    /***   Engine class declaration   ***/
+    /*** Engine class declaration ***/
     class Engine
     {
         DV_MACRO_DECLARE_SINGLETON(Engine, public)
 
         public:
-            DV_XMACRO_GETTER_DATA(ENGINE_USER_DATA)
+            DV_XMACRO_GETTER_DATA(ENGINE_DATA)
 
             static void Init(ENGINE_USER_DATA* engineInfo);
             static void Free();
@@ -262,29 +268,30 @@ namespace DvigEngine
                 return &(m_Instance->m_Data.m_MemoryPools[memoryPoolID]);
             }
 
+        private:
+            // Job functions
+            template<typename T>
+            DV_FUNCTION_INLINE void CallCreate(const char* stringID, IData* data) {
+                // MemoryChunk* object = AllocateChunk(0, sizeof(T));
+                // T* unwObject = object->Unwrap<T>();
+                // dvuchar* stringIDPtr = (dvuchar*)stringID;
+                // while (*++stringIDPtr != 0);
+                // Engine::CopyMemory((void*)&unwObject->m_SID[0], (void*)&stringID[0], (dvusize)(stringIDPtr - (dvuchar*)stringID));
+                // // if (data == nullptr) { return unwObject; }
+                // IData* objectData = unwObject->GetData();
+                // Engine::CopyMemory(objectData, data, sizeof(unwObject->m_Data));
+                // return unwObject;
+                std::cout << "function!" << std::endl;
+            }
+
+        public:
             template<typename T>
             DV_FUNCTION_INLINE void Create(const void** const result, const char* stringID, IData* data) {
-                dvcallback f = &DvigEngine::DvigEngineEngineCreate;
-                DV_XMACRO_PUSH_JOB(f, result, stringID, data)
+                DV_XMACRO_PUSH_JOB(CallCreate<T>, this)
             }
 
             void StartThreads();
             void StopThreads();
-
-        private:
-            // Command call functions
-            template<typename T>
-            DV_FUNCTION_INLINE T* CallCreate(const char* stringID, IData* data) {
-                MemoryChunk* object = AllocateChunk(0, sizeof(T));
-                T* unwObject = object->Unwrap<T>();
-                dvuchar* stringIDPtr = (dvuchar*)stringID;
-                while (*++stringIDPtr != 0);
-                Engine::CopyMemory((void*)&unwObject->m_SID[0], (void*)&stringID[0], (dvusize)(stringIDPtr - (dvuchar*)stringID));
-                if (data == nullptr) { return unwObject; }
-                IData* objectData = unwObject->GetData();
-                Engine::CopyMemory(objectData, data, sizeof(unwObject->m_Data));
-                return unwObject;
-            }
 
         private:
             ENGINE_USER_DATA m_UserData;
