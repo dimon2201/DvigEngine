@@ -1,11 +1,11 @@
 #include "../include/DvigEngine.hpp"
 
-void DvigEngine::CommandQueue::Push(void* argumentMemory, const dvisize argumentCount)
+void DvigEngine::JobQueue::Push(void* argumentMemory, const dvisize argumentCount)
 {
-    m_Data.m_InstructionCount += argumentCount;
+    m_Data.m_JobCount += argumentCount;
 }
 
-void DvigEngine::CommandQueue::Execute()
+void DvigEngine::JobQueue::Execute()
 {
     
 }

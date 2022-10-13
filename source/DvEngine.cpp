@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <typeinfo>
+#include <thread>
 
 DV_MACRO_DEFINE_SINGLETON(DvigEngine::Engine)
 
@@ -40,12 +41,27 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_USER_DATA* engineUserData)
 
     // Memory allocation for Engine
     m_Instance = (DvigEngine::Engine*)DvigEngine::Engine::AllocateUsingData(reservedMemoryPoolInfo, sizeof(DvigEngine::Engine));
+
+    // Assign Engine data
+    DvigEngine::ENGINE_DATA* engineData = (DvigEngine::ENGINE_DATA*)m_Instance->GetData();
+    engineData->m_MaxThreadCount = std::thread::hardware_concurrency();
+    if (engineUserData->m_RequestedThreadCount > 0 && engineUserData->m_RequestedThreadCount <= engineData->m_MaxThreadCount)
+    {
+        engineData->m_RequestedThreadCount = engineUserData->m_RequestedThreadCount;
+    }
+    else
+    {
+        engineData->m_RequestedThreadCount = 1;
+    }
+
+    // Memory allocation for Job Queues
+    m_Instance->m_Data.m_JobQueues = (DvigEngine::JobQueue*)DvigEngine::Engine::AllocateUsingData(reservedMemoryPoolInfo, engineData->m_RequestedThreadCount * sizeof(DvigEngine::JobQueue));
     
-    // Memory allocation for Command Queue
-    m_Instance->m_Data.m_CommandQueue = (DvigEngine::CommandQueue*)DvigEngine::Engine::AllocateUsingData(reservedMemoryPoolInfo, sizeof(DvigEngine::CommandQueue));
-    
-    // Instantiate Command Queue
-    m_Instance->m_Data.m_CommandQueue->m_Data.m_InstructionCount = 0;
+    // Instantiate Job Queues
+    for (dvisize i = 0; i < engineData->m_RequestedThreadCount; ++i)
+    {
+        m_Instance->m_Data.m_JobQueues[i].m_Data.m_JobCount = 0;
+    }
 
     // Allocate memory for memory pools classes
     dvusize allocClassByteWidth = (1 + memoryPoolsCount) * sizeof(DvigEngine::MemoryPool);
@@ -60,17 +76,16 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_USER_DATA* engineUserData)
     }
 
     // Assign Global memory pool for Engine
-    DvigEngine::MEMORY_POOL_DATA globalMemoryPoolInfo;
-    globalMemoryPoolInfo.m_ID = memoryPoolsCount;   
-    globalMemoryPoolInfo.m_Address = globalMemoryPoolAddres;
-    globalMemoryPoolInfo.m_AddressOffset = globalMemoryPoolInfo.m_Address;
-    globalMemoryPoolInfo.m_ByteWidth = globalMemoryPoolByteWidth;
+    DvigEngine::MEMORY_POOL_DATA globalMemoryPoolData;
+    globalMemoryPoolData.m_ID = memoryPoolsCount;   
+    globalMemoryPoolData.m_Address = globalMemoryPoolAddres;
+    globalMemoryPoolData.m_AddressOffset = globalMemoryPoolData.m_Address;
+    globalMemoryPoolData.m_ByteWidth = globalMemoryPoolByteWidth;
     DvigEngine::MemoryPool* globalMemoryPool = m_Instance->GetMemoryPoolByID(memoryPoolsCount);
-    DvigEngine::Engine::CopyMemory(globalMemoryPool->GetData(), &globalMemoryPoolInfo, sizeof(DvigEngine::MEMORY_POOL_DATA));
+    DvigEngine::Engine::CopyMemory(globalMemoryPool->GetData(), &globalMemoryPoolData, sizeof(DvigEngine::MEMORY_POOL_DATA));
 
-    DvigEngine::ENGINE_DATA* engineData = (DvigEngine::ENGINE_DATA*)m_Instance->GetData();
-    engineData->m_GlobalMemoryPoolAddress = globalMemoryPoolInfo.m_Address;
-    engineData->m_GlobalMemoryPoolByteWidth = globalMemoryPoolInfo.m_ByteWidth;
+    engineData->m_GlobalMemoryPoolAddress = globalMemoryPoolData.m_Address;
+    engineData->m_GlobalMemoryPoolByteWidth = globalMemoryPoolData.m_ByteWidth;
     engineData->m_RegisteredComponentCount = 0;
 
     // Allocate memory for Component storage

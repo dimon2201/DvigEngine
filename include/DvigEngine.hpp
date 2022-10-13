@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <iostream>
 #include <typeinfo>
+#include <functional>
 
 #include "DvigEngineMacros.hpp"
 
@@ -177,28 +178,28 @@ namespace DvigEngine
             ENTITY_DATA m_Data;
     };
 
-    enum COMMAND_TYPE
+    enum JOB_TYPE
     {
         CREATE = 0u
     };
 
-    struct COMMAND_QUEUE_DATA : IData
+    struct JOB_QUEUE_DATA : IData
     {
-        dvusize m_InstructionCount;
-        dvmachword m_Instructions[DV_MAX_COMMAND_QUEUE_INSTRUCTION_COUNT];
+        dvusize m_JobCount;
+        std::function<void(void*, dvusize)> m_JobCallback[4];
     };
     
-    class CommandQueue : IObject
+    class JobQueue : IObject
     {
         public:
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
-            DV_XMACRO_GETTER_DATA(COMMAND_QUEUE_DATA)
+            DV_XMACRO_GETTER_DATA(JOB_QUEUE_DATA)
             
             void Push(void* argumentMemory, const dvisize argumentCount);
             void Execute();
 
         private:
-            COMMAND_QUEUE_DATA m_Data;
+            JOB_QUEUE_DATA m_Data;
     };
 
     struct ENGINE_USER_DATA : IData
@@ -208,6 +209,7 @@ namespace DvigEngine
             dvuint32 m_MemoryPoolsCount;
             dvmachint m_ReservedMemoryPoolID;
             MEMORY_POOL_DATA* m_MemoryPoolsData;
+            dvusize m_RequestedThreadCount;
     };
 
     struct ENGINE_DATA : IData
@@ -220,7 +222,9 @@ namespace DvigEngine
             void* m_ComponentStorageOffset;
             dvusize m_ComponentStorageByteWidth;
             MemoryPool* m_MemoryPools;
-            CommandQueue* m_CommandQueue;
+            JobQueue* m_JobQueues;
+            dvusize m_RequestedThreadCount;
+            dvusize m_MaxThreadCount;
     };
 
     /***   Engine class declaration   ***/
@@ -240,7 +244,7 @@ namespace DvigEngine
 
             template<typename T>
             DV_FUNCTION_INLINE void Create(const void** const result, const char* stringID, IData* data) {
-                DV_MACRO_PUSH_COMMAND(COMMAND_TYPE::CREATE, result, stringID, data)
+                DV_MACRO_PUSH_JOB(JOB_TYPE::CREATE, result, stringID, data)
             }
 
             DV_FUNCTION_INLINE MemoryPool* GetMemoryPoolByID(dvusize memoryPoolID) {
