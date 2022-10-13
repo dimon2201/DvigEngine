@@ -58,6 +58,7 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_USER_DATA* engineUserData)
     m_Instance->m_Data.m_JobQueues = (DvigEngine::JobQueue*)DvigEngine::Engine::AllocateUsingData(reservedMemoryPoolInfo, engineData->m_RequestedThreadCount * sizeof(DvigEngine::JobQueue));
     
     // Instantiate Job Queues
+    m_Instance->m_Data.m_CurrentJobQueueCursor = 0;
     for (dvisize i = 0; i < engineData->m_RequestedThreadCount; ++i)
     {
         m_Instance->m_Data.m_JobQueues[i].m_Data.m_JobCount = 0;
@@ -151,4 +152,21 @@ void* DvigEngine::Engine::AllocateUsingData(MEMORY_POOL_DATA* memoryPool, dvusiz
 void DvigEngine::Engine::CopyMemory(void* dstAddress, void* srcAddress, dvusize byteWidth)
 {
     memcpy(dstAddress, srcAddress, byteWidth);
+}
+
+void DvigEngine::Engine::StartThreads() {
+    for (dvisize i = 0; i < 1; ++i)
+    {
+        m_Data.m_JobQueues[i].m_Data.m_Thread = std::thread(
+            &DvigEngine::JobQueue::Start, &m_Data.m_JobQueues[i]
+        );
+    }
+}
+
+void DvigEngine::Engine::StopThreads() {
+    for (dvisize i = 0; i < 1; ++i)
+    {
+        m_Data.m_JobQueues[i].Stop();
+        m_Data.m_JobQueues[i].m_Data.m_Thread.join();
+    }
 }

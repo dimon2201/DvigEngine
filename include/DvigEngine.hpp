@@ -1,3 +1,6 @@
+#ifndef _DV_H_
+#define _DV_H_
+
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -5,8 +8,12 @@
 #include <iostream>
 #include <typeinfo>
 #include <functional>
+#include <thread>
+#include <atomic>
 
 #include "DvigEngineMacros.hpp"
+
+void funcx(unsigned i);
 
 namespace DvigEngine
 {
@@ -34,6 +41,7 @@ namespace DvigEngine
     typedef dvuint32            dvdword;
     typedef dvuint64            dvqword;
     typedef dvmachword          dvresult;
+    typedef void                (*dvcallback)(unsigned);
 
     /***   Forward declaration & Prototypes  ***/
     class IShell;
@@ -185,8 +193,12 @@ namespace DvigEngine
 
     struct JOB_QUEUE_DATA : IData
     {
-        dvusize m_JobCount;
-        std::function<void(void*, dvusize)> m_JobCallback[4];
+        std::atomic<dvmachword> m_StopFlag;
+        std::atomic<dvmachword> m_ReturnFlag;
+        std::thread m_Thread;
+        dvdword m_JobCount;
+        dvmachword m_JobArguments[DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT * DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
+        dvcallback m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
     };
     
     class JobQueue : IObject
@@ -195,8 +207,9 @@ namespace DvigEngine
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
             DV_XMACRO_GETTER_DATA(JOB_QUEUE_DATA)
             
-            void Push(void* argumentMemory, const dvisize argumentCount);
-            void Execute();
+            void Push(dvcallback callback, void* argumentMemory, const dvusize argumentCount);
+            void Start();
+            void Stop();
 
         private:
             JOB_QUEUE_DATA m_Data;
@@ -222,6 +235,7 @@ namespace DvigEngine
             void* m_ComponentStorageOffset;
             dvusize m_ComponentStorageByteWidth;
             MemoryPool* m_MemoryPools;
+            dvmachword m_CurrentJobQueueCursor;
             JobQueue* m_JobQueues;
             dvusize m_RequestedThreadCount;
             dvusize m_MaxThreadCount;
@@ -242,16 +256,19 @@ namespace DvigEngine
             static void* AllocateUsingData(MEMORY_POOL_DATA* memoryPool, dvusize byteWidth);
             static void CopyMemory(void* destAddress, void* srcAddress, dvusize byteWidth);
 
-            template<typename T>
-            DV_FUNCTION_INLINE void Create(const void** const result, const char* stringID, IData* data) {
-                DV_MACRO_PUSH_JOB(JOB_TYPE::CREATE, result, stringID, data)
-            }
-
             DV_FUNCTION_INLINE MemoryPool* GetMemoryPoolByID(dvusize memoryPoolID) {
                 DV_ASSERT_PTR(m_Instance)
                 DV_ASSERT_PTR(m_Instance->m_Data.m_MemoryPools)
                 return &(m_Instance->m_Data.m_MemoryPools[memoryPoolID]);
             }
+
+            template<typename T>
+            DV_FUNCTION_INLINE void Create(const void** const result, const char* stringID, IData* data) {
+                DV_XMACRO_PUSH_JOB(funcx, result, stringID, data)
+            }
+
+            void StartThreads();
+            void StopThreads();
 
         private:
             // Command call functions
@@ -273,3 +290,5 @@ namespace DvigEngine
             ENGINE_DATA m_Data;
     };
 }
+
+#endif

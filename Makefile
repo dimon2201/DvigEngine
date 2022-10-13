@@ -1,4 +1,4 @@
-TARGET 				:= testlib.a
+TARGET 				:= main.exe
 CXXFLAGS 			:= -std=c++11 #-Werror -Wpedantic -Wall -pedantic
 CXX					:= g++
 GXX    				= $(CXX) $(CXXFLAGS) -c $(1) -o $(2) &&

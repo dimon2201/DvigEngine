@@ -46,18 +46,20 @@ int main()
     engineUserData.m_MemoryPoolsCount = 2u;
     engineUserData.m_MemoryPoolsData = memoryPoolsData;
     engineUserData.m_ReservedMemoryPoolID = 1;
-    engineUserData.m_RequestedThreadCount = 2;
-    
+    engineUserData.m_RequestedThreadCount = 1;
+
     Engine::Init(&engineUserData);
     Engine* engine = Engine::GetInstance();
 
-    String* memory = (String*)Engine::Allocate(0, 4 * sizeof(String));
-    engine->Create<String>((const void** const)&memory[0], "MyString_0", nullptr);
-    engine->Create<String>((const void** const)&memory[1], "MyString_1", nullptr);
-    engine->Create<String>((const void** const)&memory[2], "MyString_2", nullptr);
-    engine->Create<String>((const void** const)&memory[3], "MyString_3", nullptr);
+    String* string = (String*)Engine::Allocate(0, 4 * sizeof(String));
+
+    engine->StartThreads();
+    engine->Create<String>((const void** const)&string[0], "MyStringID_0", nullptr);
+    engine->Create<String>((const void** const)&string[1], "MyStringID_1", nullptr);
+    engine->StopThreads();
     
     std::cout << "Success!" << std::endl;
+
     Engine::Free();
 
     // void* mem = malloc(4 * 1024 * 1024);
