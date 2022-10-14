@@ -46,9 +46,9 @@ void DvigEngine::HashMap::Insert(String* key, void* value)
             //     return;
             // }
             ICommon* ptrAsCommon = (ICommon*)((dvmachword)m_Data.m_AssocAddress + (m_Data.m_AssocEntrySize * i));
-            dvisize cursor = 0;
-            while (ptrAsCommon->m_SID[cursor] == keyData->m_Chars[cursor] && cursor++ < keyData->m_ByteWidth);
-            if (cursor == keyData->m_ByteWidth)
+            // dvisize cursor = 0;
+            // while (ptrAsCommon->m_SID[cursor] == keyData->m_Chars[cursor] && cursor++ < keyData->m_ByteWidth);
+            if (String::CompareCharacters(ptrAsCommon->m_SID, keyData->m_Chars, ptrAsCommon->m_SIDByteWidth, keyData->m_ByteWidth) == DV_TRUE)
             {
                 // Just update value for key
                 // m_Data.m_List[i].m_Value = value;
@@ -69,12 +69,8 @@ void* DvigEngine::HashMap::Find(String* key)
     STRING_DATA* keyData = key->GetData();
     // STRING_DATA* opCompare = &m_Data.m_List[m_Data.m_HashTable[hash] - 1].m_Key;
     ICommon* assocPtr = (ICommon*)(m_Data.m_HashTable[hash]);
-    dvisize cursor = 0;
-    std::cout<<assocPtr->m_SID[cursor]<<" "<<assocPtr->m_SID[1]<<" "<<assocPtr->m_SID[2]<<std::endl;
-    while (assocPtr->m_SID[cursor] == keyData->m_Chars[cursor] && ++cursor < keyData->m_ByteWidth){
-        std::cout<<assocPtr->m_SID[cursor]<<std::endl;
-    }
-    if (cursor == keyData->m_ByteWidth)
+    // dvisize cursor = 0;
+    if (String::CompareCharacters(assocPtr->m_SID, keyData->m_Chars, assocPtr->m_SIDByteWidth, keyData->m_ByteWidth) == DV_TRUE)
     {
         // Just update value for key
         return (void*)assocPtr;
@@ -84,9 +80,9 @@ void* DvigEngine::HashMap::Find(String* key)
         for (dvisize i = 0; i < m_Data.m_ListEntryCount; ++i)
         {
             ICommon* ptrAsCommon = (ICommon*)((dvmachword)m_Data.m_AssocAddress + (m_Data.m_AssocEntrySize * i));
-            dvisize cursor = 0;
-            while (ptrAsCommon->m_SID[cursor] == keyData->m_Chars[cursor] && cursor++ < keyData->m_ByteWidth);
-            if (cursor == keyData->m_ByteWidth)
+            // dvisize cursor = 0;
+            // while (ptrAsCommon->m_SID[cursor] == keyData->m_Chars[cursor] && cursor++ < keyData->m_ByteWidth);
+            if (String::CompareCharacters(ptrAsCommon->m_SID, keyData->m_Chars, ptrAsCommon->m_SIDByteWidth, keyData->m_ByteWidth) == DV_TRUE)
             {
                 return (void*)ptrAsCommon;
             }

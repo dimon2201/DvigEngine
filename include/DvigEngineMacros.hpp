@@ -78,12 +78,19 @@
         exit(0); \
     }
 
+#define DV_XMACRO_DECLARE_COMMON_CLASS(T) \
+    public: \
+        T(); \
+        virtual ~T() {}; \
+        dvmachword m_IID; \
+        dvuchar m_SID[DV_MEMORY_COMMON_STRING_BYTE_WIDTH]; \
+        dvusize m_SIDByteWidth; \
+        dvuchar m_ExtraData[DV_MEMORY_COMMON_EXTRA_DATA];
+
 #define DV_MACRO_DECLARE_CREATION_DEPENDENT_CLASS(T) \
     public: \
         T(); \
-        ~T(); \
-        void* operator new(dvuint64) = delete; \
-        void operator delete(void*) = delete;
+        ~T() {};
 
 #define DV_MACRO_DECLARE_SINGLETON(T, function_access) \
     function_access: \
@@ -112,13 +119,6 @@
 
 #define DV_MACRO_SETTER(T, TO) \
     T = TO;
-
-#define DV_XMACRO_DECLARE_COMMON_CLASS(T) \
-    public: \
-        T() = default; \
-        dvmachword m_IID; \
-        dvuchar m_SID[DV_MEMORY_COMMON_STRING_BYTE_WIDTH]; \
-        dvuchar m_ExtraData[DV_MEMORY_COMMON_EXTRA_DATA];
 
 #define DV_XMACRO_GETTER_DATA(T) \
         DV_FUNCTION_INLINE T* GetData() { DV_MACRO_GETTER((T*)&m_Data) };
@@ -168,6 +168,13 @@
     if (m_Instance->m_Data.m_CurrentJobQueueCursor >= m_Instance->m_Data.m_RequestedThreadCount) { m_Instance->m_Data.m_CurrentJobQueueCursor = 0; } \
     auto l = [] (dvmachword* arg0, dvusize arg1) { E->T(arg0, arg1); }; \
     m_Instance->m_Data.m_JobQueues[m_Instance->m_Data.m_CurrentJobQueueCursor].Push(l, &argumentMemory[0], argumentCount);
+
+#define DV_XMACRO_CREATE_STRING_GLOBAL_SCOPE_CAPACITY(cap) String* _dv_global_scope_strings[cap]; dvusize _dv_global_scope_strings_count = 0;
+#define DV_XMACRO_CREATE_STRING(var, id, text) \
+    engine->Create<String>((const void** const)&_dv_global_scope_strings[_dv_global_scope_strings_count], id, nullptr); \
+    String* var = _dv_global_scope_strings[_dv_global_scope_strings_count]; \
+    const dvisize var##_global_scope_string_id = _dv_global_scope_strings_count++; \
+    *var = text;
 
 _DV_EOF
 
