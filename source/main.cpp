@@ -46,19 +46,27 @@ int main()
     engineUserData.m_MemoryPoolsCount = 2u;
     engineUserData.m_MemoryPoolsData = memoryPoolsData;
     engineUserData.m_ReservedMemoryPoolID = 1;
-    engineUserData.m_RequestedThreadCount = 2;
+    engineUserData.m_RequestedThreadCount = 1;
 
     Engine::Init(&engineUserData);
     Engine* engine = Engine::GetInstance();
 
-    String* string = (String*)Engine::Allocate(0, 4 * sizeof(String));
+    String** string = (String**)Engine::Allocate(0, 4 * sizeof(String));
+    STRING_DATA string0Data = STRING_DATA("Hello");
+    STRING_DATA string1Data = STRING_DATA(" world!");
+
+    float* mem = (float*)malloc(4 * 1024 * 1024);
 
     engine->StartThreads();
-    engine->Create<String>((const void** const)&string[0], "MyStringID_0", nullptr);
-    engine->Create<String>((const void** const)&string[1], "MyStringID_1", nullptr);
+    clock_t ts = clock();
+    engine->Create<String>((const void** const)&string[0], "MyStringID_0", &string0Data);
+    engine->Create<String>((const void** const)&string[1], "MyStringID_1", &string1Data);
     engine->StopThreads();
-    
+    clock_t te = clock();
+
+    std::cout << (string[0])->GetData()->m_Chars << (string[1])->GetData()->m_Chars << std::endl;
     std::cout << "Success!" << std::endl;
+    std::cout << "Time : " << te - ts << std::endl;
 
     Engine::Free();
 

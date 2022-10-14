@@ -9,7 +9,7 @@ void DvigEngine::JobQueue::Push(dvcallback callback, void* argumentMemory, const
     m_Data.m_StopFlag.store(DV_FALSE);
     m_Data.m_ReturnFlag.store(DV_FALSE);
     
-    Engine::CopyMemory(&m_Data.m_JobArguments[DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT * m_Data.m_JobCount], &((dvuchar*)argumentMemory)[0], argumentCount * sizeof(dvmachword));
+    Engine::CopyMemory(&m_Data.m_JobArguments[DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT * m_Data.m_JobCount], argumentMemory, argumentCount * sizeof(dvmachword));
     m_Data.m_Jobs[m_Data.m_JobCount++] = callback;
 }
 
@@ -26,12 +26,12 @@ void DvigEngine::JobQueue::Start()
 
         dvmachword* jobArguments = &m_Data.m_JobArguments[ DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT * m_Data.m_JobCount ];
         m_Data.m_ReturnFlag.store(DV_FALSE);
-        m_Data.m_Jobs[m_Data.m_JobCount]( (DvigEngine::Engine*)jobArguments[0] );
+        m_Data.m_Jobs[m_Data.m_JobCount]( &jobArguments[0], m_Data.m_JobCount );
     }
 }
 
 void DvigEngine::JobQueue::Stop()
 {
-    while (m_Data.m_ReturnFlag.load() == 0);
+    while (m_Data.m_ReturnFlag.load() == DV_FALSE);
     m_Data.m_StopFlag.store(DV_TRUE);
 }

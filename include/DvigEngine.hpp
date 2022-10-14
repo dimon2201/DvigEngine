@@ -10,6 +10,7 @@
 #include <functional>
 #include <thread>
 #include <atomic>
+#include <cmath>
 
 #include "DvigEngineMacros.hpp"
 
@@ -44,7 +45,7 @@ namespace DvigEngine
     typedef dvuint32            dvdword;
     typedef dvuint64            dvqword;
     typedef dvmachword          dvresult;
-    typedef void                (*dvcallback)(Engine* engine);
+    typedef void                (*dvcallback)(dvmachword*, dvusize);
 
     /*** Job function wrappers ***/
     namespace WrapperFunctions
@@ -268,30 +269,32 @@ namespace DvigEngine
                 return &(m_Instance->m_Data.m_MemoryPools[memoryPoolID]);
             }
 
-        private:
-            // Job functions
-            template<typename T>
-            DV_FUNCTION_INLINE void CallCreate(const char* stringID, IData* data) {
-                // MemoryChunk* object = AllocateChunk(0, sizeof(T));
-                // T* unwObject = object->Unwrap<T>();
-                // dvuchar* stringIDPtr = (dvuchar*)stringID;
-                // while (*++stringIDPtr != 0);
-                // Engine::CopyMemory((void*)&unwObject->m_SID[0], (void*)&stringID[0], (dvusize)(stringIDPtr - (dvuchar*)stringID));
-                // // if (data == nullptr) { return unwObject; }
-                // IData* objectData = unwObject->GetData();
-                // Engine::CopyMemory(objectData, data, sizeof(unwObject->m_Data));
-                // return unwObject;
-                std::cout << "function!" << std::endl;
-            }
-
         public:
             template<typename T>
             DV_FUNCTION_INLINE void Create(const void** const result, const char* stringID, IData* data) {
-                DV_XMACRO_PUSH_JOB(CallCreate<T>, this)
+                DV_XMACRO_PUSH_JOB(CallCreate<T>, m_Instance, result, stringID, data)
             }
 
             void StartThreads();
             void StopThreads();
+
+        private:
+            // Job functions
+            template<typename T>
+            DV_FUNCTION_INLINE void CallCreate(dvmachword* argumentMemory, dvusize jobIndex) {
+                MemoryChunk* object = AllocateChunk(0, sizeof(T));
+                T* unwObject = object->Unwrap<T>();
+                const T** result = (const T**)argumentMemory[ 0 ];
+                const char* stringID = (const char*)argumentMemory[ 1 ];
+                IData* data = (IData*)argumentMemory[ 2 ];
+                dvuchar* stringIDPtr = (dvuchar*)stringID;
+                while (*++stringIDPtr != 0);
+                Engine::CopyMemory((void*)&unwObject->m_SID[0], (void*)&stringID[0], (dvusize)(stringIDPtr - (dvuchar*)stringID));
+                if (data == nullptr) { *result = unwObject; return; /*unwObject;*/ }
+                IData* objectData = unwObject->GetData();
+                Engine::CopyMemory(objectData, data, sizeof(unwObject->m_Data));
+                *result = unwObject;
+            }
 
         private:
             ENGINE_USER_DATA m_UserData;
