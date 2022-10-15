@@ -43,40 +43,28 @@ int main()
 
     // Create strings
     String* strings[6];
-    DV_XMACRO_CREATE_STRING(strings, 0, myString1, "MyStringID_Second1", "Hello,");
-    DV_XMACRO_CREATE_STRING(strings, 1, myString2, "MyStringID_Second2", " man,");
-    DV_XMACRO_CREATE_STRING(strings, 2, myString3, "MyStringID_Second3", " How are you doing");
-    DV_XMACRO_CREATE_STRING(strings, 3, myString4, "MyStringID_Second4", " today?");
+    DV_XMACRO_CREATE_STRING(strings, 0, myString1, "MyStringID_Second1", "ABC");
+    DV_XMACRO_CREATE_STRING(strings, 1, myString2, "MyStringID_Second2", " DE");
+    DV_XMACRO_CREATE_STRING(strings, 2, myString3, "MyStringID_Second3", " XY");
 
-    // DV_XMACRO_CREATE_STRING(anotherString, "MyStringID_Second2", "...");
-    // DV_XMACRO_CREATE_STRING(andAnotherString, "MyStringID_Second22", "Wow!");
-    // engine->DeleteChunk( myString->m_MemoryObject );
-    // std::cout << (dvmachword)strings[0] << std::endl;
+    // std::cout << "second1 : " << (dvmachword)strings[1]->GetMemoryObject() << std::endl;
 
-    // std::cout << "entity1 : " << (dvmachword)entities[0] << std::endl;
-    std::cout << "second1 : " << (dvmachword)strings[1]->GetMemoryObject() << std::endl;
-    engine->DeleteObject( strings[2]->GetMemoryObject() );
+    engine->DeleteObject( strings[0]->GetMemoryObject() );
+    engine->DeleteObject( strings[1]->GetMemoryObject() );
     
     // Create entities
     Entity* entities[2];
-    engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", nullptr);
-    // std::cout << "entity2 : " << (dvmachword)entities[0]->GetMemoryObject() << std::endl;
-    std::cout << "fourth2 : " << (dvmachword)strings[3]->GetMemoryObject() << std::endl;
+    // engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", nullptr);
 
-        engine->DeleteObject( strings[3]->GetMemoryObject() );
-
-
-    // HashMap* hashMaps[2];
-    // engine->Create<String>((const void** const)&hashMaps[0], "MyHashMap", nullptr);
-    // hashMaps[0]->Insert(  );
+    // engine->DeleteObject( strings[3]->GetMemoryObject() );
+    // engine->DeleteObject( strings[0]->GetMemoryObject() );
 
     engine->StopThreads();
     clock_t te = clock();
     
     std::cout << "Output : " << strings[0]->GetData()->m_Chars
                              << strings[1]->GetData()->m_Chars
-                             << strings[0]->GetData()->m_Chars
-                             << entities[0]->GetSID()
+                             << strings[2]->GetData()->m_Chars
                              << std::endl;
     std::cout << "Success!" << std::endl;
     std::cout << "Time : " << te - ts << std::endl;
