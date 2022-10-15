@@ -42,7 +42,7 @@ int main()
     engine->StartThreads();
 
     // Create strings
-    String* strings[4]; // memory for 2 Strings
+    String* strings[6]; // memory for 2 Strings
     engine->Create<String>((const void** const)&strings[0], "MyStringID_0", nullptr);
     engine->Create<String>((const void** const)&strings[1], "MyStringID_1", nullptr);
     engine->Create<String>((const void** const)&strings[2], "MyStringID_2", nullptr);
@@ -50,7 +50,7 @@ int main()
     strings[0][0] = "Hello";
     strings[1][0] = " world!";
     strings[2][0] = " how are you";
-    strings[3][0] = " doing?";
+    strings[3][0] = " doing";
     
     // DV_XMACRO_CREATE_STRING_GLOBAL_SCOPE_CAPACITY(4);
     // DV_XMACRO_CREATE_STRING(myString, "MyStringID_Second", "How are you doing?");
@@ -88,6 +88,7 @@ int main()
     
     std::cout << "Output : " << strings[0]->GetData()->m_Chars
                              << strings[2]->GetData()->m_Chars << strings[3]->GetData()->m_Chars
+                             << strings[4]->GetData()->m_Chars << strings[5]->GetData()->m_Chars
                              << std::endl;
     std::cout << "Success!" << std::endl;
     std::cout << "Time : " << te - ts << std::endl;

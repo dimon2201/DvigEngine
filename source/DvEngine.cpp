@@ -180,7 +180,7 @@ void DvigEngine::Engine::DeleteChunk(MemoryChunk* memoryChunk)
 
     dvmachword toMoveByteWidth = (dvmachword)memoryPool->m_Data.m_AddressOffset - (dvmachword)srcAddress;
     Engine::MoveMemory( destAddress, srcAddress, toMoveByteWidth );
-    memoryPool->m_Data.m_AddressOffset = (void*)((dvmachword)memoryPool->m_Data.m_AddressOffset - toMoveByteWidth);
+    memoryPool->m_Data.m_AddressOffset = (void*)((dvmachword)memoryPool->m_Data.m_AddressOffset - toDeleteByteWidth);
 }
 
 void DvigEngine::Engine::CopyMemory(void* dstAddress, void* srcAddress, dvusize byteWidth)
