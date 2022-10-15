@@ -68,6 +68,7 @@ namespace DvigEngine
     {
         DV_MACRO_DECLARE_CREATION_DEPENDENT_CLASS(IObject)
 
+        IObject** m_Createe;
         MemoryChunk* m_MemoryObject;
     };
 
@@ -302,6 +303,7 @@ namespace DvigEngine
                 IData* data = (IData*)argumentMemory[ 2 ];
                 MemoryChunk* object = AllocateChunk(0, sizeof(T));
                 T* unwObject = object->Unwrap<T>();
+                unwObject->m_Createe = (IObject**)result;
                 unwObject->m_MemoryObject = object;
                 *result = unwObject;
                 unwObject->m_SIDByteWidth = String::CharactersCount((const void*)stringID);

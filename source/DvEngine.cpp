@@ -160,19 +160,26 @@ void DvigEngine::Engine::DeleteChunk(MemoryChunk* memoryChunk)
 {
     const dvisize memoryPoolID = memoryChunk->m_Data.m_MemoryPoolID;
     MemoryPool* const memoryPool = &m_Instance->m_Data.m_MemoryPools[memoryPoolID];
-    void* address = memoryChunk;
+
     dvmachword toDeleteByteWidth = sizeof(DvigEngine::MemoryChunk) + memoryChunk->m_Data.m_ByteWidth;
-    void* nextAddress = (void*)((dvmachword)address + toDeleteByteWidth);
-    dvmachword toMoveByteWidth = (dvmachword)memoryPool->m_Data.m_AddressOffset - (dvmachword)nextAddress;
-    // Engine::MoveMemory( address, nextAddress, toMoveByteWidth );
-    void* lastAddress = (void*)((dvusize)address + toMoveByteWidth);
-    while ((dvmachword)address < (dvmachword)lastAddress)
+    void* curAddress = (void*)((dvmachword)memoryChunk + toDeleteByteWidth);
+    void* lastAddress = (void*)memoryPool->m_Data.m_AddressOffset;
+    void* destAddress = (void*)memoryChunk;
+    void* srcAddress = curAddress;
+    MemoryChunk* curMemoryChunk = (MemoryChunk*)destAddress;
+    IObject** createe = (IObject**)(((IObject*)curMemoryChunk->m_Data.m_Address)->m_Createe);
+    *createe = nullptr;
+    while (curAddress < lastAddress)
     {
-        IObject* const obj = (IObject* const)((dvmachword)address + sizeof(MemoryChunk));
-        obj->m_MemoryObject = (MemoryChunk*)((dvmachword)obj->m_MemoryObject - (dvmachword)toDeleteByteWidth);
-        address = (void*)((dvmachword)address + sizeof(MemoryChunk) + obj->m_MemoryObject->m_Data.m_ByteWidth);
+        curMemoryChunk = (MemoryChunk*)curAddress;
+        IObject** createe = (IObject**)(((IObject*)curMemoryChunk->m_Data.m_Address)->m_Createe);
+        *createe = (IObject*)((dvmachword)*createe - toDeleteByteWidth);
+
+        curAddress = (void*)((dvmachword)curAddress + sizeof(DvigEngine::MemoryChunk) + curMemoryChunk->m_Data.m_ByteWidth);
     }
-    
+
+    dvmachword toMoveByteWidth = (dvmachword)memoryPool->m_Data.m_AddressOffset - (dvmachword)srcAddress;
+    Engine::MoveMemory( destAddress, srcAddress, toMoveByteWidth );
     memoryPool->m_Data.m_AddressOffset = (void*)((dvmachword)memoryPool->m_Data.m_AddressOffset - toMoveByteWidth);
 }
 
