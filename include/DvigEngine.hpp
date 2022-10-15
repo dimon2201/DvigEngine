@@ -19,7 +19,7 @@ namespace DvigEngine
     /*** Forward declaration & Prototypes ***/
     class IShell;
     class String;
-    class MemoryChunk;
+    class MemoryObject;
     class Engine;
 
     /*** Typenames ***/
@@ -52,27 +52,34 @@ namespace DvigEngine
     /*** Declaration & Definition ***/
     class ICommon
     {
-        public:
-            DV_XMACRO_DECLARE_COMMON_CLASS(ICommon)
-
-            ICommon(const char* str);
+        DV_XMACRO_DECLARE_COMMON_CLASS(ICommon)
+        DV_MACRO_FRIENDS(DvigEngine::Engine)
     };
 
-    class IShell : ICommon
+    class IShell : public ICommon
     { };
 
     struct IData
     { };
 
-    struct IObject : ICommon
+    class IObject : public ICommon
     {
         DV_MACRO_DECLARE_CREATION_DEPENDENT_CLASS(IObject)
+        DV_MACRO_FRIENDS(DvigEngine::Engine)
 
-        IObject** m_Createe;
-        MemoryChunk* m_MemoryObject;
+        public:
+            DV_FUNCTION_INLINE IObject** GetCreatee() { return m_Createe; }
+            DV_FUNCTION_INLINE MemoryObject* GetMemoryObject() { return m_MemoryObject; };
+
+        private:
+            void SetCreateeAndMemoryObject(IObject** createe, MemoryObject* memoryObject);
+
+        private:
+            IObject** m_Createe;
+            MemoryObject* m_MemoryObject;
     };
 
-    struct MEMORY_CHUNK_DATA : IData
+    struct MEMORY_OBJECT_DATA : IData
     {
         public:
             void* m_Address;
@@ -80,11 +87,11 @@ namespace DvigEngine
             dvmachword m_MemoryPoolID;
     };
 
-    class MemoryChunk : IObject
+    class MemoryObject: public IObject
     {
         public:
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
-            DV_XMACRO_GETTER_DATA(MEMORY_CHUNK_DATA)
+            DV_XMACRO_GETTER_DATA(MEMORY_OBJECT_DATA)
 
             template<typename T>
             DV_FUNCTION_INLINE T* Unwrap() {
@@ -92,7 +99,7 @@ namespace DvigEngine
             }
 
         private:
-            MEMORY_CHUNK_DATA m_Data;
+            MEMORY_OBJECT_DATA m_Data;
     };
 
     struct MEMORY_POOL_DATA : IData
@@ -105,7 +112,7 @@ namespace DvigEngine
             dvusize m_ByteWidth;
     };
 
-    class MemoryPool : IObject
+    class MemoryPool : public IObject
     {
         public:
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
@@ -113,7 +120,7 @@ namespace DvigEngine
 
         private:
             MEMORY_POOL_DATA m_Data;
-            MemoryChunk* m_MemoryObject;
+            MemoryObject* m_MemoryObject;
     };
 
     struct STRING_DATA : IData
@@ -166,7 +173,7 @@ namespace DvigEngine
             dvisize m_HashTable[DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH];
     };
 
-    class HashMap : IObject
+    class HashMap : public IObject
     {
         public:
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
@@ -192,7 +199,7 @@ namespace DvigEngine
             dvuint32 m_ComponentsBits[DV_COMPONENT_BIT_MASK_BYTE_WIDTH];
     };
 
-    class Entity : IObject
+    class Entity : public IObject
     {
         public:
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
@@ -212,7 +219,7 @@ namespace DvigEngine
         dvcallback m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
     };
     
-    class JobQueue : IObject
+    class JobQueue : public IObject
     {
         public:
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
@@ -265,9 +272,9 @@ namespace DvigEngine
             static void Init(ENGINE_INPUT_DATA* engineInputData);
             static void Free();
             static void* Allocate(dvusize memoryPoolID, dvusize byteWidth);
-            static MemoryChunk* AllocateChunk(dvusize memoryPoolID, dvusize byteWidth);
+            static MemoryObject* AllocateObject(dvusize memoryPoolID, dvusize byteWidth);
             static void* AllocateUsingData(MEMORY_POOL_DATA* memoryPool, dvusize byteWidth);
-            static void DeleteChunk(MemoryChunk* memoryChunk);
+            static void DeleteObject(MemoryObject* memoryObject);
             static void CopyMemory(void* destAddress, void* srcAddress, dvusize byteWidth);
             static void MoveMemory(void* destAddress, void* srcAddress, dvusize byteWidth);
 
@@ -301,16 +308,17 @@ namespace DvigEngine
                 const T** result = (const T**)argumentMemory[ 0 ];
                 const char* stringID = (const char*)argumentMemory[ 1 ];
                 IData* data = (IData*)argumentMemory[ 2 ];
-                MemoryChunk* object = AllocateChunk(0, sizeof(T));
-                T* unwObject = object->Unwrap<T>();
-                unwObject->m_Createe = (IObject**)result;
-                unwObject->m_MemoryObject = object;
-                *result = unwObject;
-                unwObject->m_SIDByteWidth = String::CharactersCount((const void*)stringID);
-                Engine::CopyMemory((void*)&unwObject->m_SID[0], (void*)&stringID[0], unwObject->m_SIDByteWidth);
+                MemoryObject* memoryObject = AllocateObject(0, sizeof(T));
+                ICommon* cmnObj = memoryObject->Unwrap<ICommon>();
+                cmnObj->SetSID( &stringID[0] );
+                IObject* obj = (IObject*)cmnObj;
+                obj->SetCreateeAndMemoryObject( (IObject**)result, memoryObject );
+                T* typedObj = (T*)obj;
+                *result = typedObj;
+                // Engine::CopyMemory((void*)typedObj->GetSID(), (void*)&stringID[0], typedObj->Char());
                 if (data == nullptr) { return; }
-                IData* objectData = unwObject->GetData();
-                Engine::CopyMemory(objectData, data, sizeof(unwObject->m_Data));
+                IData* objectData = typedObj->GetData();
+                Engine::CopyMemory(objectData, data, sizeof(typedObj->m_Data));
             }
 
         private:

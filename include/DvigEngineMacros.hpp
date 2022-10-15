@@ -82,6 +82,14 @@
     public: \
         T(); \
         virtual ~T() {}; \
+        DV_FUNCTION_INLINE dvuchar* GetSID() { return &m_SID[0]; } \
+        DV_FUNCTION_INLINE dvusize GetSIDByteWidth() { return m_SIDByteWidth; } \
+    private: \
+        DV_FUNCTION_INLINE void SetSID(const char* stringID) { \
+            m_SIDByteWidth = 0; \
+            while (stringID[++m_SIDByteWidth] != 0) { m_SID[m_SIDByteWidth - 1] = stringID[m_SIDByteWidth - 1]; } \
+        }; \
+    private: \
         dvmachword m_IID; \
         dvuchar m_SID[DV_MEMORY_COMMON_STRING_BYTE_WIDTH]; \
         dvusize m_SIDByteWidth; \
@@ -90,7 +98,7 @@
 #define DV_MACRO_DECLARE_CREATION_DEPENDENT_CLASS(T) \
     public: \
         T(); \
-        ~T() {};
+        virtual ~T() {};
 
 #define DV_MACRO_DECLARE_SINGLETON(T, function_access) \
     function_access: \
@@ -169,12 +177,10 @@
     auto l = [] (dvmachword* arg0, dvusize arg1) { E->T(arg0, arg1); }; \
     m_Instance->m_Data.m_JobQueues[m_Instance->m_Data.m_CurrentJobQueueCursor].Push(l, &argumentMemory[0], argumentCount);
 
-#define DV_XMACRO_CREATE_STRING_GLOBAL_SCOPE_CAPACITY(cap) String* _dv_global_scope_strings[cap]; dvusize _dv_global_scope_strings_count = 0;
-#define DV_XMACRO_CREATE_STRING(var, id, text) \
-    engine->Create<String>((const void** const)&_dv_global_scope_strings[_dv_global_scope_strings_count], id, nullptr); \
-    String* var = _dv_global_scope_strings[_dv_global_scope_strings_count]; \
-    const dvisize var##_global_scope_string_id = _dv_global_scope_strings_count++; \
-    *var = text;
+#define DV_XMACRO_CREATE_STRING(array, index, var, id, text) \
+    engine->Create<String>((const void** const)&array[index], id, nullptr); \
+    String** var = &array[index]; \
+    **var = text;
 
 _DV_EOF
 

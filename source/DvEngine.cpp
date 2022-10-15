@@ -125,20 +125,20 @@ void* DvigEngine::Engine::Allocate(dvusize memoryPoolID, dvusize byteWidth)
     return prevPoolOffset;
 }
 
-DvigEngine::MemoryChunk* DvigEngine::Engine::AllocateChunk(dvusize memoryPoolID, dvusize byteWidth)
+DvigEngine::MemoryObject* DvigEngine::Engine::AllocateObject(dvusize memoryPoolID, dvusize byteWidth)
 {
     DV_ASSERT_PTR(m_Instance)
     DV_ASSERT(byteWidth)
 
-    dvusize allocByteWidth = sizeof(DvigEngine::MemoryChunk) + byteWidth;
+    dvusize allocByteWidth = sizeof(DvigEngine::MemoryObject) + byteWidth;
 
     DvigEngine::MEMORY_POOL_DATA* memoryPoolInfo = (DvigEngine::MEMORY_POOL_DATA*)m_Instance->GetMemoryPoolByID(memoryPoolID)->GetData();
     void* prevPoolOffset = memoryPoolInfo->m_AddressOffset;
     memoryPoolInfo->m_AddressOffset = (void*)((dvusize)memoryPoolInfo->m_AddressOffset + allocByteWidth);
 
-    DvigEngine::MemoryChunk* memoryChunk = (DvigEngine::MemoryChunk*)prevPoolOffset;
-    DvigEngine::MEMORY_CHUNK_DATA* memoryChunkData = (DvigEngine::MEMORY_CHUNK_DATA*)memoryChunk->GetData();
-    memoryChunkData->m_Address = (void*)((dvusize)prevPoolOffset + sizeof(DvigEngine::MemoryChunk));
+    DvigEngine::MemoryObject* memoryChunk = (DvigEngine::MemoryObject*)prevPoolOffset;
+    DvigEngine::MEMORY_OBJECT_DATA* memoryChunkData = (DvigEngine::MEMORY_OBJECT_DATA*)memoryChunk->GetData();
+    memoryChunkData->m_Address = (void*)((dvusize)prevPoolOffset + sizeof(DvigEngine::MemoryObject));
     memoryChunkData->m_ByteWidth = byteWidth;
     memoryChunkData->m_MemoryPoolID = memoryPoolID;
 
@@ -156,26 +156,26 @@ void* DvigEngine::Engine::AllocateUsingData(MEMORY_POOL_DATA* memoryPool, dvusiz
     return prevPoolOffset;
 }
 
-void DvigEngine::Engine::DeleteChunk(MemoryChunk* memoryChunk)
+void DvigEngine::Engine::DeleteObject(MemoryObject* memoryObject)
 {
-    const dvisize memoryPoolID = memoryChunk->m_Data.m_MemoryPoolID;
+    const dvisize memoryPoolID = memoryObject->m_Data.m_MemoryPoolID;
     MemoryPool* const memoryPool = &m_Instance->m_Data.m_MemoryPools[memoryPoolID];
 
-    dvmachword toDeleteByteWidth = sizeof(DvigEngine::MemoryChunk) + memoryChunk->m_Data.m_ByteWidth;
-    void* curAddress = (void*)((dvmachword)memoryChunk + toDeleteByteWidth);
+    dvmachword toDeleteByteWidth = sizeof(DvigEngine::MemoryObject) + memoryObject->m_Data.m_ByteWidth;
+    void* curAddress = (void*)((dvmachword)memoryObject + toDeleteByteWidth);
     void* lastAddress = (void*)memoryPool->m_Data.m_AddressOffset;
-    void* destAddress = (void*)memoryChunk;
+    void* destAddress = (void*)memoryObject;
     void* srcAddress = curAddress;
-    MemoryChunk* curMemoryChunk = (MemoryChunk*)destAddress;
-    IObject** createe = (IObject**)(((IObject*)curMemoryChunk->m_Data.m_Address)->m_Createe);
+    MemoryObject* curMemoryObject = (MemoryObject*)destAddress;
+    IObject** createe = (IObject**)(((IObject*)curMemoryObject->m_Data.m_Address)->GetCreatee());
     *createe = nullptr;
     while (curAddress < lastAddress)
     {
-        curMemoryChunk = (MemoryChunk*)curAddress;
-        IObject** createe = (IObject**)(((IObject*)curMemoryChunk->m_Data.m_Address)->m_Createe);
+        curMemoryObject = (MemoryObject*)curAddress;
+        IObject** createe = (IObject**)(((IObject*)curMemoryObject->m_Data.m_Address)->GetCreatee());
         *createe = (IObject*)((dvmachword)*createe - toDeleteByteWidth);
 
-        curAddress = (void*)((dvmachword)curAddress + sizeof(DvigEngine::MemoryChunk) + curMemoryChunk->m_Data.m_ByteWidth);
+        curAddress = (void*)((dvmachword)curAddress + sizeof(DvigEngine::MemoryObject) + curMemoryObject->m_Data.m_ByteWidth);
     }
 
     dvmachword toMoveByteWidth = (dvmachword)memoryPool->m_Data.m_AddressOffset - (dvmachword)srcAddress;
