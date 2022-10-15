@@ -53,11 +53,18 @@ int main()
     // engine->DeleteChunk( myString->m_MemoryObject );
     // std::cout << (dvmachword)strings[0] << std::endl;
 
-    engine->DeleteObject( strings[1]->GetMemoryObject() );
+    // std::cout << "entity1 : " << (dvmachword)entities[0] << std::endl;
+    std::cout << "second1 : " << (dvmachword)strings[1]->GetMemoryObject() << std::endl;
+    engine->DeleteObject( strings[2]->GetMemoryObject() );
     
     // Create entities
     Entity* entities[2];
     engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", nullptr);
+    // std::cout << "entity2 : " << (dvmachword)entities[0]->GetMemoryObject() << std::endl;
+    std::cout << "fourth2 : " << (dvmachword)strings[3]->GetMemoryObject() << std::endl;
+
+        engine->DeleteObject( strings[3]->GetMemoryObject() );
+
 
     // HashMap* hashMaps[2];
     // engine->Create<String>((const void** const)&hashMaps[0], "MyHashMap", nullptr);
@@ -66,8 +73,10 @@ int main()
     engine->StopThreads();
     clock_t te = clock();
     
-    std::cout << "Output : " << strings[0]->GetData()->m_Chars << (dvmachword)entities[0]->GetData()->m_Offset
-                             << strings[2]->GetData()->m_Chars << strings[3]->GetData()->m_Chars
+    std::cout << "Output : " << strings[0]->GetData()->m_Chars
+                             << strings[1]->GetData()->m_Chars
+                             << strings[0]->GetData()->m_Chars
+                             << entities[0]->GetSID()
                              << std::endl;
     std::cout << "Success!" << std::endl;
     std::cout << "Time : " << te - ts << std::endl;

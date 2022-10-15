@@ -87,7 +87,8 @@
     private: \
         DV_FUNCTION_INLINE void SetSID(const char* stringID) { \
             m_SIDByteWidth = 0; \
-            while (stringID[++m_SIDByteWidth] != 0) { m_SID[m_SIDByteWidth - 1] = stringID[m_SIDByteWidth - 1]; } \
+            while (stringID[m_SIDByteWidth] != 0) { m_SID[m_SIDByteWidth] = stringID[m_SIDByteWidth]; ++m_SIDByteWidth; } \
+            m_SID[m_SIDByteWidth] = 0; \
         }; \
     private: \
         dvmachword m_IID; \

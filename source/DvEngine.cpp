@@ -161,26 +161,94 @@ void DvigEngine::Engine::DeleteObject(MemoryObject* memoryObject)
     const dvisize memoryPoolID = memoryObject->m_Data.m_MemoryPoolID;
     MemoryPool* const memoryPool = &m_Instance->m_Data.m_MemoryPools[memoryPoolID];
 
-    dvmachword toDeleteByteWidth = sizeof(DvigEngine::MemoryObject) + memoryObject->m_Data.m_ByteWidth;
-    void* curAddress = (void*)((dvmachword)memoryObject + toDeleteByteWidth);
+    void* curAddress = memoryObject;
     void* lastAddress = (void*)memoryPool->m_Data.m_AddressOffset;
-    void* destAddress = (void*)memoryObject;
-    void* srcAddress = curAddress;
-    MemoryObject* curMemoryObject = (MemoryObject*)destAddress;
-    IObject** createe = (IObject**)(((IObject*)curMemoryObject->m_Data.m_Address)->GetCreatee());
-    *createe = nullptr;
-    while (curAddress < lastAddress)
+    void* nextAddress = curAddress;
+    void* copyAddress = curAddress;
+    dvusize toClearByteWidth = 0;
+    for (;;)
     {
-        curMemoryObject = (MemoryObject*)curAddress;
-        IObject** createe = (IObject**)(((IObject*)curMemoryObject->m_Data.m_Address)->GetCreatee());
-        *createe = (IObject*)((dvmachword)*createe - toDeleteByteWidth);
+        // MoCrDDDDMoCrDDMoCrDDDDDD
+        // MoCrDD
+        curAddress = nextAddress;
 
-        curAddress = (void*)((dvmachword)curAddress + sizeof(DvigEngine::MemoryObject) + curMemoryObject->m_Data.m_ByteWidth);
+        MemoryObject* curMemoryObject = (MemoryObject*)curAddress;
+        nextAddress = (void*)((dvmachword)curMemoryObject->GetData()->m_Address + curMemoryObject->GetData()->m_ByteWidth);
+
+        if (nextAddress >= lastAddress)
+        {
+            break;
+        }
+
+        std::cout << (dvmachword)curMemoryObject << " " << (dvmachword)lastAddress << std::endl;
+
+        toClearByteWidth = (dvusize)nextAddress - (dvusize)copyAddress;
+        memset( copyAddress, 0, toClearByteWidth );
+
+        MemoryObject* nextMemoryObject = (MemoryObject*)nextAddress;
+        IObject** nextCreatee = (((IObject*)(nextMemoryObject->GetData()->m_Address))->GetCreatee());
+        std::cout << (*nextCreatee)->GetSID() << std::endl;
+        // IObject** ppNextCreatee = nextObject->GetCreatee();
+        *nextCreatee = (IObject*)((dvmachword)*nextCreatee - toClearByteWidth);
+
+        const dvusize toCopyByteWidth = sizeof(MemoryObject) + nextMemoryObject->GetData()->m_ByteWidth;
+        Engine::CopyMemory( copyAddress, nextAddress, toCopyByteWidth );
+        copyAddress = (void*)((dvmachword)copyAddress + toCopyByteWidth);
     }
 
-    dvmachword toMoveByteWidth = (dvmachword)memoryPool->m_Data.m_AddressOffset - (dvmachword)srcAddress;
-    Engine::MoveMemory( destAddress, srcAddress, toMoveByteWidth );
-    memoryPool->m_Data.m_AddressOffset = (void*)((dvmachword)memoryPool->m_Data.m_AddressOffset - toDeleteByteWidth);
+    memoryPool->m_Data.m_AddressOffset = (void*)((dvmachword)memoryPool->m_Data.m_AddressOffset - toClearByteWidth);
+
+    // dvmachword toDeleteByteWidth = sizeof(DvigEngine::MemoryObject) + memoryObject->m_Data.m_ByteWidth;
+    // void* destAddress = (void*)memoryObject;
+    // void* curAddress = (void*)((dvmachword)memoryObject + toDeleteByteWidth);
+    // void* lastAddress = (void*)memoryPool->m_Data.m_AddressOffset;
+    // void* srcAddress = curAddress;
+    // MemoryObject* prevMemoryObject = (MemoryObject*)destAddress;
+    // IObject** createe = (IObject**)(((IObject*)prevMemoryObject->m_Data.m_Address)->GetCreatee());
+    // // *createe = nullptr;
+    // std::cout << "start " << (dvmachword)destAddress << " " << (dvmachword)lastAddress << std::endl;
+    // if (curAddress >= lastAddress)
+    // {
+    //     // Last entry
+    // }
+    // else
+    // {
+    //     // MoCrDDDDMoCrDD
+
+    //     while (curAddress < lastAddress)
+    //     {
+    //         // Previous object
+    //         prevMemoryObject = (MemoryObject*)destAddress;
+    //         IObject** createe2 = (IObject**)(((IObject*)prevMemoryObject->m_Data.m_Address)->GetCreatee());
+    //         std::cout << (*createe2)->GetSID() << std::endl;
+    //         dvuchar* toClearAddress = (dvuchar*)((dvmachword)destAddress + sizeof(MemoryObject));
+    //         for (dvisize i = 0; i < prevMemoryObject->m_Data.m_ByteWidth; ++i) { *toClearAddress++ = 0; }
+            
+    //         // Current object
+    //         MemoryObject* curMemoryObject = (MemoryObject*)curAddress;
+    //         IObject** createe = (IObject**)(((IObject*)curMemoryObject->m_Data.m_Address)->GetCreatee());
+    //         std::cout << (*createe)->GetSID() << std::endl;
+    //         *createe = (IObject*)((dvmachword)*createe - toDeleteByteWidth);
+    //         // MemoryObject* pCurMemoryObject = (*createe)->GetMemoryObject();
+    //         // MemoryObject** ppCurMemoryObject = &pCurMemoryObject;
+    //         // // *ppCurMemoryObject = (MemoryObject*)((dvmachword)*createe - sizeof(MemoryObject));
+    //         (*createe)->setmemoryobject( (void*)((dvmachword)*createe - sizeof(MemoryObject)) );
+
+    //         memcpy( destAddress, curAddress, sizeof(MemoryObject) + curMemoryObject->m_Data.m_ByteWidth );
+
+    //         destAddress = curAddress;
+    //         //destAddress = (void*)((dvmachword)destAddress + sizeof(DvigEngine::MemoryObject) + prevMemoryObject->m_Data.m_ByteWidth);
+    //         curAddress = (void*)((dvmachword)curAddress + sizeof(DvigEngine::MemoryObject) + curMemoryObject->m_Data.m_ByteWidth);
+    //         std::cout << (dvmachword)*createe << " " << (dvmachword)lastAddress << std::endl;
+    //     }
+    //     dvuchar* toClearAddress = (dvuchar*)((dvmachword)destAddress + sizeof(MemoryObject));
+    //     for (dvisize i = 0; i < prevMemoryObject->m_Data.m_ByteWidth; ++i) { *toClearAddress++ = 0; }
+    // }
+
+    // dvmachword toMoveByteWidth = (dvmachword)memoryPool->m_Data.m_AddressOffset - (dvmachword)srcAddress;
+    // // memset( destAddress, 0, toDeleteByteWidth );
+    // // Engine::MoveMemory( destAddress, srcAddress, toMoveByteWidth );
+    // memoryPool->m_Data.m_AddressOffset = (void*)((dvmachword)memoryPool->m_Data.m_AddressOffset - toDeleteByteWidth);
 }
 
 void DvigEngine::Engine::CopyMemory(void* dstAddress, void* srcAddress, dvusize byteWidth)

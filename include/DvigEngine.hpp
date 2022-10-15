@@ -70,6 +70,7 @@ namespace DvigEngine
         public:
             DV_FUNCTION_INLINE IObject** GetCreatee() { return m_Createe; }
             DV_FUNCTION_INLINE MemoryObject* GetMemoryObject() { return m_MemoryObject; };
+            void setmemoryobject(void* address) { m_MemoryObject = (MemoryObject*)address; };
 
         private:
             void SetCreateeAndMemoryObject(IObject** createe, MemoryObject* memoryObject);
