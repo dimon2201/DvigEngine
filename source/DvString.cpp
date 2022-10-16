@@ -53,3 +53,14 @@ DvigEngine::dvresult DvigEngine::String::CompareCharacters(dvstring op1, dvstrin
         return DV_FALSE;
     }
 }
+
+DvigEngine::MemoryObject* DvigEngine::String::ConcateCharacters(dvstring op1, dvstring op2, const dvusize op1ByteWidth, const dvusize op2ByteWidth)
+{
+    MemoryObject* memoryObject = Engine::AllocateObject(0, op1ByteWidth + op2ByteWidth);
+    dvuchar* chars = (dvuchar*)memoryObject->GetData()->m_Address;
+    
+    Engine::CopyMemory(chars, &op1[0], op1ByteWidth);
+    Engine::CopyMemory(&chars[op1ByteWidth], &op2[0], op2ByteWidth);
+
+    return memoryObject;
+}

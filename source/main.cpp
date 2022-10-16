@@ -40,19 +40,7 @@ int main()
     
     clock_t ts = clock();
     engine->StartThreads();
-
-    LinkedList* linkedList[1];
-    engine->Create<LinkedList>((const void** const)&linkedList[0], "MyLinkedList_0", nullptr);
-    linkedList[0]->Init(0);
-    dvint32 index = linkedList[0]->Insert((MemoryObject*)255);
-    linkedList[0]->Insert((MemoryObject*)128);
-    linkedList[0]->Insert((MemoryObject*)64);
-    index = linkedList[0]->Insert((MemoryObject*)32);
-    linkedList[0]->Insert((MemoryObject*)16);
-
-    MemoryObject* data = linkedList[0]->Find(index);
-    std::cout << (dvmachword)data << std::endl;
-
+    
     // Create entities
     Entity* entities[2];
     engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", nullptr);

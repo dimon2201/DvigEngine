@@ -142,6 +142,7 @@ namespace DvigEngine
             static dvusize CharactersCount(const void* op1);
             static dvresult Compare(STRING_DATA* op1, STRING_DATA* op2);
             static dvresult CompareCharacters(dvstring op1, dvstring op2, const dvusize op1ByteWidth, const dvusize op2ByteWidth);
+            static MemoryObject* ConcateCharacters(dvstring op1, dvstring op2, const dvusize op1ByteWidth, const dvusize op2ByteWidth);
 
             DV_FUNCTION_INLINE String& operator=(const char* str) { m_Data = STRING_DATA(str); return *this; }
             DV_FUNCTION_INLINE dvuchar* operator()() { return &m_Data.m_Chars[0]; }
@@ -217,9 +218,7 @@ namespace DvigEngine
     };
 
     struct IComponent : IData
-    {
-        
-    };
+    { };
 
     struct ENTITY_DATA : IData
     {

@@ -35,4 +35,6 @@ DvigEngine::LINKED_LIST_DATA_ENTRY* DvigEngine::LinkedList::MakeEntry(MemoryObje
 {
     LINKED_LIST_DATA_ENTRY* newEntry = (LINKED_LIST_DATA_ENTRY*)Engine::AllocateObject(0, m_Data.m_EntryByteWidth);
     newEntry->m_Value = value;
+
+    return newEntry;
 }
