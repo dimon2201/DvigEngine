@@ -49,14 +49,14 @@ int main()
 
     // std::cout << "second1 : " << (dvmachword)strings[1]->GetMemoryObject() << std::endl;
     // engine->DeleteObject( strings[0]->GetMemoryObject() );
-    engine->DeleteObject( strings[0]->GetMemoryObject() );
-    engine->DeleteObject( strings[2]->GetMemoryObject() );
+    engine->DeleteObject( *strings[1]->GetMemoryObject() );
+    // engine->DeleteObject( strings[2]->GetMemoryObject() );
 
     // Create entities
     Entity* entities[2];
-    // engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", nullptr);
+    engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", nullptr);
 
-    // engine->DeleteObject( strings[1]->GetMemoryObject() );
+    engine->DeleteObject( *strings[2]->GetMemoryObject() );
     // engine->DeleteObject( strings[2]->GetMemoryObject() );
 
     engine->StopThreads();
@@ -69,6 +69,7 @@ int main()
             std::cout << "(" << i << ")" << strings[i]->GetData()->m_Chars;
         }
     }
+    std::cout << entities[0]->GetSID ();
     std::cout << std::endl;
 
     std::cout << "Success!" << std::endl;

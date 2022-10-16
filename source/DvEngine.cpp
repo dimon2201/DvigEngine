@@ -168,10 +168,9 @@ void DvigEngine::Engine::DeleteObject(MemoryObject* memoryObject)
     
     MemoryObject* curMemoryObject = (MemoryObject*)curAddress;
     IObject* curObject = (IObject*)((dvmachword)curMemoryObject + sizeof(MemoryObject));
-    MemoryObject* curMemoryObjectPointer = curObject->GetMemoryObject();
-    MemoryObject** pCurMemoryObjectPointer = &curMemoryObjectPointer;
+    MemoryObject** pCurMemoryObjectPointer = curObject->GetMemoryObject();
     IObject** pCurCreatee = curObject->GetCreatee();
-    std::cout << "current : " << curObject->GetSID () << std::endl;
+    *pCurMemoryObjectPointer = nullptr;
     *pCurCreatee = nullptr;
 
     void* lastAddress = (void*)memoryPool->m_Data.m_AddressOffset;
@@ -183,51 +182,14 @@ void DvigEngine::Engine::DeleteObject(MemoryObject* memoryObject)
     {
         MemoryObject* curMemoryObject = (MemoryObject*)curAddress;
         IObject* curObject = (IObject*)((dvmachword)curMemoryObject + sizeof(MemoryObject));
-        MemoryObject* curMemoryObjectPointer = curObject->GetMemoryObject();
-        MemoryObject** pCurMemoryObjectPointer = &curMemoryObjectPointer;
+        MemoryObject** pCurMemoryObjectPointer = curObject->GetMemoryObject();
         IObject** pCurCreatee = curObject->GetCreatee();
 
-        std::cout << curObject->GetSID () << std::endl;
-        // *pCurMemoryObjectPointer = (MemoryObject*)((dvmachword)curAddress);
-        curObject->setmemoryobject(curAddress);
+        *pCurMemoryObjectPointer = (MemoryObject*)((dvmachword)curAddress);
         *pCurCreatee = (IObject*)((dvmachword)curAddress + sizeof(MemoryObject));
         
         curAddress = (void*)((dvmachword)curAddress + sizeof(MemoryObject) + curMemoryObject->m_Data.m_ByteWidth);
     }
-    std::cout << "e" << std::endl;
-
-    // ABC DE XY
-    // DE XY XY
-    // DE XY XY
-
-    // for (;;)
-    // {
-    //     MemoryObject* nextMemoryObject = (MemoryObject*)nextAddress;
-    //     MemoryObject* curMemoryObject = (MemoryObject*)curAddress;
-    //     IObject* nextObject = (IObject*)((dvmachword)nextMemoryObject + sizeof(MemoryObject));
-    //     IObject* curObject = (IObject*)((dvmachword)curMemoryObject + sizeof(MemoryObject));
-    //     MemoryObject* nextMemoryObjectPointer = nextObject->GetMemoryObject();
-    //     MemoryObject* curMemoryObjectPointer = curObject->GetMemoryObject();
-    //     MemoryObject** pNextMemoryObjectPointer = &nextMemoryObjectPointer;
-    //     MemoryObject** pCurMemoryObjectPointer = &curMemoryObjectPointer;
-    //     IObject** pNextCreatee = nextObject->GetCreatee();
-    //     IObject** pCurCreatee = curObject->GetCreatee();
-
-    //     // *pNextMemoryObjectPointer = *pCurMemoryObjectPointer;
-    //     *pNextCreatee = (IObject*)((dvmachword)copyAddress + sizeof(MemoryObject));
-
-    //     if (nextAddress >= lastAddress)
-    //     {
-    //         break;
-    //     }
-
-    //     for (dvisize i = 0; i < deletedObjectByteWidth; ++i) { *copyAddress++ = ((dvuchar*)nextAddress)[i]; }
-
-    //     curAddress = nextAddress;
-    //     nextAddress = (void*)((dvmachword)nextAddress + sizeof(MemoryObject) + nextMemoryObject->m_Data.m_ByteWidth);
-    // }
-        // memoryPool->GetData()->m_AddressOffset = (void*)((dvmachword)memoryPool->GetData()->m_AddressOffset - deletedObjectByteWidth);
-    // std::cout << (dvmachword)memoryPool->GetData()->m_AddressOffset << " " << deletedObjectByteWidth << std::endl;
 }
 
 void DvigEngine::Engine::CopyMemory(void* dstAddress, void* srcAddress, dvusize byteWidth)
