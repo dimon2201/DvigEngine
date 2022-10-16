@@ -29,7 +29,7 @@ int main()
 
     ENGINE_INPUT_DATA engineInputData;
     engineInputData.m_Version = DV_ENGINE_VERSION_NUMBER;
-    engineInputData.m_MemoryPoolsCount = 2u;
+    engineInputData.m_MemoryPoolsCount = 3u;
     engineInputData.m_MemoryPoolsData = memoryPoolsData;
     engineInputData.m_ReservedMemoryPoolID = 1;
     engineInputData.m_StorageMemoryPoolID = 2;
@@ -41,36 +41,24 @@ int main()
     clock_t ts = clock();
     engine->StartThreads();
 
-    // Create strings
-    String* strings[6];
-    DV_XMACRO_CREATE_STRING(strings, 0, myString1, "MyStringID_Second1", "ABC");
-    DV_XMACRO_CREATE_STRING(strings, 1, myString2, "MyStringID_Second2", " DE");
-    DV_XMACRO_CREATE_STRING(strings, 2, myString3, "MyStringID_Second3", " XY");
+    LinkedList* linkedList[1];
+    engine->Create<LinkedList>((const void** const)&linkedList[0], "MyLinkedList_0", nullptr);
+    linkedList[0]->Init(0);
+    dvint32 index = linkedList[0]->Insert((MemoryObject*)255);
+    linkedList[0]->Insert((MemoryObject*)128);
+    linkedList[0]->Insert((MemoryObject*)64);
+    index = linkedList[0]->Insert((MemoryObject*)32);
+    linkedList[0]->Insert((MemoryObject*)16);
 
-    // std::cout << "second1 : " << (dvmachword)strings[1]->GetMemoryObject() << std::endl;
-    // engine->DeleteObject( strings[0]->GetMemoryObject() );
-    engine->DeleteObject( *strings[1]->GetMemoryObject() );
-    // engine->DeleteObject( strings[2]->GetMemoryObject() );
+    MemoryObject* data = linkedList[0]->Find(index);
+    std::cout << (dvmachword)data << std::endl;
 
     // Create entities
     Entity* entities[2];
     engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", nullptr);
 
-    engine->DeleteObject( *strings[2]->GetMemoryObject() );
-    // engine->DeleteObject( strings[2]->GetMemoryObject() );
-
     engine->StopThreads();
     clock_t te = clock();
-
-    std::cout << "Output : ";
-    for (dvisize i = 0; i < 3; ++i)
-    {
-        if (strings[i] != nullptr) {
-            std::cout << "(" << i << ")" << strings[i]->GetData()->m_Chars;
-        }
-    }
-    std::cout << entities[0]->GetSID ();
-    std::cout << std::endl;
 
     std::cout << "Success!" << std::endl;
     std::cout << "Time : " << te - ts << std::endl;

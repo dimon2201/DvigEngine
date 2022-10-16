@@ -70,7 +70,6 @@ namespace DvigEngine
         public:
             DV_FUNCTION_INLINE IObject** GetCreatee() { return m_Createe; }
             DV_FUNCTION_INLINE MemoryObject** GetMemoryObject() { return &m_MemoryObject; };
-            void setmemoryobject(void* address) { m_MemoryObject = (MemoryObject*)address; };
 
         private:
             void SetCreateeAndMemoryObject(IObject** createe, MemoryObject* memoryObject);
@@ -151,11 +150,41 @@ namespace DvigEngine
             STRING_DATA m_Data;
     };
 
-    struct HASH_MAP_DATA_SLOT : IData
+    struct LINKED_LIST_DATA_ENTRY : IData
+    {
+        LINKED_LIST_DATA_ENTRY* m_PrevAddress;
+        LINKED_LIST_DATA_ENTRY* m_NextAddress;
+        MemoryObject* m_Value;
+    };
+
+    struct LINKED_LIST_DATA : IData
+    {
+        dvusize m_EntryCount;
+        dvusize m_EntryByteWidth;
+        dvusize m_AllocatedEntryCount;
+        LINKED_LIST_DATA_ENTRY* m_Head;
+    };
+
+    class LinkedList : public IObject
     {
         public:
-            HASH_MAP_DATA_SLOT() {};
-            HASH_MAP_DATA_SLOT(String* key, void* value);
+            DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
+            DV_XMACRO_GETTER_DATA(LINKED_LIST_DATA)
+
+            void Init(const dvusize capacity);
+            dvint32 Insert(MemoryObject* const value);
+            MemoryObject* Find(const dvint32 index);
+            LINKED_LIST_DATA_ENTRY* MakeEntry(MemoryObject* const value);
+
+        private:
+            LINKED_LIST_DATA m_Data;
+    };
+
+    struct HASH_MAP_DATA_ENTRY : IData
+    {
+        public:
+            HASH_MAP_DATA_ENTRY() {};
+            HASH_MAP_DATA_ENTRY(String* key, void* value);
             
             STRING_DATA m_Key;
             void* m_Value;
@@ -165,12 +194,11 @@ namespace DvigEngine
     {
         public:
             HASH_MAP_DATA() {}
-            HASH_MAP_DATA(dvusize assocEntrySize) : m_AssocEntrySize(assocEntrySize) {}
+            HASH_MAP_DATA(void* assocAddress, dvusize assocEntrySize) : m_AssocAddress(assocAddress), m_AssocEntrySize(assocEntrySize) {}
 
             void* m_AssocAddress;
             dvusize m_AssocEntrySize;
             dvusize m_ListEntryCount;
-            //HASH_MAP_DATA_SLOT m_List[DV_MAX_HASH_MAP_LIST_ENTRY_COUNT];
             dvisize m_HashTable[DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH];
     };
 
@@ -248,13 +276,9 @@ namespace DvigEngine
     struct ENGINE_DATA : IData
     {
         public:
-            void* m_GlobalMemoryPoolAddress;
-            dvusize m_GlobalMemoryPoolByteWidth;
-            dvusize m_RegisteredComponentCount;
-            // void* m_ComponentStorage;
-            // void* m_ComponentStorageOffset;
-            // dvusize m_ComponentStorageByteWidth;
             MemoryPool* m_MemoryPools;
+            HashMap m_Registry;
+            dvusize m_RegisteredComponentCount;
             dvmachword m_CurrentJobQueueCursor;
             JobQueue* m_JobQueues;
             dvusize m_RequestedThreadCount;
@@ -275,7 +299,7 @@ namespace DvigEngine
             static void* Allocate(dvusize memoryPoolID, dvusize byteWidth);
             static MemoryObject* AllocateObject(dvusize memoryPoolID, dvusize byteWidth);
             static void* AllocateUsingData(MEMORY_POOL_DATA* memoryPool, dvusize byteWidth);
-            static void DeleteObject(MemoryObject* memoryObject);
+            static void DeleteObject(MemoryObject** ppMemoryObject);
             static void CopyMemory(void* destAddress, void* srcAddress, dvusize byteWidth);
             static void MoveMemory(void* destAddress, void* srcAddress, dvusize byteWidth);
 

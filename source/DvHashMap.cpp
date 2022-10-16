@@ -2,7 +2,7 @@
 
 #include "../include/DvigEngine.hpp"
 
-DvigEngine::HASH_MAP_DATA_SLOT::HASH_MAP_DATA_SLOT(DvigEngine::String* key, void* value)
+DvigEngine::HASH_MAP_DATA_ENTRY::HASH_MAP_DATA_ENTRY(DvigEngine::String* key, void* value)
 {
     m_Key = STRING_DATA((const char*)(&key->GetData()->m_Chars[0]));
     m_Value = value;
@@ -29,8 +29,6 @@ void DvigEngine::HashMap::Insert(String* key, void* value)
     dvuint32 hash = HashMap::Hash(key);
     if (m_Data.m_HashTable[hash] == DV_NULL)
     {
-        //void* cursor = (void*)((dvmachword)m_Data.m_AssocAddress + (m_Data.m_AssocEntrySize * m_Data.m_ListEntryCount));
-        //m_Data.m_List[m_Data.m_ListEntryCount++] = HASH_MAP_DATA_SLOT(key, value);
         m_Data.m_HashTable[hash] = (dvusize)value;//m_Data.m_ListEntryCount;
     }
     else
@@ -39,26 +37,16 @@ void DvigEngine::HashMap::Insert(String* key, void* value)
         STRING_DATA* keyData = key->GetData();
         for (dvisize i = 0; i < m_Data.m_ListEntryCount; ++i)
         {
-            // if (DvigEngine::String::Compare(&m_Data.m_List[i].m_Key, keyData) == DV_TRUE)
-            // {
-            //     // Just update value for key
-            //     m_Data.m_List[i].m_Value = value;
-            //     return;
-            // }
             ICommon* ptrAsCommon = (ICommon*)((dvmachword)m_Data.m_AssocAddress + (m_Data.m_AssocEntrySize * i));
-            // dvisize cursor = 0;
-            // while (ptrAsCommon->m_SID[cursor] == keyData->m_Chars[cursor] && cursor++ < keyData->m_ByteWidth);
             if (String::CompareCharacters(ptrAsCommon->GetSID(), keyData->m_Chars, ptrAsCommon->GetSIDByteWidth(), keyData->m_ByteWidth) == DV_TRUE)
             {
                 // Just update value for key
-                // m_Data.m_List[i].m_Value = value;
                 m_Data.m_HashTable[hash] = (dvusize)value;//m_Data.m_ListEntryCount;
                 return;
             }
         }
 
         // Collision create new entry
-        // m_Data.m_List[m_Data.m_ListEntryCount++] = HASH_MAP_DATA_SLOT(key, value);
         m_Data.m_HashTable[hash] = (dvusize)value;//m_Data.m_ListEntryCount;
     }
 }
