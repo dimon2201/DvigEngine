@@ -48,24 +48,29 @@ int main()
     DV_XMACRO_CREATE_STRING(strings, 2, myString3, "MyStringID_Second3", " XY");
 
     // std::cout << "second1 : " << (dvmachword)strings[1]->GetMemoryObject() << std::endl;
-
+    // engine->DeleteObject( strings[0]->GetMemoryObject() );
     engine->DeleteObject( strings[0]->GetMemoryObject() );
-    engine->DeleteObject( strings[1]->GetMemoryObject() );
-    
+    engine->DeleteObject( strings[2]->GetMemoryObject() );
+
     // Create entities
     Entity* entities[2];
     // engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", nullptr);
 
-    // engine->DeleteObject( strings[3]->GetMemoryObject() );
-    // engine->DeleteObject( strings[0]->GetMemoryObject() );
+    // engine->DeleteObject( strings[1]->GetMemoryObject() );
+    // engine->DeleteObject( strings[2]->GetMemoryObject() );
 
     engine->StopThreads();
     clock_t te = clock();
-    
-    std::cout << "Output : " << strings[0]->GetData()->m_Chars
-                             << strings[1]->GetData()->m_Chars
-                             << strings[2]->GetData()->m_Chars
-                             << std::endl;
+
+    std::cout << "Output : ";
+    for (dvisize i = 0; i < 3; ++i)
+    {
+        if (strings[i] != nullptr) {
+            std::cout << "(" << i << ")" << strings[i]->GetData()->m_Chars;
+        }
+    }
+    std::cout << std::endl;
+
     std::cout << "Success!" << std::endl;
     std::cout << "Time : " << te - ts << std::endl;
 
