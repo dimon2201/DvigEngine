@@ -7,7 +7,8 @@
 
 #define DV_TRUE                                         1
 #define DV_FALSE                                        0
-#define DV_NULL                                         DV_FALSE
+#define DV_ZERO                                         0
+#define DV_NULL                                         -1
 
 #define DV_DEBUG                                        DV_FALSE
 

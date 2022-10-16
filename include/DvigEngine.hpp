@@ -106,7 +106,7 @@ namespace DvigEngine
     {
         public:
             dvmachword m_ID;
-            dvstring m_Label; //dvuchar m_Label[DV_MEMORY_COMMON_STRING_BYTE_WIDTH];
+            dvstring m_Label;
             void* m_Address;
             void* m_AddressOffset;
             dvusize m_ByteWidth;
@@ -129,7 +129,7 @@ namespace DvigEngine
             STRING_DATA() {};
             STRING_DATA(const char* str);
 
-            dvstring m_Chars; //dvuchar m_Chars[DV_MEMORY_COMMON_STRING_BYTE_WIDTH];
+            dvstring m_Chars;
             dvusize m_ByteWidth;
     };
 
@@ -139,10 +139,10 @@ namespace DvigEngine
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
             DV_XMACRO_GETTER_DATA(STRING_DATA)
 
-            static dvusize CharactersCount(const void* op1);
+            static dvusize CharactersCount(dvstring op1);
             static dvresult Compare(STRING_DATA* op1, STRING_DATA* op2);
-            static dvresult CompareCharacters(dvstring op1, dvstring op2, const dvusize op1ByteWidth, const dvusize op2ByteWidth);
-            static MemoryObject* ConcateCharacters(dvstring op1, dvstring op2, const dvusize op1ByteWidth, const dvusize op2ByteWidth);
+            static dvresult CompareCharacters(dvstring op1, dvstring op2);
+            static MemoryObject* ConcateCharacters(dvstring op1, dvstring op2);
 
             DV_FUNCTION_INLINE String& operator=(const char* str) { m_Data = STRING_DATA(str); return *this; }
             DV_FUNCTION_INLINE dvuchar* operator()() { return &m_Data.m_Chars[0]; }
@@ -172,10 +172,13 @@ namespace DvigEngine
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
             DV_XMACRO_GETTER_DATA(LINKED_LIST_DATA)
 
+            LINKED_LIST_DATA_ENTRY* MakeEntry(MemoryObject* const value);
+
             void Init(const dvusize capacity);
             dvint32 Insert(MemoryObject* const value);
+            void Replace(const dvint32 index, MemoryObject* const value);
             MemoryObject* Find(const dvint32 index);
-            LINKED_LIST_DATA_ENTRY* MakeEntry(MemoryObject* const value);
+            dvint32 FindValue(void* value);
 
         private:
             LINKED_LIST_DATA m_Data;
@@ -194,13 +197,11 @@ namespace DvigEngine
     struct HASH_MAP_DATA : IData
     {
         public:
-            HASH_MAP_DATA() {}
-            HASH_MAP_DATA(void* assocAddress, dvusize assocEntrySize) : m_AssocAddress(assocAddress), m_AssocEntrySize(assocEntrySize) {}
-
             void* m_AssocAddress;
-            dvusize m_AssocEntrySize;
+            dvusize m_AssocEntryByteWidth;
             dvusize m_ListEntryCount;
-            dvisize m_HashTable[DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH];
+            dvqword m_HashTable[DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH];
+            LinkedList m_LinkedList;
     };
 
     class HashMap : public IObject
@@ -209,9 +210,11 @@ namespace DvigEngine
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
             DV_XMACRO_GETTER_DATA(HASH_MAP_DATA)
 
-            static dvuint32 Hash(String* input);
-            void Insert(String* key, void* value);
-            void* Find(String* key);
+            static dvuint32 Hash(STRING_DATA* input);
+
+            void Init(void* const assocAddress, const dvusize assocEntryByteWidth);
+            void Insert(STRING_DATA* key, void* value);
+            void* Find(STRING_DATA* key);
 
         private:
             HASH_MAP_DATA m_Data;
