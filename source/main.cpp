@@ -47,7 +47,7 @@ int main()
     void* mem = Engine::Allocate(0, 1024);
     HashMap* hashMaps[1];
     engine->Create<HashMap>((const void** const)&hashMaps[0], "MyHashMap_0", nullptr);
-    hashMaps[0]->Init(mem, sizeof(String));
+    hashMaps[0]->Init(mem, 4);
     hashMaps[0]->Insert((*helloString)->GetData(), (void*)255);
     void* value = hashMaps[0]->Find((*helloString)->GetData());
     std::cout << (dvmachword)value << std::endl;

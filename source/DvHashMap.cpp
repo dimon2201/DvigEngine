@@ -30,7 +30,7 @@ void DvigEngine::HashMap::Init(void* const assocAddress, const dvusize assocEntr
 {
     m_Data.m_AssocAddress = assocAddress;
     m_Data.m_AssocEntryByteWidth = assocEntryByteWidth;
-    m_Data.m_LinkedList.Init(0);
+    m_Data.m_LinkedList.Init(0, 2 * sizeof(dvmachword));
 }
 
 void DvigEngine::HashMap::Insert(STRING_DATA* key, void* value)
@@ -39,77 +39,75 @@ void DvigEngine::HashMap::Insert(STRING_DATA* key, void* value)
     if (m_Data.m_HashTable[hash] == DV_ZERO)
     {
         // Empty slot
-        const dvint32 index = m_Data.m_LinkedList.Insert( (MemoryObject*)key->m_Chars ); // insert value to linked list
-        m_Data.m_HashTable[hash] = (dvqword)((index & 0xFFFFFFFF) | (((dvqword)value) << 32));
+        dvmachword pair[2];
+        pair[0] = (dvmachword)key->m_Chars;
+        pair[1] = (dvmachword)value;
+        const dvint32 index = m_Data.m_LinkedList.Insert( (void* const)&pair[0] ); // insert pair
+        m_Data.m_HashTable[hash] = index;
     }
     else
     {
         // Possible collision
-        STRING_DATA* keyData = key;
-        const dvint32 index = m_Data.m_LinkedList.FindValue( (MemoryObject*)value );
-
-        if (index != DV_NULL)
+        // Search through the linked list for key match
+        for (dvisize i = 0; i < m_Data.m_LinkedList.GetData()->m_EntryCount; ++i)
         {
-            // Just update value for key
-            m_Data.m_HashTable[hash] = (dvusize)value;
-            m_Data.m_LinkedList.Replace( index, (MemoryObject*)value );
-            return;
+            MemoryObject* memoryObject = (MemoryObject*)m_Data.m_LinkedList.Find( i );
+            dvmachword* pair = (dvmachword*)memoryObject->GetData()->m_Address;
+            dvuchar* chars = (dvuchar*)pair[0];
+
+            if (String::CompareCharacters(key->m_Chars, chars) == DV_TRUE)
+            {
+                // Just update value for key
+                dvmachword pair[2];
+                pair[0] = (dvmachword)key->m_Chars;
+                pair[1] = (dvmachword)value;
+                m_Data.m_LinkedList.Replace( i, &pair[0] ); // update
+                m_Data.m_HashTable[hash] = i;
+                return;
+            }
         }
 
-        // Collision create new entry
-        m_Data.m_HashTable[hash] = (dvusize)value;
-        m_Data.m_LinkedList.Insert( (MemoryObject*)value );
-
-        // for (dvisize i = 0; i < m_Data.m_ListEntryCount; ++i)
-        // {
-        //     ICommon* ptrAsCommon = (ICommon*)((dvmachword)m_Data.m_AssocAddress + (m_Data.m_AssocEntryByteWidth * i));
-        //     if (String::CompareCharacters(ptrAsCommon->GetSID(), keyData->m_Chars) == DV_TRUE)
-        //     {
-        //         // Just update value for key
-        //         m_Data.m_HashTable[hash] = (dvusize)value;
-        //         return;
-        //     }
-        // }
-
-        // // Collision create new entry
-        // m_Data.m_HashTable[hash] = (dvusize)value;
+        // Nothing found
+        // Insert new entry
+        dvmachword pair[2];
+        pair[0] = (dvmachword)key->m_Chars;
+        pair[1] = (dvmachword)value;
+        const dvint32 index = m_Data.m_LinkedList.Insert( &pair[0] ); // insert pair
+        m_Data.m_HashTable[hash] = index;
     }
 }
 
 void* DvigEngine::HashMap::Find(STRING_DATA* key)
 {
     dvuint32 hash = HashMap::Hash(key);
-    STRING_DATA* keyData = key;
-    const dvqword pair = m_Data.m_HashTable[hash];
-    const dvdword index = pair & 0xFFFFFFFF;
-    const dvdword value = pair >> 32;
+    const dvqword index = m_Data.m_HashTable[hash];
 
-    dvuchar* foundChars = (dvuchar*)m_Data.m_LinkedList.Find( index );
+    MemoryObject* memoryObject = (MemoryObject*)m_Data.m_LinkedList.Find( index );
+    dvmachword* pair = (dvmachword*)memoryObject->GetData()->m_Address;
+    dvuchar* chars = (dvuchar*)pair[0];
+    void* value = (void*)pair[1];
 
-    if (String::CompareCharacters(foundChars, keyData->m_Chars) == DV_TRUE)
+    if (String::CompareCharacters(key->m_Chars, chars) == DV_TRUE)
     {
-        // Just update value for key
-        return (void*)(dvmachword)value;
+        // First hit exact match
+        return (void*)value;
     }
     else
     {
+        // Search through the linked list for key match
         for (dvisize i = 0; i < m_Data.m_LinkedList.GetData()->m_EntryCount; ++i)
         {
-            MemoryObject* value = m_Data.m_LinkedList.Find( i );
-            ICommon* ptrAsCommon = (ICommon*)((dvmachword)m_Data.m_AssocAddress + (m_Data.m_AssocEntryByteWidth * i));
-            if (String::CompareCharacters(ptrAsCommon->GetSID(), keyData->m_Chars) == DV_TRUE)
+            MemoryObject* memoryObject = (MemoryObject*)m_Data.m_LinkedList.Find( i );
+            dvmachword* pair = (dvmachword*)memoryObject->GetData()->m_Address;
+            dvuchar* chars = (dvuchar*)pair[0];
+            void* value = (void*)pair[1];
+
+            if (String::CompareCharacters(key->m_Chars, chars) == DV_TRUE)
             {
-                return (void*)ptrAsCommon;
+                // Just update value for key
+                return (void*)value;
             }
         }
-        // for (dvisize i = 0; i < m_Data.m_ListEntryCount; ++i)
-        // {
-        //     ICommon* ptrAsCommon = (ICommon*)((dvmachword)m_Data.m_AssocAddress + (m_Data.m_AssocEntryByteWidth * i));
-        //     if (String::CompareCharacters(ptrAsCommon->GetSID(), keyData->m_Chars) == DV_TRUE)
-        //     {
-        //         return (void*)ptrAsCommon;
-        //     }
-        // }
     }
 
     return nullptr;

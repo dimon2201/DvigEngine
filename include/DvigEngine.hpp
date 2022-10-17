@@ -154,7 +154,6 @@ namespace DvigEngine
     struct LINKED_LIST_DATA_ENTRY : IData
     {
         LINKED_LIST_DATA_ENTRY* m_PrevAddress;
-        LINKED_LIST_DATA_ENTRY* m_NextAddress;
         MemoryObject* m_Value;
     };
 
@@ -162,7 +161,7 @@ namespace DvigEngine
     {
         dvusize m_EntryCount;
         dvusize m_EntryByteWidth;
-        dvusize m_AllocatedEntryCount;
+        dvusize m_EntryValueByteWidth;
         LINKED_LIST_DATA_ENTRY* m_Head;
     };
 
@@ -172,13 +171,12 @@ namespace DvigEngine
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
             DV_XMACRO_GETTER_DATA(LINKED_LIST_DATA)
 
-            LINKED_LIST_DATA_ENTRY* MakeEntry(MemoryObject* const value);
+            LINKED_LIST_DATA_ENTRY* MakeEntry(void* const value);
 
-            void Init(const dvusize capacity);
-            dvint32 Insert(MemoryObject* const value);
-            void Replace(const dvint32 index, MemoryObject* const value);
-            MemoryObject* Find(const dvint32 index);
-            dvint32 FindValue(void* value);
+            void Init(const dvusize capacity, const dvusize entryValueByteWidth);
+            dvint32 Insert(void* const value);
+            void Replace(const dvint32 index, void* const value);
+            void* Find(const dvint32 index);
 
         private:
             LINKED_LIST_DATA m_Data;
