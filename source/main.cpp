@@ -44,17 +44,23 @@ int main()
     String* strings[128];
     DV_XMACRO_CREATE_STRING(strings, 0, helloString, "HelloStringID_0", "hello");
 
-    void* mem = Engine::Allocate(0, 1024);
     HashMap* hashMaps[1];
     engine->Create<HashMap>((const void** const)&hashMaps[0], "MyHashMap_0", nullptr);
-    hashMaps[0]->Init(mem, 4);
-    hashMaps[0]->Insert((*helloString)->GetData(), (void*)255);
-    void* value = hashMaps[0]->Find((*helloString)->GetData());
+    hashMaps[0]->Init();
+    hashMaps[0]->Insert((*helloString)->GetData()->m_Chars, (void*)255);
+    void* value = hashMaps[0]->Find((*helloString)->GetData()->m_Chars);
     std::cout << (dvmachword)value << std::endl;
 
     // Create entities
     Entity* entities[2];
     engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", nullptr);
+
+    struct MyComponent : IComponent
+    { };
+    engine->RegisterComponent<MyComponent>();
+    struct MySystem : ISystem
+    { };
+    engine->RegisterComponent<MySystem>();
 
     engine->StopThreads();
     clock_t te = clock();

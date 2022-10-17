@@ -12,11 +12,11 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
     DV_ASSERT((engineInputData->m_Version == DV_ENGINE_VERSION_NUMBER))
 
     DvigEngine::MEMORY_POOL_DATA* memoryPoolsData = engineInputData->m_MemoryPoolsData;
-    dvusize memoryPoolsCount = engineInputData->m_MemoryPoolsCount;
+    dvisize memoryPoolsCount = engineInputData->m_MemoryPoolsCount;
 
     // Count total memory occupancy for pools
     dvusize totalPoolByteWidth = 0;
-    for (dvusize i = 0; i < memoryPoolsCount; ++i) { totalPoolByteWidth += memoryPoolsData[i].m_ByteWidth; }
+    for (dvisize i = 0; i < memoryPoolsCount; ++i) { totalPoolByteWidth += memoryPoolsData[i].m_ByteWidth; }
     totalPoolByteWidth += sizeof(DvigEngine::MEMORY_POOL_DATA); // for global pool info
 
     // Allocate global memory pool
@@ -61,7 +61,7 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
     
     // Instantiate Job Queues
     m_Instance->m_Data.m_CurrentJobQueueCursor = 0;
-    for (dvisize i = 0; i < engineData->m_RequestedThreadCount; ++i)
+    for (dvisize i = 0; i < (dvisize)engineData->m_RequestedThreadCount; ++i)
     {
         m_Instance->m_Data.m_JobQueues[i].m_Data.m_JobCount = 0;
     }
@@ -86,7 +86,7 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
     globalMemoryPoolData.m_ByteWidth = globalMemoryPoolByteWidth;
     DvigEngine::MemoryPool* globalMemoryPool = m_Instance->GetMemoryPoolByID(memoryPoolsCount);
     DvigEngine::Engine::CopyMemory(globalMemoryPool->GetData(), &globalMemoryPoolData, sizeof(DvigEngine::MEMORY_POOL_DATA));
-    
+
     // Assign Storage memory pool for Engine
     storageMemoryPoolData->m_ID = storageMemoryPoolID;
     DvigEngine::MemoryPool* storageMemoryPool = m_Instance->GetMemoryPoolByID(storageMemoryPoolID);
@@ -96,7 +96,8 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
     DvigEngine::Engine::CopyMemory(&m_Instance->m_InputData, engineInputData, sizeof(ENGINE_INPUT_DATA));
     m_Instance->m_InputData.m_MemoryPoolsCount += 1;
 
-    engineData->m_RegisteredComponentCount = 0;
+    // Initialize registry hashmap for Engine
+    m_Instance->m_RegistryData.m_HashMap.Init();
 }
 
 void DvigEngine::Engine::Free()
@@ -161,7 +162,6 @@ void DvigEngine::Engine::DeleteObject(MemoryObject** ppMemoryObject)
     MemoryPool* const memoryPool = &m_Instance->m_Data.m_MemoryPools[memoryPoolID];
 
     void* curAddress = (void*)memoryObject;
-    dvuchar* copyAddress = (dvuchar*)curAddress;
     dvusize deletedObjectByteWidth = sizeof(MemoryObject) + memoryObject->GetData()->m_ByteWidth;
     void* nextAddress = (void*)((dvmachword)curAddress + deletedObjectByteWidth);
     
@@ -202,7 +202,7 @@ void DvigEngine::Engine::MoveMemory(void* dstAddress, void* srcAddress, dvusize 
 }
 
 void DvigEngine::Engine::StartThreads() {
-    for (dvisize i = 0; i < m_Data.m_RequestedThreadCount; ++i)
+    for (dvisize i = 0; i < (dvisize)m_Data.m_RequestedThreadCount; ++i)
     {
         m_Data.m_JobQueues[i].m_Data.m_Thread = std::thread(
             &DvigEngine::JobQueue::Start, &m_Data.m_JobQueues[i]
@@ -211,7 +211,7 @@ void DvigEngine::Engine::StartThreads() {
 }
 
 void DvigEngine::Engine::StopThreads() {
-    for (dvisize i = 0; i < m_Data.m_RequestedThreadCount; ++i)
+    for (dvisize i = 0; i < (dvisize)m_Data.m_RequestedThreadCount; ++i)
     {
         m_Data.m_JobQueues[i].Stop();
         m_Data.m_JobQueues[i].m_Data.m_Thread.join();

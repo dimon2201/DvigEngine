@@ -168,7 +168,7 @@
 #define DV_XMACRO_PUSH_JOB_ARGS_3(_0, _1, _2, ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ; argumentMemory[2] = (dvmachword)_2 ;
 #define DV_XMACRO_PUSH_JOB_ARGS_4(_0, _1, _2, _3, ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ; argumentMemory[2] = (dvmachword)_2 ; argumentMemory[3] = (dvmachword)_3 ;
 #define DV_XMACRO_PUSH_JOB_ARGS_5(_0, _1, _2, _3, _4, ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ; argumentMemory[2] = (dvmachword)_2 ; argumentMemory[3] = (dvmachword)_3 ; argumentMemory[4] = (dvmachword)_4 ;
-#define DV_XMACRO_PUSH_JOB_ARGS_6(_0, _1, _2, _3, _4, _5 ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ; argumentMemory[2] = (dvmachword)_2 ; argumentMemory[3] = (dvmachword)_3 ; argumentMemory[4] = (dvmachword)_4 ; argumentMemory[5] = (dvmachword)_5 ;
+#define DV_XMACRO_PUSH_JOB_ARGS_6(_0, _1, _2, _3, _4, _5, ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ; argumentMemory[2] = (dvmachword)_2 ; argumentMemory[3] = (dvmachword)_3 ; argumentMemory[4] = (dvmachword)_4 ; argumentMemory[5] = (dvmachword)_5 ;
 #define DV_XMACRO_XPUSH_JOB(...) DV_MACRO_CONCATE(DV_XMACRO_PUSH_JOB_ARGS_, DV_MACRO_ARGS_CNT(__VA_ARGS__))(__VA_ARGS__)
 #define DV_XMACRO_PUSH_JOB(T, E, ...) \
     const dvisize argumentCount = DV_MACRO_ARGS_CNT(__VA_ARGS__); \

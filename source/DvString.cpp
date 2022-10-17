@@ -3,7 +3,6 @@
 
 DvigEngine::STRING_DATA::STRING_DATA(const char* str)
 {
-    dvusize strByteWidth = 0;
     dvuchar* strDE = (dvuchar*)str;
     dvuchar* strCopy = (dvuchar*)str;
     while (*strCopy != 0) { m_Chars[dvint32(strCopy - strDE)] = str[dvint32(strCopy - strDE)]; strCopy++; };
@@ -27,7 +26,6 @@ DvigEngine::dvresult DvigEngine::String::Compare(STRING_DATA* op1, STRING_DATA* 
 
     if (op1StrByteWidth != op2StrByteWidth) { return DV_FALSE; }
 
-    dvresult result = 0;
     for (dvisize i = 0; i < op1StrByteWidth; ++i)
     {
         if (op1->m_Chars[i] != op2->m_Chars[i])
@@ -44,7 +42,7 @@ DvigEngine::dvresult DvigEngine::String::CompareCharacters(dvstring op1, dvstrin
     const dvusize op1ByteWidth = String::CharactersCount(op1);
     const dvusize op2ByteWidth = String::CharactersCount(op2);
 
-    dvisize cycle = 0;
+    dvusize cycle = 0;
     if (op1ByteWidth != op2ByteWidth) { return DV_FALSE; }
     while (op1[cycle] == op2[cycle] && cycle++ < op1ByteWidth);
 

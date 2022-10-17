@@ -195,11 +195,9 @@ namespace DvigEngine
     struct HASH_MAP_DATA : IData
     {
         public:
-            void* m_AssocAddress;
-            dvusize m_AssocEntryByteWidth;
             dvusize m_ListEntryCount;
-            dvqword m_HashTable[DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH];
             LinkedList m_LinkedList;
+            dvqword m_HashTable[DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH];
     };
 
     class HashMap : public IObject
@@ -208,18 +206,27 @@ namespace DvigEngine
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
             DV_XMACRO_GETTER_DATA(HASH_MAP_DATA)
 
-            static dvuint32 Hash(STRING_DATA* input);
+            static dvuint32 Hash(dvstring input);
 
-            void Init(void* const assocAddress, const dvusize assocEntryByteWidth);
-            void Insert(STRING_DATA* key, void* value);
-            void* Find(STRING_DATA* key);
+            void Init();
+            void Insert(dvstring key, void* value);
+            void* Find(dvstring key);
 
         private:
             HASH_MAP_DATA m_Data;
     };
 
     struct IComponent : IData
-    { };
+    {
+        public:
+            static dvint32 m_RegistryIndex;
+    };
+
+    class ISystem : IObject
+    {
+        public:
+            static dvint32 m_RegistryIndex;
+    };
 
     struct ENTITY_DATA : IData
     {
@@ -273,11 +280,18 @@ namespace DvigEngine
             dvusize m_RequestedThreadCount;
     };
 
+    struct ENGINE_REGISTRY_DATA : IData
+    {
+        public:
+            dvint32 m_ComponentIndexCount;
+            dvint32 m_SystemIndexCount;
+            HashMap m_HashMap;
+    };
+
     struct ENGINE_DATA : IData
     {
         public:
             MemoryPool* m_MemoryPools;
-            HashMap m_Registry;
             dvusize m_RegisteredComponentCount;
             dvmachword m_CurrentJobQueueCursor;
             JobQueue* m_JobQueues;
@@ -313,12 +327,24 @@ namespace DvigEngine
             void StopThreads();
 
         public:
-            // Wrapper functions
+            // Registry functions
             template<typename T>
-            DV_FUNCTION_INLINE void Register() {
-                
+            DV_FUNCTION_INLINE void RegisterComponent() {
+                dvuchar* typeName = (dvuchar*)typeid(T).name();
+                const dvint32 componentIndex = m_RegistryData.m_ComponentIndexCount++;
+                m_RegistryData.m_HashMap.Insert(typeName, (void*)(dvmachword)componentIndex);
+                T::m_RegistryIndex = componentIndex;
+            }
+
+            template<typename T>
+            DV_FUNCTION_INLINE void RegisterSystem() {
+                dvuchar* typeName = (dvuchar*)typeid(T).name();
+                const dvint32 systemIndex = m_RegistryData.m_SystemIndexCount++;
+                m_RegistryData.m_HashMap.Insert(typeName, (void*)(dvmachword)systemIndex);
+                T::m_RegistryIndex = systemIndex;
             }
             
+            // Wrapper functions
             template<typename T>
             DV_FUNCTION_INLINE void Create(const void** const result, const char* stringID, IData* data) {
                 // DV_XMACRO_PUSH_JOB(CallCreate<T>, m_Instance, result, stringID, data)
@@ -348,6 +374,7 @@ namespace DvigEngine
 
         private:
             ENGINE_INPUT_DATA m_InputData;
+            ENGINE_REGISTRY_DATA m_RegistryData;
             ENGINE_DATA m_Data;
     };
 }
