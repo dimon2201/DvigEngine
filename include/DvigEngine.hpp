@@ -60,7 +60,9 @@ namespace DvigEngine
     { };
 
     struct IData
-    { };
+    {
+        virtual ~IData() {};
+    };
 
     class IObject : public ICommon
     {
@@ -219,7 +221,9 @@ namespace DvigEngine
     struct IComponent : IData
     {
         public:
-            static dvint32 m_RegistryIndex;
+            dvstring m_TypeName;
+            dvusize m_LayoutByteWidth;
+            dvint32 m_RegistryIndex;
     };
 
     class ISystem : IObject
@@ -231,8 +235,12 @@ namespace DvigEngine
     struct ENTITY_DATA : IData
     {
         public:
-            void* m_Offset;
-            dvuint32 m_ComponentsBits[DV_COMPONENT_BIT_MASK_BYTE_WIDTH];
+            ENTITY_DATA();
+
+            void* m_SubStorageAddress;
+            dvusize m_SubStorageByteWidth;
+            dvusize m_ComponentCount;
+            dvuint32 m_ComponentBits[DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT];
     };
 
     class Entity : public IObject
@@ -275,8 +283,8 @@ namespace DvigEngine
             dvdword m_Version;
             dvuint32 m_MemoryPoolsCount;
             MEMORY_POOL_DATA* m_MemoryPoolsData;
-            dvmachint m_ReservedMemoryPoolID;
-            dvmachint m_StorageMemoryPoolID;
+            dvint32 m_ReservedMemoryPoolID;
+            dvint32 m_StorageMemoryPoolID;
             dvusize m_RequestedThreadCount;
     };
 
@@ -327,13 +335,12 @@ namespace DvigEngine
             void StopThreads();
 
         public:
-            // Registry functions
+            // ECS related functions
             template<typename T>
             DV_FUNCTION_INLINE void RegisterComponent() {
                 dvuchar* typeName = (dvuchar*)typeid(T).name();
                 const dvint32 componentIndex = m_RegistryData.m_ComponentIndexCount++;
                 m_RegistryData.m_HashMap.Insert(typeName, (void*)(dvmachword)componentIndex);
-                T::m_RegistryIndex = componentIndex;
             }
 
             template<typename T>
@@ -341,7 +348,51 @@ namespace DvigEngine
                 dvuchar* typeName = (dvuchar*)typeid(T).name();
                 const dvint32 systemIndex = m_RegistryData.m_SystemIndexCount++;
                 m_RegistryData.m_HashMap.Insert(typeName, (void*)(dvmachword)systemIndex);
-                T::m_RegistryIndex = systemIndex;
+            }
+
+            template<typename T>
+            DV_FUNCTION_INLINE void AddComponent(Entity* entity, IComponent* component) {
+                dvuchar* typeName = (dvuchar*)typeid(T).name();
+                const dvusize typeNameByteWidth = String::CharactersCount( typeName );
+                const dvint32 registryIndex = (dvint32)(dvmachword)m_RegistryData.m_HashMap.Find( typeName );
+                Engine::CopyMemory( &component->m_TypeName[0], &typeName[0], typeNameByteWidth );
+                component->m_TypeName[typeNameByteWidth] = 0;
+                component->m_LayoutByteWidth = sizeof(T);
+                component->m_RegistryIndex = registryIndex;
+
+                const dvint32 maskIndex = (dvint32)((dvdword)registryIndex >> 5u);
+                const dvdword maskBit = 1u << (dvdword)registryIndex & 31u;
+                if ((entity->GetData()->m_ComponentBits[ maskIndex ] >> maskBit) & 1u) { return; }
+                entity->GetData()->m_ComponentBits[ maskIndex ] |= 1u << maskBit;
+
+                const dvint32 storageMemoryPoolID = m_Instance->m_InputData.m_StorageMemoryPoolID;
+                MemoryPool* storageMemoryPool = &m_Instance->GetData()->m_MemoryPools[storageMemoryPoolID];
+                
+                Engine::Allocate( storageMemoryPoolID, sizeof(T) );
+                void* const lastSubStorageAddress = (void* const)((dvmachword)entity->GetData()->m_SubStorageAddress + (dvmachword)entity->GetData()->m_SubStorageByteWidth);
+                void* const moveToAddress = (void* const)((dvmachword)lastSubStorageAddress + sizeof(T));
+                const dvusize moveByteWidth = (dvmachword)storageMemoryPool->GetData()->m_AddressOffset - (dvmachword)lastSubStorageAddress;
+                Engine::MoveMemory( moveToAddress, lastSubStorageAddress, moveByteWidth );
+                Engine::CopyMemory( lastSubStorageAddress, component, sizeof(T) );
+
+                entity->GetData()->m_SubStorageByteWidth += sizeof(T);
+                entity->GetData()->m_ComponentCount += 1;
+            }
+
+            template<typename T>
+            DV_FUNCTION_INLINE T* GetComponent(Entity* entity) {
+                void* componentAddress = entity->GetData()->m_SubStorageAddress;
+                for (dvisize i = 0; i < (dvisize)entity->GetData()->m_ComponentCount; ++i)
+                {
+                    IComponent* baseComponent = (IComponent*)componentAddress;
+                    dvuchar* typeName = (dvuchar*)typeid(T).name();
+                    if (String::CompareCharacters( &baseComponent->m_TypeName[0], &typeName[0] )) {
+                        return (T*)baseComponent;
+                    }
+                    componentAddress = (void*)((dvmachword)componentAddress + (dvmachword)baseComponent->m_LayoutByteWidth);
+                }
+
+                return nullptr;
             }
             
             // Wrapper functions

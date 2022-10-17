@@ -51,16 +51,21 @@ int main()
     void* value = hashMaps[0]->Find((*helloString)->GetData()->m_Chars);
     std::cout << (dvmachword)value << std::endl;
 
+    struct MyComponent : IComponent { dvint32 a = 1; };
+    struct AnotherComponent : IComponent { dvint32 a = 2; };
+    engine->RegisterComponent<MyComponent>();
+    engine->RegisterComponent<AnotherComponent>();
     // Create entities
     Entity* entities[2];
-    engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", nullptr);
-
-    struct MyComponent : IComponent
-    { };
-    engine->RegisterComponent<MyComponent>();
-    struct MySystem : ISystem
-    { };
-    engine->RegisterComponent<MySystem>();
+    ENTITY_DATA entityData;
+    engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", &entityData);
+    MyComponent component;
+    AnotherComponent anotherComponent;
+    engine->AddComponent<MyComponent>( entities[0], &component );
+    engine->AddComponent<AnotherComponent>( entities[0], &anotherComponent );
+    MyComponent* c1 = engine->GetComponent<MyComponent>( entities[0] );
+    AnotherComponent* c2 = engine->GetComponent<AnotherComponent>( entities[0] );
+    std::cout << c1->a << " " << c2->a << std::endl;
 
     engine->StopThreads();
     clock_t te = clock();

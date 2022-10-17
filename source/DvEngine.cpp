@@ -173,7 +173,7 @@ void DvigEngine::Engine::DeleteObject(MemoryObject** ppMemoryObject)
     *pCurCreatee = nullptr;
 
     void* lastAddress = (void*)memoryPool->m_Data.m_AddressOffset;
-    Engine::MoveMemory( curAddress, nextAddress, (dvusize)lastAddress - (dvusize)nextAddress );
+    Engine::MoveMemory(curAddress, nextAddress, (dvusize)lastAddress - (dvusize)nextAddress);
     memoryPool->GetData()->m_AddressOffset = (void*)((dvmachword)memoryPool->GetData()->m_AddressOffset - deletedObjectByteWidth);
     lastAddress = (void*)memoryPool->m_Data.m_AddressOffset;
 
