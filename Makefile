@@ -1,5 +1,5 @@
 TARGET 				:= main.exe
-CXXFLAGS 			:= -std=c++11 -O0 -Werror -Wpedantic -Wall -pedantic
+CXXFLAGS 			:= -std=c++11 -O0 #-Werror -Wpedantic -Wall -pedantic
 CXX					:= g++
 GXX    				= $(CXX) $(CXXFLAGS) -c $(1) -o $(2) &&
 

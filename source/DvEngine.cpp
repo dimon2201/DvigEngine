@@ -36,10 +36,12 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
     }
 
     // Start System memory pools
-    dvmachint reservedMemoryPoolID = engineInputData->m_ReservedMemoryPoolID;
-    dvmachint storageMemoryPoolID = engineInputData->m_StorageMemoryPoolID;
+    dvmachint reservedMemoryPoolID = engineInputData->m_SystemMemoryPoolID;
+    dvmachint entityStorageMemoryPoolID = engineInputData->m_EntityStorageMemoryPoolID;
+    dvmachint componentStorageMemoryPoolID = engineInputData->m_ComponentStorageMemoryPoolID;
     DvigEngine::MEMORY_POOL_DATA* reservedMemoryPoolData = &memoryPoolsData[reservedMemoryPoolID];
-    DvigEngine::MEMORY_POOL_DATA* storageMemoryPoolData = &memoryPoolsData[storageMemoryPoolID];
+    DvigEngine::MEMORY_POOL_DATA* entityStorageMemoryPoolData = &memoryPoolsData[entityStorageMemoryPoolID];
+    DvigEngine::MEMORY_POOL_DATA* componentStorageMemoryPoolData = &memoryPoolsData[componentStorageMemoryPoolID];
 
     // Memory allocation for Engine
     m_Instance = (DvigEngine::Engine*)DvigEngine::Engine::AllocateUsingData(reservedMemoryPoolData, sizeof(DvigEngine::Engine));
@@ -55,6 +57,7 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
     {
         engineData->m_RequestedThreadCount = 1;
     }
+
 
     // Memory allocation for Job Queues
     m_Instance->m_Data.m_JobQueues = (DvigEngine::JobQueue*)DvigEngine::Engine::AllocateUsingData(reservedMemoryPoolData, engineData->m_RequestedThreadCount * sizeof(DvigEngine::JobQueue));
@@ -87,17 +90,27 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
     DvigEngine::MemoryPool* globalMemoryPool = m_Instance->GetMemoryPoolByID(memoryPoolsCount);
     DvigEngine::Engine::CopyMemory(globalMemoryPool->GetData(), &globalMemoryPoolData, sizeof(DvigEngine::MEMORY_POOL_DATA));
 
-    // Assign Storage memory pool for Engine
-    storageMemoryPoolData->m_ID = storageMemoryPoolID;
-    DvigEngine::MemoryPool* storageMemoryPool = m_Instance->GetMemoryPoolByID(storageMemoryPoolID);
-    DvigEngine::Engine::CopyMemory(storageMemoryPool->GetData(), &storageMemoryPoolData, sizeof(DvigEngine::MEMORY_POOL_DATA));
+    // Assign Storage memory pools (both Entity and Component) for Engine
+    entityStorageMemoryPoolData->m_ID = entityStorageMemoryPoolID;
+    componentStorageMemoryPoolData->m_ID = componentStorageMemoryPoolID;
+    DvigEngine::MemoryPool* entityStorageMemoryPool = m_Instance->GetMemoryPoolByID(entityStorageMemoryPoolID);
+    // DvigEngine::Engine::CopyMemory(entityStorageMemoryPool->GetData(), &entityStorageMemoryPoolData, sizeof(DvigEngine::MEMORY_POOL_DATA));
+    DvigEngine::MemoryPool* componentStorageMemoryPool = m_Instance->GetMemoryPoolByID(componentStorageMemoryPoolID);
+    // DvigEngine::Engine::CopyMemory(componentStorageMemoryPool->GetData(), &componentStorageMemoryPoolData, sizeof(DvigEngine::MEMORY_POOL_DATA));
+    m_Instance->m_Data.m_MemoryPools[ entityStorageMemoryPoolID ].GetData()->m_ID = entityStorageMemoryPoolID;
+    m_Instance->m_Data.m_MemoryPools[ componentStorageMemoryPoolID ].GetData()->m_ID = componentStorageMemoryPoolID;
 
     // Copy user input data to Engine
     DvigEngine::Engine::CopyMemory(&m_Instance->m_InputData, engineInputData, sizeof(ENGINE_INPUT_DATA));
     m_Instance->m_InputData.m_MemoryPoolsCount += 1;
-
+    
     // Initialize registry hashmap for Engine
+    m_Instance->m_RegistryData.m_EntityCount = 0;
+    m_Instance->m_RegistryData.m_EntityStorageAddress = entityStorageMemoryPoolData->m_AddressOffset;
+    m_Instance->m_RegistryData.m_UniqueComponentCount = 0;
+    m_Instance->m_RegistryData.m_UniqueSystemCount = 0;
     m_Instance->m_RegistryData.m_HashMap.Init();
+    m_Instance->m_RegistryData.m_Systems.Init(sizeof(dvmachword));
 }
 
 void DvigEngine::Engine::Free()
@@ -201,7 +214,8 @@ void DvigEngine::Engine::MoveMemory(void* dstAddress, void* srcAddress, dvusize 
     memmove(dstAddress, srcAddress, byteWidth);
 }
 
-void DvigEngine::Engine::StartThreads() {
+void DvigEngine::Engine::StartThreads()
+{
     for (dvisize i = 0; i < (dvisize)m_Data.m_RequestedThreadCount; ++i)
     {
         m_Data.m_JobQueues[i].m_Data.m_Thread = std::thread(
@@ -210,10 +224,31 @@ void DvigEngine::Engine::StartThreads() {
     }
 }
 
-void DvigEngine::Engine::StopThreads() {
+void DvigEngine::Engine::StopThreads()
+{
     for (dvisize i = 0; i < (dvisize)m_Data.m_RequestedThreadCount; ++i)
     {
         m_Data.m_JobQueues[i].Stop();
         m_Data.m_JobQueues[i].m_Data.m_Thread.join();
     }
+}
+
+void DvigEngine::Engine::UpdateSystems()
+{
+    // const dvisize uniqueSystemCount = m_RegistryData.m_UniqueSystemCount;
+    // LinkedList* const systemList = (LinkedList* const)&m_RegistryData.m_Systems;
+    // void* const storageAddress = m_RegistryData.m_EntityStorageAddress; // array of all Entities means Entity Storage
+    // const dvisize componentCount = m_RegistryData.m_EntityCount;
+
+    // // Run through each System
+    // for (dvisize i = 0; i < uniqueSystemCount; ++i)
+    // {
+    //     ISystem* system = (ISystem*)systemList->Find( i );
+        
+    //     // Run through each Entity
+    //     for (dvisize i = 0; i < componentCount; ++i)
+    //     {
+
+    //     }
+    // }
 }

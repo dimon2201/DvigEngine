@@ -26,13 +26,16 @@ DvigEngine::dvuint32 DvigEngine::HashMap::Hash(dvstring input)
 
 void DvigEngine::HashMap::Init()
 {
-    m_Data.m_LinkedList.Init(0, 2 * sizeof(dvmachword)); // pair (2 address pointers)
+    m_Data.m_LinkedList.Init(2 * sizeof(dvmachword)); // pair (2 address pointers)
+    for (dvisize i = 0; i < DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH; ++i) {
+        m_Data.m_HashTable[i] = DV_NULL;
+    }
 }
 
 void DvigEngine::HashMap::Insert(dvstring key, void* value)
 {
     dvuint32 hash = HashMap::Hash(key);
-    if (m_Data.m_HashTable[hash] == DV_ZERO)
+    if (m_Data.m_HashTable[hash] == DV_NULL)
     {
         // Empty slot
         dvmachword pair[2];
@@ -76,7 +79,9 @@ void DvigEngine::HashMap::Insert(dvstring key, void* value)
 void* DvigEngine::HashMap::Find(dvstring key)
 {
     dvuint32 hash = HashMap::Hash(key);
-    const dvqword index = m_Data.m_HashTable[hash];
+    const dvint32 index = m_Data.m_HashTable[hash];
+
+    if (index == DV_NULL) { return nullptr; }
 
     MemoryObject* memoryObject = (MemoryObject*)m_Data.m_LinkedList.Find( index );
     dvmachword* pair = (dvmachword*)memoryObject->GetData()->m_Address;

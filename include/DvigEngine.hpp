@@ -175,7 +175,7 @@ namespace DvigEngine
 
             LINKED_LIST_DATA_ENTRY* MakeEntry(void* const value);
 
-            void Init(const dvusize capacity, const dvusize entryValueByteWidth);
+            void Init(const dvusize entryValueByteWidth);
             dvint32 Insert(void* const value);
             void Replace(const dvint32 index, void* const value);
             void* Find(const dvint32 index);
@@ -199,7 +199,7 @@ namespace DvigEngine
         public:
             dvusize m_ListEntryCount;
             LinkedList m_LinkedList;
-            dvqword m_HashTable[DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH];
+            dvint32 m_HashTable[DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH];
     };
 
     class HashMap : public IObject
@@ -228,8 +228,14 @@ namespace DvigEngine
 
     class ISystem : IObject
     {
+        DV_MACRO_DECLARE_SINGLETON(ISystem, public)
+        DV_MACRO_FRIENDS(DvigEngine::Engine)
+        
         public:
-            static dvint32 m_RegistryIndex;
+            virtual void Run(void* workMemory);
+
+            dvstring m_TypeName;
+            dvint32 m_RegistryIndex;
     };
 
     struct ENTITY_DATA : IData
@@ -283,28 +289,31 @@ namespace DvigEngine
             dvdword m_Version;
             dvuint32 m_MemoryPoolsCount;
             MEMORY_POOL_DATA* m_MemoryPoolsData;
-            dvint32 m_ReservedMemoryPoolID;
-            dvint32 m_StorageMemoryPoolID;
+            dvint32 m_SystemMemoryPoolID;
+            dvint32 m_EntityStorageMemoryPoolID;
+            dvint32 m_ComponentStorageMemoryPoolID;
             dvusize m_RequestedThreadCount;
     };
 
     struct ENGINE_REGISTRY_DATA : IData
     {
         public:
-            dvint32 m_ComponentIndexCount;
-            dvint32 m_SystemIndexCount;
+            void* m_EntityStorageAddress;
+            dvusize m_EntityCount;
+            dvint32 m_UniqueComponentCount;
+            dvint32 m_UniqueSystemCount;
             HashMap m_HashMap;
+            LinkedList m_Systems;
     };
 
     struct ENGINE_DATA : IData
     {
         public:
             MemoryPool* m_MemoryPools;
-            dvusize m_RegisteredComponentCount;
             dvmachword m_CurrentJobQueueCursor;
             JobQueue* m_JobQueues;
-            dvusize m_RequestedThreadCount;
             dvusize m_MaxThreadCount;
+            dvusize m_RequestedThreadCount;
             void* m_UserData;
     };
 
@@ -333,28 +342,35 @@ namespace DvigEngine
             
             void StartThreads();
             void StopThreads();
+            void UpdateSystems();
 
         public:
             // ECS related functions
             template<typename T>
             DV_FUNCTION_INLINE void RegisterComponent() {
                 dvuchar* typeName = (dvuchar*)typeid(T).name();
-                const dvint32 componentIndex = m_RegistryData.m_ComponentIndexCount++;
+                const dvint32 componentIndex = ++m_RegistryData.m_UniqueComponentCount;
+                if (m_RegistryData.m_HashMap.Find(typeName) != nullptr) { return; }
                 m_RegistryData.m_HashMap.Insert(typeName, (void*)(dvmachword)componentIndex);
             }
 
             template<typename T>
             DV_FUNCTION_INLINE void RegisterSystem() {
                 dvuchar* typeName = (dvuchar*)typeid(T).name();
-                const dvint32 systemIndex = m_RegistryData.m_SystemIndexCount++;
-                m_RegistryData.m_HashMap.Insert(typeName, (void*)(dvmachword)systemIndex);
+                ++m_RegistryData.m_UniqueSystemCount;
+                if (m_RegistryData.m_HashMap.Find(typeName) != nullptr) { return; }
+                T::m_Instance = (T*)Engine::AllocateObject( 0, sizeof(T) )->GetData()->m_Address;
+                // m_RegistryData.m_HashMap.Insert(typeName, (void*)T::m_Instance);
+                m_RegistryData.m_Systems.Insert( (void*)T::m_Instance );
             }
 
             template<typename T>
-            DV_FUNCTION_INLINE void AddComponent(Entity* entity, IComponent* component) {
+            DV_FUNCTION_INLINE void AddComponent(Entity* entity, IComponent* ccomponent) {
                 dvuchar* typeName = (dvuchar*)typeid(T).name();
                 const dvusize typeNameByteWidth = String::CharactersCount( typeName );
                 const dvint32 registryIndex = (dvint32)(dvmachword)m_RegistryData.m_HashMap.Find( typeName );
+                T icomponent;
+                T* component = &icomponent;
                 Engine::CopyMemory( &component->m_TypeName[0], &typeName[0], typeNameByteWidth );
                 component->m_TypeName[typeNameByteWidth] = 0;
                 component->m_LayoutByteWidth = sizeof(T);
@@ -365,7 +381,7 @@ namespace DvigEngine
                 if ((entity->GetData()->m_ComponentBits[ maskIndex ] >> maskBit) & 1u) { return; }
                 entity->GetData()->m_ComponentBits[ maskIndex ] |= 1u << maskBit;
 
-                const dvint32 storageMemoryPoolID = m_Instance->m_InputData.m_StorageMemoryPoolID;
+                const dvint32 storageMemoryPoolID = m_Instance->m_InputData.m_ComponentStorageMemoryPoolID;
                 MemoryPool* storageMemoryPool = &m_Instance->GetData()->m_MemoryPools[storageMemoryPoolID];
                 
                 Engine::Allocate( storageMemoryPoolID, sizeof(T) );
@@ -394,7 +410,7 @@ namespace DvigEngine
 
                 return nullptr;
             }
-            
+
             // Wrapper functions
             template<typename T>
             DV_FUNCTION_INLINE void Create(const void** const result, const char* stringID, IData* data) {
@@ -417,7 +433,7 @@ namespace DvigEngine
                 obj->SetCreateeAndMemoryObject( (IObject**)result, memoryObject );
                 T* typedObj = (T*)obj;
                 *result = typedObj;
-                // Engine::CopyMemory((void*)typedObj->GetSID(), (void*)&stringID[0], typedObj->Char());
+                // Engine::CopyMemory((void*)typedObj->GetSID(), (void*)&stringID[0], String::CharactersCount( (dvuchar*)&stringID[0] ));
                 if (data == nullptr) { return; }
                 IData* objectData = typedObj->GetData();
                 Engine::CopyMemory(objectData, data, sizeof(typedObj->m_Data));

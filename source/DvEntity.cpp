@@ -13,7 +13,7 @@ DvigEngine::ENTITY_DATA::ENTITY_DATA()
     dvuchar* typeName = (dvuchar*)typeid(IComponent).name();
     const dvusize typeNameByteWidth = String::CharactersCount( typeName );
     Engine::CopyMemory( &component->m_TypeName[0], &typeName[0], typeNameByteWidth );
-    component->m_TypeName[typeNameByteWidth] = 0;
+    component->m_TypeName[typeNameByteWidth] = 0; // last char always zero
     component->m_LayoutByteWidth = sizeof(IComponent);
     component->m_RegistryIndex = DV_NULL;
 }

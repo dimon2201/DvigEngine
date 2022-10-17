@@ -1,8 +1,8 @@
 #include "../include/DvigEngine.hpp"
 
-void DvigEngine::LinkedList::Init(const DvigEngine::dvusize capacity, const DvigEngine::dvusize entryValueByteWidth)
+void DvigEngine::LinkedList::Init(const DvigEngine::dvusize entryValueByteWidth)
 {
-    m_Data.m_EntryCount = capacity;
+    m_Data.m_EntryCount = 0;
     m_Data.m_EntryByteWidth = sizeof(LINKED_LIST_DATA_ENTRY) + sizeof(MemoryObject) + entryValueByteWidth;
     m_Data.m_EntryValueByteWidth = entryValueByteWidth;
 }
