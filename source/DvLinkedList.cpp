@@ -45,11 +45,11 @@ void* DvigEngine::LinkedList::Find(const dvint32 index)
 
 DvigEngine::LINKED_LIST_DATA_ENTRY* DvigEngine::LinkedList::MakeEntry(void* const value)
 {
-    MemoryObject* entryValue = Engine::AllocateObject(0, m_Data.m_EntryValueByteWidth);
-    Engine::CopyMemory(entryValue->GetData()->m_Address, value, m_Data.m_EntryValueByteWidth);
+    // MemoryObject* entryValue = Engine::AllocateObject(0, m_Data.m_EntryValueByteWidth);
+    // Engine::CopyMemory(entryValue->GetData()->m_Address, value, m_Data.m_EntryValueByteWidth);
 
-    LINKED_LIST_DATA_ENTRY* newEntry = (LINKED_LIST_DATA_ENTRY*)Engine::AllocateObject(0, m_Data.m_EntryByteWidth);
-    newEntry->m_Value = entryValue;
+    LINKED_LIST_DATA_ENTRY* newEntry = (LINKED_LIST_DATA_ENTRY*)Engine::AllocateObject(1, m_Data.m_EntryByteWidth);
+    newEntry->m_Value = (MemoryObject*)value;
 
     return newEntry;
 }

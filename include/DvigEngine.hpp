@@ -60,9 +60,7 @@ namespace DvigEngine
     { };
 
     struct IData
-    {
-        virtual ~IData() {};
-    };
+    { };
 
     class IObject : public ICommon
     {
@@ -184,6 +182,12 @@ namespace DvigEngine
             LINKED_LIST_DATA m_Data;
     };
 
+    struct HASH_MAP_MEMORY_BLOCK : IData
+    {
+        dvmachword m_EntryCount;
+        dvuchar m_Memory[ DV_MAX_HASH_MAP_MEMORY_BLOCK_BYTE_WIDTH ];
+    };
+
     struct HASH_MAP_DATA_ENTRY : IData
     {
         public:
@@ -215,6 +219,7 @@ namespace DvigEngine
             void* Find(dvstring key);
 
         private:
+            MemoryObject* AllocateBlock();
             void InsertToMemoryBlock(dvuint32 hash, dvstring key, void* value);
 
             HASH_MAP_DATA m_Data;
@@ -429,13 +434,12 @@ namespace DvigEngine
                 const char* stringID = (const char*)argumentMemory[ 1 ];
                 IData* data = (IData*)argumentMemory[ 2 ];
                 MemoryObject* memoryObject = AllocateObject(0, sizeof(T));
-                ICommon* cmnObj = memoryObject->Unwrap<ICommon>();
-                cmnObj->SetSID( &stringID[0] );
-                IObject* obj = (IObject*)cmnObj;
+                ICommon* baseObj = memoryObject->Unwrap<ICommon>();
+                baseObj->SetSID( &stringID[0] );
+                IObject* obj = (IObject*)baseObj;
                 obj->SetCreateeAndMemoryObject( (IObject**)result, memoryObject );
                 T* typedObj = (T*)obj;
                 *result = typedObj;
-                // Engine::CopyMemory((void*)typedObj->GetSID(), (void*)&stringID[0], String::CharactersCount( (dvuchar*)&stringID[0] ));
                 if (data == nullptr) { return; }
                 IData* objectData = typedObj->GetData();
                 Engine::CopyMemory(objectData, data, sizeof(typedObj->m_Data));
