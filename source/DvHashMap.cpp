@@ -25,66 +25,75 @@ DvigEngine::dvuint32 DvigEngine::HashMap::Hash(dvstring input)
 }
 
 void DvigEngine::HashMap::Init()
-{
-    m_Data.m_LinkedList.Init(2 * sizeof(dvmachword)); // pair (2 address pointers)
+{   
+    // Allocate first memory block
+    m_Data.m_MemoryBlocks.Init(2 * sizeof(dvmachword)); // pair (2 address pointers)
+    MemoryObject* memoryBlock = Engine::AllocateObject( 0, DV_MAX_HASH_MAP_MEMORY_BLOCK_BYTE_WIDTH );
+    m_Data.m_MemoryBlocks.Insert( (void*)memoryBlock );
+    void* usefulData = memoryBlock->GetData()->m_Address;
+    *((dvuint32*)usefulData) = 0;
+
     for (dvisize i = 0; i < DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH; ++i) {
-        m_Data.m_HashTable[i] = DV_NULL;
+        m_Data.m_HashTable[i] = (dvmachword)nullptr;
     }
 }
 
 void DvigEngine::HashMap::Insert(dvstring key, void* value)
 {
     dvuint32 hash = HashMap::Hash(key);
-    if (m_Data.m_HashTable[hash] == DV_NULL)
+    if (m_Data.m_HashTable[hash] == (dvmachword)nullptr)
     {
         // Empty slot
-        dvmachword pair[2];
-        pair[0] = (dvmachword)key;
-        pair[1] = (dvmachword)value;
-        const dvint32 index = m_Data.m_LinkedList.Insert( (void* const)&pair[0] ); // insert pair
-        m_Data.m_HashTable[hash] = index;
+        this->InsertToMemoryBlock( hash, key, value );
     }
     else
     {
         // Possible collision
-        // Search through the linked list for key match
-        for (dvisize i = 0; i < (dvisize)m_Data.m_LinkedList.GetData()->m_EntryCount; ++i)
+        // Search through the memory blocks for key match
+        const dvusize memoryBlockEntryCount = m_Data.m_MemoryBlocks.GetData()->m_EntryCount;
+        for (dvisize i = 0; i < (dvisize)memoryBlockEntryCount; ++i)
         {
-            MemoryObject* memoryObject = (MemoryObject*)m_Data.m_LinkedList.Find( i );
-            dvmachword* pair = (dvmachword*)memoryObject->GetData()->m_Address;
-            dvuchar* chars = (dvuchar*)pair[0];
+            // Run through each memory block entry
+            void* memoryBlock = ((MemoryObject*)m_Data.m_MemoryBlocks.Find( (dvint32)i ))->GetData()->m_Address;
+            const dvusize entriesPerBlock = *((dvuint32*)memoryBlock);
+            memoryBlock = (void*)((dvmachword)memoryBlock + 4);
 
-            if (String::CompareCharacters(key, chars) == DV_TRUE)
+            for (dvisize j = 0; j < (dvisize)entriesPerBlock; ++j)
             {
-                // Just update value for key
-                dvmachword pair[2];
-                pair[0] = (dvmachword)key;
-                pair[1] = (dvmachword)value;
-                m_Data.m_LinkedList.Replace( i, &pair[0] ); // update
-                m_Data.m_HashTable[hash] = i;
-                return;
+                dvmachword* pair = (dvmachword*)memoryBlock;
+                dvuchar* chars = (dvuchar*)pair[0];
+
+                if (String::CompareCharacters(key, chars) == DV_TRUE)
+                {
+                    // Just update value for key
+                    dvmachword newPair[2];
+                    newPair[0] = (dvmachword)key;
+                    newPair[1] = (dvmachword)value;
+                    pair[0] = newPair[0];
+                    pair[1] = newPair[1];
+                    m_Data.m_HashTable[hash] = i;
+                    return;
+                }
+
+                memoryBlock = (void*)((dvmachword)memoryBlock + m_Data.m_MemoryBlocks.GetData()->m_EntryValueByteWidth);
             }
         }
 
         // Nothing found
         // Insert new entry
-        dvmachword pair[2];
-        pair[0] = (dvmachword)key;
-        pair[1] = (dvmachword)value;
-        const dvint32 index = m_Data.m_LinkedList.Insert( &pair[0] ); // insert pair
-        m_Data.m_HashTable[hash] = index;
+        this->InsertToMemoryBlock( hash, key, value );
     }
 }
 
 void* DvigEngine::HashMap::Find(dvstring key)
 {
     dvuint32 hash = HashMap::Hash(key);
-    const dvint32 index = m_Data.m_HashTable[hash];
+    void* readFromAddress = (void*)m_Data.m_HashTable[hash];
 
-    if (index == DV_NULL) { return nullptr; }
+    if (readFromAddress == nullptr) { return nullptr; }
 
-    MemoryObject* memoryObject = (MemoryObject*)m_Data.m_LinkedList.Find( index );
-    dvmachword* pair = (dvmachword*)memoryObject->GetData()->m_Address;
+    // MemoryObject* memoryObject = (MemoryObject*)m_Data.m_LinkedList.Find( index );
+    dvmachword* pair = (dvmachword*)readFromAddress;
     dvuchar* chars = (dvuchar*)pair[0];
     void* value = (void*)pair[1];
 
@@ -95,21 +104,63 @@ void* DvigEngine::HashMap::Find(dvstring key)
     }
     else
     {
-        // Search through the linked list for key match
-        for (dvisize i = 0; i < (dvisize)m_Data.m_LinkedList.GetData()->m_EntryCount; ++i)
+        // Possible collision
+        // Search through the memory blocks for key match
+        const dvusize memoryBlockEntryCount = m_Data.m_MemoryBlocks.GetData()->m_EntryCount;
+        for (dvisize i = 0; i < (dvisize)memoryBlockEntryCount; ++i)
         {
-            MemoryObject* memoryObject = (MemoryObject*)m_Data.m_LinkedList.Find( i );
-            dvmachword* pair = (dvmachword*)memoryObject->GetData()->m_Address;
-            dvuchar* chars = (dvuchar*)pair[0];
-            void* value = (void*)pair[1];
+            // Run through each memory block entry
+            void* memoryBlock = ((MemoryObject*)m_Data.m_MemoryBlocks.Find( (dvint32)i ))->GetData()->m_Address;
+            const dvusize entriesPerBlock = *((dvuint32*)memoryBlock);
+            memoryBlock = (void*)((dvmachword)memoryBlock + 4);
 
-            if (String::CompareCharacters(key, chars) == DV_TRUE)
+            for (dvisize j = 0; j < (dvisize)entriesPerBlock; ++j)
             {
-                // Just update value for key
-                return (void*)value;
+                dvmachword* pair = (dvmachword*)memoryBlock;
+                dvuchar* chars = (dvuchar*)pair[0];
+                void* value = (void*)pair[1];
+
+                if (String::CompareCharacters(key, chars) == DV_TRUE)
+                {
+                    // Return proper value
+                    return value;
+                }
+
+                memoryBlock = (void*)((dvmachword)memoryBlock + m_Data.m_MemoryBlocks.GetData()->m_EntryValueByteWidth);
             }
         }
     }
 
     return nullptr;
+}
+
+void DvigEngine::HashMap::InsertToMemoryBlock(dvuint32 hash, dvstring key, void* value)
+{
+    dvmachword pair[2];
+    pair[0] = (dvmachword)key;
+    pair[1] = (dvmachword)value;
+
+    dvint32 memoryBlockCount = (const dvint32)m_Data.m_MemoryBlocks.GetData()->m_EntryCount;
+    dvusize memoryBlockEntryByteWidth = m_Data.m_MemoryBlocks.GetData()->m_EntryValueByteWidth;
+    MemoryObject* memoryBlock = (MemoryObject*)m_Data.m_MemoryBlocks.Find( memoryBlockCount - 1 );
+    void* usefulData = memoryBlock->GetData()->m_Address;
+    dvuint32 memoryBlockEntryCount = *((dvuint32*)usefulData);
+    
+    // Check if memory block is full
+    // Then create new memory block
+    if (memoryBlockEntryCount * memoryBlockEntryByteWidth >= DV_MAX_HASH_MAP_MEMORY_BLOCK_BYTE_WIDTH)
+    {
+        memoryBlock = Engine::AllocateObject( 0, DV_MAX_HASH_MAP_MEMORY_BLOCK_BYTE_WIDTH );
+        m_Data.m_MemoryBlocks.Insert( memoryBlock );
+        usefulData = memoryBlock->GetData()->m_Address;
+        *((dvuint32*)usefulData) = 0;
+    }
+
+    // Write pair to proper memory block
+    dvmachword* writeToAddress = (dvmachword*)((dvmachword)usefulData + 4 + (memoryBlockEntryCount * memoryBlockEntryByteWidth));
+    writeToAddress[0] = pair[0];
+    writeToAddress[1] = pair[1];
+    *((dvuint32*)usefulData) += 1;
+
+    m_Data.m_HashTable[hash] = (dvmachword)writeToAddress;
 }

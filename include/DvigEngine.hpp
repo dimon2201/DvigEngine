@@ -52,8 +52,8 @@ namespace DvigEngine
     /*** Declaration & Definition ***/
     class ICommon
     {
-        DV_XMACRO_DECLARE_COMMON_CLASS(ICommon)
         DV_MACRO_FRIENDS(DvigEngine::Engine)
+        DV_XMACRO_DECLARE_COMMON_CLASS(ICommon)
     };
 
     class IShell : public ICommon
@@ -66,8 +66,8 @@ namespace DvigEngine
 
     class IObject : public ICommon
     {
-        DV_MACRO_DECLARE_CREATION_DEPENDENT_CLASS(IObject)
         DV_MACRO_FRIENDS(DvigEngine::Engine)
+        DV_MACRO_DECLARE_CREATION_DEPENDENT_CLASS(IObject)
 
         public:
             DV_FUNCTION_INLINE IObject** GetCreatee() { return m_Createe; }
@@ -198,8 +198,8 @@ namespace DvigEngine
     {
         public:
             dvusize m_ListEntryCount;
-            LinkedList m_LinkedList;
-            dvint32 m_HashTable[DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH];
+            LinkedList m_MemoryBlocks;
+            dvmachword m_HashTable[DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH];
     };
 
     class HashMap : public IObject
@@ -215,6 +215,8 @@ namespace DvigEngine
             void* Find(dvstring key);
 
         private:
+            void InsertToMemoryBlock(dvuint32 hash, dvstring key, void* value);
+
             HASH_MAP_DATA m_Data;
     };
 
@@ -228,8 +230,8 @@ namespace DvigEngine
 
     class ISystem : IObject
     {
-        DV_MACRO_DECLARE_SINGLETON(ISystem, public)
         DV_MACRO_FRIENDS(DvigEngine::Engine)
+        DV_MACRO_DECLARE_SINGLETON(ISystem, public)
         
         public:
             virtual void Run(void* workMemory);
@@ -302,8 +304,8 @@ namespace DvigEngine
             dvusize m_EntityCount;
             dvint32 m_UniqueComponentCount;
             dvint32 m_UniqueSystemCount;
-            HashMap m_HashMap;
-            LinkedList m_Systems;
+            HashMap m_Components;
+            HashMap m_Systems;
     };
 
     struct ENGINE_DATA : IData
@@ -347,28 +349,28 @@ namespace DvigEngine
         public:
             // ECS related functions
             template<typename T>
-            DV_FUNCTION_INLINE void RegisterComponent() {
+            void RegisterComponent() {
                 dvuchar* typeName = (dvuchar*)typeid(T).name();
                 const dvint32 componentIndex = ++m_RegistryData.m_UniqueComponentCount;
-                if (m_RegistryData.m_HashMap.Find(typeName) != nullptr) { return; }
-                m_RegistryData.m_HashMap.Insert(typeName, (void*)(dvmachword)componentIndex);
+                if (m_RegistryData.m_Components.Find(typeName) != nullptr) { return; }
+                m_RegistryData.m_Components.Insert(typeName, (void*)(dvmachword)componentIndex);
             }
 
             template<typename T>
-            DV_FUNCTION_INLINE void RegisterSystem() {
+            void RegisterSystem() {
                 dvuchar* typeName = (dvuchar*)typeid(T).name();
                 ++m_RegistryData.m_UniqueSystemCount;
-                if (m_RegistryData.m_HashMap.Find(typeName) != nullptr) { return; }
+                if (m_RegistryData.m_Systems.Find(typeName) != nullptr) { return; }
                 T::m_Instance = (T*)Engine::AllocateObject( 0, sizeof(T) )->GetData()->m_Address;
                 // m_RegistryData.m_HashMap.Insert(typeName, (void*)T::m_Instance);
-                m_RegistryData.m_Systems.Insert( (void*)T::m_Instance );
+                m_RegistryData.m_Systems.Insert( typeName, (void*)T::m_Instance );
             }
 
             template<typename T>
-            DV_FUNCTION_INLINE void AddComponent(Entity* entity, IComponent* ccomponent) {
+            void AddComponent(Entity* entity, IComponent* ccomponent) {
                 dvuchar* typeName = (dvuchar*)typeid(T).name();
                 const dvusize typeNameByteWidth = String::CharactersCount( typeName );
-                const dvint32 registryIndex = (dvint32)(dvmachword)m_RegistryData.m_HashMap.Find( typeName );
+                const dvint32 registryIndex = (dvint32)(dvmachword)m_RegistryData.m_Components.Find( typeName );
                 T icomponent;
                 T* component = &icomponent;
                 Engine::CopyMemory( &component->m_TypeName[0], &typeName[0], typeNameByteWidth );

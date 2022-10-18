@@ -109,8 +109,8 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
     m_Instance->m_RegistryData.m_EntityStorageAddress = entityStorageMemoryPoolData->m_AddressOffset;
     m_Instance->m_RegistryData.m_UniqueComponentCount = 0;
     m_Instance->m_RegistryData.m_UniqueSystemCount = 0;
-    m_Instance->m_RegistryData.m_HashMap.Init();
-    m_Instance->m_RegistryData.m_Systems.Init(sizeof(dvmachword));
+    m_Instance->m_RegistryData.m_Components.Init();
+    m_Instance->m_RegistryData.m_Systems.Init();
 }
 
 void DvigEngine::Engine::Free()
