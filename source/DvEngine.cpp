@@ -109,8 +109,13 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
     m_Instance->m_RegistryData.m_EntityStorageAddress = entityStorageMemoryPoolData->m_AddressOffset;
     m_Instance->m_RegistryData.m_UniqueComponentCount = 0;
     m_Instance->m_RegistryData.m_UniqueSystemCount = 0;
+    m_Instance->m_RegistryData.m_TypeAllocationPoolID.Init();
     m_Instance->m_RegistryData.m_Components.Init();
     m_Instance->m_RegistryData.m_Systems.Init();
+
+    // Initialize allocation pool ID for basic types
+    const dvuchar* const typeName = (const dvuchar* const)typeid(Entity).name();
+    m_Instance->m_RegistryData.m_TypeAllocationPoolID.Insert( (dvuchar*)typeName, (void*)componentStorageMemoryPoolID );
 }
 
 void DvigEngine::Engine::Free()
@@ -235,20 +240,21 @@ void DvigEngine::Engine::StopThreads()
 
 void DvigEngine::Engine::UpdateSystems()
 {
-    // const dvisize uniqueSystemCount = m_RegistryData.m_UniqueSystemCount;
-    // LinkedList* const systemList = (LinkedList* const)&m_RegistryData.m_Systems;
-    // void* const storageAddress = m_RegistryData.m_EntityStorageAddress; // array of all Entities means Entity Storage
-    // const dvisize componentCount = m_RegistryData.m_EntityCount;
+    const dvisize uniqueSystemCount = m_RegistryData.m_UniqueSystemCount;
+    HashMap* const systemList = (HashMap* const)&m_RegistryData.m_Systems;
+    void* const storageAddress = m_RegistryData.m_EntityStorageAddress; // array of all Entities means Entity Storage
+    const dvisize entityCount = m_RegistryData.m_EntityCount;
 
-    // // Run through each System
-    // for (dvisize i = 0; i < uniqueSystemCount; ++i)
-    // {
-    //     ISystem* system = (ISystem*)systemList->Find( i );
+    // Run through each System
+    for (dvisize i = 0; i < uniqueSystemCount; ++i)
+    {
+        ISystem* system = (ISystem*)systemList->FindIndex( i );
+        std::cout << system->m_TypeName << std::endl;
         
-    //     // Run through each Entity
-    //     for (dvisize i = 0; i < componentCount; ++i)
-    //     {
-
-    //     }
-    // }
+        // Run through each Entity
+        for (dvisize i = 0; i < entityCount; ++i)
+        {
+            
+        }
+    }
 }

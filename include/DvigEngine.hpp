@@ -206,6 +206,8 @@ namespace DvigEngine
             dvmachword m_HashTable[DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH];
     };
 
+    struct Entry { dvmachword chars; void* value; };
+
     class HashMap : public IObject
     {
         public:
@@ -217,6 +219,7 @@ namespace DvigEngine
             void Init();
             void Insert(dvstring key, void* value);
             void* Find(dvstring key);
+            void* FindIndex(const dvint32 index);
 
         private:
             MemoryObject* AllocateBlock();
@@ -309,6 +312,7 @@ namespace DvigEngine
             dvusize m_EntityCount;
             dvint32 m_UniqueComponentCount;
             dvint32 m_UniqueSystemCount;
+            HashMap m_TypeAllocationPoolID;
             HashMap m_Components;
             HashMap m_Systems;
     };
@@ -367,7 +371,6 @@ namespace DvigEngine
                 ++m_RegistryData.m_UniqueSystemCount;
                 if (m_RegistryData.m_Systems.Find(typeName) != nullptr) { return; }
                 T::m_Instance = (T*)Engine::AllocateObject( 0, sizeof(T) )->GetData()->m_Address;
-                // m_RegistryData.m_HashMap.Insert(typeName, (void*)T::m_Instance);
                 m_RegistryData.m_Systems.Insert( typeName, (void*)T::m_Instance );
             }
 
@@ -388,13 +391,13 @@ namespace DvigEngine
                 if ((entity->GetData()->m_ComponentBits[ maskIndex ] >> maskBit) & 1u) { return; }
                 entity->GetData()->m_ComponentBits[ maskIndex ] |= 1u << maskBit;
 
-                const dvint32 storageMemoryPoolID = m_Instance->m_InputData.m_ComponentStorageMemoryPoolID;
-                MemoryPool* storageMemoryPool = &m_Instance->GetData()->m_MemoryPools[storageMemoryPoolID];
+                const dvint32 componentStorageMemoryPoolID = m_Instance->m_InputData.m_ComponentStorageMemoryPoolID;
+                MemoryPool* componentStorageMemoryPool = &m_Instance->GetData()->m_MemoryPools[componentStorageMemoryPoolID];
                 
-                Engine::Allocate( storageMemoryPoolID, sizeof(T) );
+                Engine::Allocate( componentStorageMemoryPoolID, sizeof(T) );
                 void* const lastSubStorageAddress = (void* const)((dvmachword)entity->GetData()->m_SubStorageAddress + (dvmachword)entity->GetData()->m_SubStorageByteWidth);
                 void* const moveToAddress = (void* const)((dvmachword)lastSubStorageAddress + sizeof(T));
-                const dvusize moveByteWidth = (dvmachword)storageMemoryPool->GetData()->m_AddressOffset - (dvmachword)lastSubStorageAddress;
+                const dvusize moveByteWidth = (dvmachword)componentStorageMemoryPool->GetData()->m_AddressOffset - (dvmachword)lastSubStorageAddress;
                 Engine::MoveMemory( moveToAddress, lastSubStorageAddress, moveByteWidth );
                 Engine::CopyMemory( lastSubStorageAddress, component, sizeof(T) );
 
@@ -431,18 +434,17 @@ namespace DvigEngine
             template<typename T>
             DV_FUNCTION_INLINE void CallCreate(dvmachword* argumentMemory, dvusize jobIndex) {
                 const T** result = (const T**)argumentMemory[ 0 ];
-                const char* stringID = (const char*)argumentMemory[ 1 ];
-                IData* data = (IData*)argumentMemory[ 2 ];
-                MemoryObject* memoryObject = AllocateObject(0, sizeof(T));
-                ICommon* baseObj = memoryObject->Unwrap<ICommon>();
-                baseObj->SetSID( &stringID[0] );
-                IObject* obj = (IObject*)baseObj;
-                obj->SetCreateeAndMemoryObject( (IObject**)result, memoryObject );
-                T* typedObj = (T*)obj;
+                const char* objectID = (const char*)argumentMemory[ 1 ];
+                IData* objectData = (IData*)argumentMemory[ 2 ];
+                const dvusize allocationPoolID = (const dvusize)m_RegistryData.m_TypeAllocationPoolID.Find( (dvuchar*)typeid(T).name() );
+                MemoryObject* memoryObject = AllocateObject(allocationPoolID, sizeof(T));
+                T* typedObj = (T*)memoryObject->Unwrap<T>();
+                typedObj->SetSID( &objectID[0] );
+                typedObj->SetCreateeAndMemoryObject( (IObject**)result, memoryObject );
                 *result = typedObj;
-                if (data == nullptr) { return; }
-                IData* objectData = typedObj->GetData();
-                Engine::CopyMemory(objectData, data, sizeof(typedObj->m_Data));
+                if (objectData == nullptr) { return; }
+                IData* actualObjectData = typedObj->GetData();
+                Engine::CopyMemory(actualObjectData, objectData, sizeof(typedObj->m_Data));
             }
 
         private:

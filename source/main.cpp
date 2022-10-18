@@ -24,7 +24,7 @@ int main()
 {
     MEMORY_POOL_DATA memoryPoolsData[4];
     memoryPoolsData[0].m_ByteWidth = 465536;
-    memoryPoolsData[1].m_ByteWidth = 465536;
+    memoryPoolsData[1].m_ByteWidth = 22465536;
     memoryPoolsData[2].m_ByteWidth = 465536;
     memoryPoolsData[3].m_ByteWidth = 465536;
 
@@ -53,37 +53,23 @@ int main()
     // void* value = hashMaps[0]->Find((*helloString)->GetData()->m_Chars);
     // std::cout << (dvmachword)value << std::endl;
 
-    // struct MyComponent : IComponent { dvint32 a = 1; };
-    // struct AnotherComponent : IComponent { dvint32 a = 2; };
-    // engine->RegisterComponent<MyComponent>();
-    // engine->RegisterComponent<AnotherComponent>();
-    // engine->RegisterSystem<ISystem>();
-    // // Create entities
-    // Entity* entities[2];
-    // ENTITY_DATA entityData;
-    // engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", &entityData);
-    // MyComponent component;
-    // AnotherComponent anotherComponent;
-    // engine->AddComponent<MyComponent>( entities[0], nullptr );
-    // engine->AddComponent<AnotherComponent>( entities[0], &anotherComponent );
-    // MyComponent* c1 = engine->GetComponent<MyComponent>( entities[0] );
-    // AnotherComponent* c2 = engine->GetComponent<AnotherComponent>( entities[0] );
-    // std::cout << c1->a << " " << c2->a << std::endl;
-    // std::cout << entities[0]->GetSID () << std::endl;
-
-    for (dvisize i = 0; i < 7 * 65; ++i)
-    {
-        char buff[1024];
-        buff[0] = 'i'; buff[1] = 'd'; buff[2] = '_';
-        _itoa( i, &buff[3], 10 );
-        // dvuchar* id = (dvuchar*)String::ConcateCharacters( (dvuchar*)"id_", (dvuchar*)&buff[0] )->GetData()->m_Address;
-        // std::cout << &id[0] << std::endl;
-        dvuint32 v = i;
-        if (i == 257) { v = 255; }
-        hashMaps[0]->Insert( (dvuchar*)&buff[0], (void*)(dvmachword)v );
-    }
-    void* value = hashMaps[0]->Find( (dvuchar*)"id_257" );
-    std::cout << "Return : " << (dvmachword)value << std::endl;
+    struct MyComponent : IComponent { dvint32 a = 1; dvint32 b = 2; };
+    struct AnotherComponent : IComponent { dvint32 a = 2; };
+    engine->RegisterComponent<MyComponent>();
+    engine->RegisterComponent<AnotherComponent>();
+    engine->RegisterSystem<ISystem>();
+    // Create entities
+    Entity* entities[2];
+    ENTITY_DATA entityData;
+    engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", &entityData);
+    MyComponent component;
+    AnotherComponent anotherComponent;
+    engine->AddComponent<MyComponent>( entities[0], nullptr );
+    engine->AddComponent<AnotherComponent>( entities[0], &anotherComponent );
+    MyComponent* c1 = engine->GetComponent<MyComponent>( entities[0] );
+    AnotherComponent* c2 = engine->GetComponent<AnotherComponent>( entities[0] );
+    std::cout << c1->a << " " << c2->a << std::endl;
+    std::cout << entities[0]->GetSID () << std::endl;
 
     engine->StopThreads();
     clock_t te = clock();

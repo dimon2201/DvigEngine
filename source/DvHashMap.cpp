@@ -41,18 +41,10 @@ void DvigEngine::HashMap::Insert(dvstring key, void* value)
     if (m_Data.m_HashTable[hash] == (dvmachword)nullptr)
     {
         // Empty slot
-        // std::cout << "a" << std::endl;
-        // static int a = 0;
-        // std::cout << "cnt " << a << std::endl;
-        // a += 1;
         this->InsertToMemoryBlock( hash, key, value );
     }
     else
     {
-        // std::cout << "b" << std::endl;
-        // static int b = 0;
-        // std::cout << "cnt " << b << std::endl;
-        // b += 1;
         // Possible collision
         // Search through the memory blocks for key match
         const dvusize memoryBlockEntryCount = m_Data.m_MemoryBlocks.GetData()->m_EntryCount;
@@ -63,16 +55,12 @@ void DvigEngine::HashMap::Insert(dvstring key, void* value)
             HASH_MAP_MEMORY_BLOCK* memoryBlock = memoryObject->Unwrap<HASH_MAP_MEMORY_BLOCK>();
             const dvusize entriesPerBlock = memoryBlock->m_EntryCount;
 
-            struct Entry { dvmachword chars; dvmachword value; };
             Entry* entries = (Entry*)&memoryBlock->m_Memory[0];
 
             for (dvisize j = 0; j < (dvisize)entriesPerBlock; ++j)
             {
-                // dvmachword* pair = (dvmachword*)memoryBlock;
-                // dvuchar* chars = (dvuchar*)pair[0];
                 dvuchar** chars = (dvuchar**)&entries[j].chars;
                 dvmachword* value = (dvmachword*)&entries[j].value;
-                // std::cout << "chars " << "n=" << entriesPerBlock << " b=" << i << " " << *chars << " " << *value << std::endl;
                 if (String::CompareCharacters(key, *chars) == DV_TRUE)
                 {
                     // Just update value for key
@@ -114,7 +102,6 @@ void* DvigEngine::HashMap::Find(dvstring key)
     if (String::CompareCharacters(key, chars) == DV_TRUE)
     {
         // First hit exact match
-        std::cout << "hit" << std::endl;
         return (void*)value;
     }
     else
@@ -129,7 +116,6 @@ void* DvigEngine::HashMap::Find(dvstring key)
             HASH_MAP_MEMORY_BLOCK* memoryBlock = memoryObject->Unwrap<HASH_MAP_MEMORY_BLOCK>();
             const dvusize entriesPerBlock = memoryBlock->m_EntryCount;
 
-            struct Entry { dvmachword chars; void* value; };
             Entry* entries = (Entry*)&memoryBlock->m_Memory[0];
 
             for (dvisize j = 0; j < (dvisize)entriesPerBlock; ++j)
@@ -142,9 +128,41 @@ void* DvigEngine::HashMap::Find(dvstring key)
                 if (String::CompareCharacters(key, *chars) == DV_TRUE)
                 {
                     // Just return a value
-                    // std::cout << "hit chars " << *chars << " " << (dvmachword)*value << std::endl;
                     return *value;
                 }
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+void* DvigEngine::HashMap::FindIndex(const dvint32 index)
+{
+    dvint32 searchIndex = index;
+    if (searchIndex < 0) { return nullptr; }
+
+    // Search through the memory blocks for index match
+    dvint32 cycle = 0;
+    const dvusize memoryBlockCount = m_Data.m_MemoryBlocks.GetData()->m_EntryCount;
+    for (dvisize i = 0; i < (dvisize)memoryBlockCount; ++i)
+    {
+        // Run through each memory block entry
+        MemoryObject* memoryObject = (MemoryObject*)m_Data.m_MemoryBlocks.Find( (dvint32)i );
+        HASH_MAP_MEMORY_BLOCK* memoryBlock = memoryObject->Unwrap<HASH_MAP_MEMORY_BLOCK>();
+        const dvusize entriesPerBlock = memoryBlock->m_EntryCount;
+
+        Entry* entries = (Entry*)&memoryBlock->m_Memory[0];
+
+        for (dvisize j = 0; j < (dvisize)entriesPerBlock; ++j, ++cycle)
+        {
+            dvuchar** chars = (dvuchar**)&entries[j].chars;
+            void** value = (void**)&entries[j].value;
+
+            if (searchIndex == cycle)
+            {
+                // Just return a value
+                return *value;
             }
         }
     }
