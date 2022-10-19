@@ -22,19 +22,17 @@ class MemoryPoolShell : IShell
 
 int main()
 {
-    MEMORY_POOL_DATA memoryPoolsData[4];
+    MEMORY_POOL_DATA memoryPoolsData[3];
     memoryPoolsData[0].m_ByteWidth = 465536;
     memoryPoolsData[1].m_ByteWidth = 22465536;
     memoryPoolsData[2].m_ByteWidth = 465536;
-    memoryPoolsData[3].m_ByteWidth = 465536;
 
     ENGINE_INPUT_DATA engineInputData;
     engineInputData.m_Version = DV_ENGINE_VERSION_NUMBER;
-    engineInputData.m_MemoryPoolsCount = 4u;
+    engineInputData.m_MemoryPoolsCount = 3u;
     engineInputData.m_MemoryPoolsData = memoryPoolsData;
     engineInputData.m_SystemMemoryPoolID = 1;
-    engineInputData.m_EntityStorageMemoryPoolID = 2;
-    engineInputData.m_ComponentStorageMemoryPoolID = 3;
+    engineInputData.m_StorageMemoryPoolID = 2;
     engineInputData.m_RequestedThreadCount = 1;
 
     Engine::Init(&engineInputData);
@@ -55,21 +53,49 @@ int main()
 
     struct MyComponent : IComponent { dvint32 a = 1; dvint32 b = 2; };
     struct AnotherComponent : IComponent { dvint32 a = 2; };
+    // class SystemInterface
+    // {
+    //     public:
+    //     virtual ~SystemInterface() {};
+    //     virtual void Update(Engine* engine, Entity* object) {};
+    //     dvuint32 val;
+    // };
+    // class MySystem : public SystemInterface
+    // {
+    //     public:
+    //     ~MySystem() {};
+    //     void Update(Engine* engine, Entity* object)
+    //     {
+
+    //     }
+    // };
+    class MySystem : public ISystem
+    {
+        public:
+        ~MySystem() {};
+        void Update(Engine* engine, Entity* entity)
+        {
+            AnotherComponent* component = engine->GetComponent<AnotherComponent>(entity);
+            std::cout << component->a << std::endl;
+        }
+    };
     engine->RegisterComponent<MyComponent>();
     engine->RegisterComponent<AnotherComponent>();
-    engine->RegisterSystem<ISystem>();
-    // Create entities
+    engine->RegisterSystem<MySystem>();
+    // // Create entities
     Entity* entities[2];
-    ENTITY_DATA entityData;
-    engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", &entityData);
+    // ENTITY_DATA entityData;
+    engine->Create<Entity>((const void** const)&entities[0], "EntityID_0", nullptr);
     MyComponent component;
     AnotherComponent anotherComponent;
-    engine->AddComponent<MyComponent>( entities[0], nullptr );
+    engine->AddComponent<MyComponent>( entities[0], &component );
     engine->AddComponent<AnotherComponent>( entities[0], &anotherComponent );
     MyComponent* c1 = engine->GetComponent<MyComponent>( entities[0] );
     AnotherComponent* c2 = engine->GetComponent<AnotherComponent>( entities[0] );
     std::cout << c1->a << " " << c2->a << std::endl;
     std::cout << entities[0]->GetSID () << std::endl;
+
+    engine->UpdateSystems();
 
     engine->StopThreads();
     clock_t te = clock();

@@ -102,20 +102,18 @@
 #define DV_MACRO_DECLARE_CREATION_DEPENDENT_CLASS(T) \
     public: \
         T(); \
-        virtual ~T() {};
+        virtual ~T() {}; \
 
 #define DV_MACRO_DECLARE_SINGLETON(T, function_access) \
     function_access: \
         static T* GetInstance(); \
     private: \
         T(); \
-        ~T(); \
         T(const T&) = delete; \
         T(T&&) = delete; \
         T& operator=(T&&) = delete; \
         void operator=(const T&) = delete; \
         void* operator new(dvuint64) = delete; \
-        void operator delete(void*) = delete; \
         static T* m_Instance;
 
 #define DV_MACRO_DEFINE_SINGLETON(T) \
@@ -185,6 +183,16 @@
     engine->Create<String>((const void** const)&array[index], id, nullptr); \
     String** var = &array[index]; \
     **var = text;
+
+#define DV_XMACRO_DEFINE_COMPONENT_LAYOUT_ARGS_2(T, _0T, _0V, ...) \
+    struct T : public IComponent \
+    { \
+        _0T _0V; \
+    }
+
+#define DV_XMACRO_DEFINE_COMPONENT_BLANK
+#define DV_XMACRO_XDEFINE_COMPONENT(T, ...) DV_MACRO_CONCATE(DV_XMACRO_DEFINE_COMPONENT_LAYOUT_ARGS_, DV_MACRO_ARGS_CNT(__VA_ARGS__))(T, __VA_ARGS__, DV_XMACRO_DEFINE_COMPONENT_BLANK)
+#define DV_XMACRO_DEFINE_COMPONENT(T, ...) DV_XMACRO_XDEFINE_COMPONENT(T, __VA_ARGS__)
 
 _DV_EOF
 

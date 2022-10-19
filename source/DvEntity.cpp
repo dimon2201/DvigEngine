@@ -1,19 +1,14 @@
+#include <iostream>
 #include "../include/DvigEngine.hpp"
 
-DvigEngine::ENTITY_DATA::ENTITY_DATA()
+void DvigEngine::ENTITY_DATA::Init(Engine* engine, Entity* entity)
 {
-    m_SubStorageAddress = Engine::Allocate(2, sizeof(IComponent));
-    m_SubStorageByteWidth = sizeof(IComponent);
-    m_ComponentCount = 1;
+    engine->GetData()->m_EntityCount += 1;
+    
+    m_SubStorageAddress = (void*)((dvmachword)entity + sizeof(Entity)); //Engine::Allocate(2, sizeof(IComponent));
+    m_SubStorageByteWidth = 0; //sizeof(IComponent);
+    m_ComponentCount = 0; //1;
     for (dvisize i = 0; i < DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT; ++i) {
         m_ComponentBits[i] = 0;
     }
-
-    IComponent* component = (IComponent*)m_SubStorageAddress;
-    dvuchar* typeName = (dvuchar*)typeid(IComponent).name();
-    const dvusize typeNameByteWidth = String::CharactersCount( typeName );
-    Engine::CopyMemory( &component->m_TypeName[0], &typeName[0], typeNameByteWidth );
-    component->m_TypeName[typeNameByteWidth] = 0; // last char always zero
-    component->m_LayoutByteWidth = sizeof(IComponent);
-    component->m_RegistryIndex = DV_NULL;
 }

@@ -37,11 +37,9 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
 
     // Start System memory pools
     dvmachint reservedMemoryPoolID = engineInputData->m_SystemMemoryPoolID;
-    dvmachint entityStorageMemoryPoolID = engineInputData->m_EntityStorageMemoryPoolID;
-    dvmachint componentStorageMemoryPoolID = engineInputData->m_ComponentStorageMemoryPoolID;
+    dvmachint storageMemoryPoolID = engineInputData->m_StorageMemoryPoolID;
     DvigEngine::MEMORY_POOL_DATA* reservedMemoryPoolData = &memoryPoolsData[reservedMemoryPoolID];
-    DvigEngine::MEMORY_POOL_DATA* entityStorageMemoryPoolData = &memoryPoolsData[entityStorageMemoryPoolID];
-    DvigEngine::MEMORY_POOL_DATA* componentStorageMemoryPoolData = &memoryPoolsData[componentStorageMemoryPoolID];
+    DvigEngine::MEMORY_POOL_DATA* storageMemoryPoolData = &memoryPoolsData[storageMemoryPoolID];
 
     // Memory allocation for Engine
     m_Instance = (DvigEngine::Engine*)DvigEngine::Engine::AllocateUsingData(reservedMemoryPoolData, sizeof(DvigEngine::Engine));
@@ -91,22 +89,17 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
     DvigEngine::Engine::CopyMemory(globalMemoryPool->GetData(), &globalMemoryPoolData, sizeof(DvigEngine::MEMORY_POOL_DATA));
 
     // Assign Storage memory pools (both Entity and Component) for Engine
-    entityStorageMemoryPoolData->m_ID = entityStorageMemoryPoolID;
-    componentStorageMemoryPoolData->m_ID = componentStorageMemoryPoolID;
-    DvigEngine::MemoryPool* entityStorageMemoryPool = m_Instance->GetMemoryPoolByID(entityStorageMemoryPoolID);
-    // DvigEngine::Engine::CopyMemory(entityStorageMemoryPool->GetData(), &entityStorageMemoryPoolData, sizeof(DvigEngine::MEMORY_POOL_DATA));
-    DvigEngine::MemoryPool* componentStorageMemoryPool = m_Instance->GetMemoryPoolByID(componentStorageMemoryPoolID);
+    storageMemoryPoolData->m_ID = storageMemoryPoolID;
     // DvigEngine::Engine::CopyMemory(componentStorageMemoryPool->GetData(), &componentStorageMemoryPoolData, sizeof(DvigEngine::MEMORY_POOL_DATA));
-    m_Instance->m_Data.m_MemoryPools[ entityStorageMemoryPoolID ].GetData()->m_ID = entityStorageMemoryPoolID;
-    m_Instance->m_Data.m_MemoryPools[ componentStorageMemoryPoolID ].GetData()->m_ID = componentStorageMemoryPoolID;
+    m_Instance->m_Data.m_MemoryPools[ storageMemoryPoolID ].GetData()->m_ID = storageMemoryPoolID;
 
     // Copy user input data to Engine
     DvigEngine::Engine::CopyMemory(&m_Instance->m_InputData, engineInputData, sizeof(ENGINE_INPUT_DATA));
     m_Instance->m_InputData.m_MemoryPoolsCount += 1;
     
+    m_Instance->m_Data.m_EntityCount = 0;
     // Initialize registry hashmap for Engine
-    m_Instance->m_RegistryData.m_EntityCount = 0;
-    m_Instance->m_RegistryData.m_EntityStorageAddress = entityStorageMemoryPoolData->m_AddressOffset;
+    m_Instance->m_RegistryData.m_StorageAddress = storageMemoryPoolData->m_AddressOffset;
     m_Instance->m_RegistryData.m_UniqueComponentCount = 0;
     m_Instance->m_RegistryData.m_UniqueSystemCount = 0;
     m_Instance->m_RegistryData.m_TypeAllocationPoolID.Init();
@@ -115,7 +108,7 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
 
     // Initialize allocation pool ID for basic types
     const dvuchar* const typeName = (const dvuchar* const)typeid(Entity).name();
-    m_Instance->m_RegistryData.m_TypeAllocationPoolID.Insert( (dvuchar*)typeName, (void*)componentStorageMemoryPoolID );
+    m_Instance->m_RegistryData.m_TypeAllocationPoolID.Insert( (dvuchar*)typeName, (void*)storageMemoryPoolID );
 }
 
 void DvigEngine::Engine::Free()
@@ -219,6 +212,11 @@ void DvigEngine::Engine::MoveMemory(void* dstAddress, void* srcAddress, dvusize 
     memmove(dstAddress, srcAddress, byteWidth);
 }
 
+void DvigEngine::Engine::SetMemory(void* dstAddress, dvmachword value, dvusize byteWidth)
+{
+    memset(dstAddress, value, byteWidth);
+}
+
 void DvigEngine::Engine::StartThreads()
 {
     for (dvisize i = 0; i < (dvisize)m_Data.m_RequestedThreadCount; ++i)
@@ -242,19 +240,24 @@ void DvigEngine::Engine::UpdateSystems()
 {
     const dvisize uniqueSystemCount = m_RegistryData.m_UniqueSystemCount;
     HashMap* const systemList = (HashMap* const)&m_RegistryData.m_Systems;
-    void* const storageAddress = m_RegistryData.m_EntityStorageAddress; // array of all Entities means Entity Storage
-    const dvisize entityCount = m_RegistryData.m_EntityCount;
+    MemoryObject* storageAddress = (MemoryObject*)m_RegistryData.m_StorageAddress; // array of all Entities means Entity Storage
+    const dvisize entityCount = m_Data.m_EntityCount;
 
     // Run through each System
     for (dvisize i = 0; i < uniqueSystemCount; ++i)
     {
         ISystem* system = (ISystem*)systemList->FindIndex( i );
-        std::cout << system->m_TypeName << std::endl;
+        void* entityCursor = (void*)storageAddress->GetData()->m_Address;
         
         // Run through each Entity
         for (dvisize i = 0; i < entityCount; ++i)
         {
+            Entity* entity = (Entity*)entityCursor;
+
+            // Update derived system
+            system->Update( m_Instance, entity );
             
+            entityCursor = (void*)((dvmachword)entityCursor + entity->m_Data.m_SubStorageByteWidth);
         }
     }
 }

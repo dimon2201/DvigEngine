@@ -18,8 +18,10 @@ namespace DvigEngine
 {
     /*** Forward declaration & Prototypes ***/
     class IShell;
-    class String;
     class MemoryObject;
+    class String;
+    class HashMap;
+    class Entity;
     class Engine;
 
     /*** Typenames ***/
@@ -201,6 +203,8 @@ namespace DvigEngine
     struct HASH_MAP_DATA : IData
     {
         public:
+            DV_FUNCTION_INLINE void Init(Engine* engine, HashMap* object) { };
+
             dvusize m_ListEntryCount;
             LinkedList m_MemoryBlocks;
             dvmachword m_HashTable[DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH];
@@ -236,14 +240,14 @@ namespace DvigEngine
             dvint32 m_RegistryIndex;
     };
 
-    class ISystem : IObject
+    class ISystem
     {
-        DV_MACRO_FRIENDS(DvigEngine::Engine)
-        DV_MACRO_DECLARE_SINGLETON(ISystem, public)
+        DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
         
         public:
-            virtual void Run(void* workMemory);
-
+            virtual ~ISystem() {};
+            virtual void Update(Engine* engine, Entity* entity) {};
+            
             dvstring m_TypeName;
             dvint32 m_RegistryIndex;
     };
@@ -251,7 +255,9 @@ namespace DvigEngine
     struct ENTITY_DATA : IData
     {
         public:
-            ENTITY_DATA();
+            DV_FUNCTION_INLINE ENTITY_DATA(Engine* engine, Entity* object) { Init( engine, object ); }
+
+            void Init(Engine* engine, Entity* object);
 
             void* m_SubStorageAddress;
             dvusize m_SubStorageByteWidth;
@@ -300,16 +306,14 @@ namespace DvigEngine
             dvuint32 m_MemoryPoolsCount;
             MEMORY_POOL_DATA* m_MemoryPoolsData;
             dvint32 m_SystemMemoryPoolID;
-            dvint32 m_EntityStorageMemoryPoolID;
-            dvint32 m_ComponentStorageMemoryPoolID;
+            dvint32 m_StorageMemoryPoolID;
             dvusize m_RequestedThreadCount;
     };
 
     struct ENGINE_REGISTRY_DATA : IData
     {
         public:
-            void* m_EntityStorageAddress;
-            dvusize m_EntityCount;
+            void* m_StorageAddress;
             dvint32 m_UniqueComponentCount;
             dvint32 m_UniqueSystemCount;
             HashMap m_TypeAllocationPoolID;
@@ -325,6 +329,7 @@ namespace DvigEngine
             JobQueue* m_JobQueues;
             dvusize m_MaxThreadCount;
             dvusize m_RequestedThreadCount;
+            dvusize m_EntityCount;
             void* m_UserData;
     };
 
@@ -344,6 +349,7 @@ namespace DvigEngine
             static void DeleteObject(MemoryObject** ppMemoryObject);
             static void CopyMemory(void* destAddress, void* srcAddress, dvusize byteWidth);
             static void MoveMemory(void* destAddress, void* srcAddress, dvusize byteWidth);
+            static void SetMemory(void* destAddress, dvmachword value, dvusize byteWidth);
 
             DV_FUNCTION_INLINE MemoryPool* GetMemoryPoolByID(dvusize memoryPoolID) {
                 DV_ASSERT_PTR(m_Instance)
@@ -368,19 +374,24 @@ namespace DvigEngine
             template<typename T>
             void RegisterSystem() {
                 dvuchar* typeName = (dvuchar*)typeid(T).name();
-                ++m_RegistryData.m_UniqueSystemCount;
+                const dvint32 systemIndex = ++m_RegistryData.m_UniqueSystemCount;
                 if (m_RegistryData.m_Systems.Find(typeName) != nullptr) { return; }
-                T::m_Instance = (T*)Engine::AllocateObject( 0, sizeof(T) )->GetData()->m_Address;
-                m_RegistryData.m_Systems.Insert( typeName, (void*)T::m_Instance );
+                T systemOnStack;
+                Engine::SetMemory( &systemOnStack.m_TypeName[0], 0, DV_MEMORY_COMMON_STRING_BYTE_WIDTH );
+                T* system = Engine::AllocateObject( 0, sizeof(T) )->Unwrap<T>();
+                Engine::CopyMemory( system, &systemOnStack, sizeof(T) );
+                Engine::CopyMemory( &system->m_TypeName[0], &typeName[0], String::CharactersCount( typeName ) );
+                system->m_RegistryIndex = systemIndex;
+                m_RegistryData.m_Systems.Insert( typeName, (void*)(dvmachword)system );
             }
 
             template<typename T>
-            void AddComponent(Entity* entity, IComponent* ccomponent) {
+            void AddComponent(Entity* entity, IComponent* component) {
+                DV_ASSERT_PTR(component)
+
                 dvuchar* typeName = (dvuchar*)typeid(T).name();
                 const dvusize typeNameByteWidth = String::CharactersCount( typeName );
                 const dvint32 registryIndex = (dvint32)(dvmachword)m_RegistryData.m_Components.Find( typeName );
-                T icomponent;
-                T* component = &icomponent;
                 Engine::CopyMemory( &component->m_TypeName[0], &typeName[0], typeNameByteWidth );
                 component->m_TypeName[typeNameByteWidth] = 0;
                 component->m_LayoutByteWidth = sizeof(T);
@@ -391,13 +402,13 @@ namespace DvigEngine
                 if ((entity->GetData()->m_ComponentBits[ maskIndex ] >> maskBit) & 1u) { return; }
                 entity->GetData()->m_ComponentBits[ maskIndex ] |= 1u << maskBit;
 
-                const dvint32 componentStorageMemoryPoolID = m_Instance->m_InputData.m_ComponentStorageMemoryPoolID;
-                MemoryPool* componentStorageMemoryPool = &m_Instance->GetData()->m_MemoryPools[componentStorageMemoryPoolID];
+                const dvint32 storageMemoryPoolID = m_Instance->m_InputData.m_StorageMemoryPoolID;
+                MemoryPool* storageMemoryPool = &m_Instance->GetData()->m_MemoryPools[storageMemoryPoolID];
                 
-                Engine::Allocate( componentStorageMemoryPoolID, sizeof(T) );
+                Engine::AllocateObject( storageMemoryPoolID, sizeof(T) )->Unwrap<void>();
                 void* const lastSubStorageAddress = (void* const)((dvmachword)entity->GetData()->m_SubStorageAddress + (dvmachword)entity->GetData()->m_SubStorageByteWidth);
                 void* const moveToAddress = (void* const)((dvmachword)lastSubStorageAddress + sizeof(T));
-                const dvusize moveByteWidth = (dvmachword)componentStorageMemoryPool->GetData()->m_AddressOffset - (dvmachword)lastSubStorageAddress;
+                const dvusize moveByteWidth = (dvmachword)storageMemoryPool->GetData()->m_AddressOffset - (dvmachword)lastSubStorageAddress;
                 Engine::MoveMemory( moveToAddress, lastSubStorageAddress, moveByteWidth );
                 Engine::CopyMemory( lastSubStorageAddress, component, sizeof(T) );
 
@@ -438,13 +449,16 @@ namespace DvigEngine
                 IData* objectData = (IData*)argumentMemory[ 2 ];
                 const dvusize allocationPoolID = (const dvusize)m_RegistryData.m_TypeAllocationPoolID.Find( (dvuchar*)typeid(T).name() );
                 MemoryObject* memoryObject = AllocateObject(allocationPoolID, sizeof(T));
-                T* typedObj = (T*)memoryObject->Unwrap<T>();
-                typedObj->SetSID( &objectID[0] );
-                typedObj->SetCreateeAndMemoryObject( (IObject**)result, memoryObject );
-                *result = typedObj;
-                if (objectData == nullptr) { return; }
-                IData* actualObjectData = typedObj->GetData();
-                Engine::CopyMemory(actualObjectData, objectData, sizeof(typedObj->m_Data));
+                T* typedObject = (T*)memoryObject->Unwrap<T>();
+                typedObject->SetSID( &objectID[0] );
+                typedObject->SetCreateeAndMemoryObject( (IObject**)result, memoryObject );
+                *result = typedObject;
+                if (objectData == nullptr) {
+                    typedObject->m_Data.Init( m_Instance, typedObject );
+                    return;
+                }
+                IData* actualObjectData = typedObject->GetData();
+                Engine::CopyMemory(actualObjectData, objectData, sizeof(typedObject->m_Data));
             }
 
         private:

@@ -66,9 +66,6 @@ void DvigEngine::HashMap::Insert(dvstring key, void* value)
                     // Just update value for key
                     MemoryObject* mo = Engine::AllocateObject(1, String::CharactersCount((dvuchar*)key));
                     memcpy(mo->GetData()->m_Address, &key[0], String::CharactersCount((dvuchar*)key));
-                    dvmachword newPair[2];
-                    newPair[0] = (dvmachword)key;
-                    newPair[1] = (dvmachword)value;
                     // pair[0] = newPair[0];
                     // pair[1] = newPair[1];
                     *chars = (dvuchar*)mo->GetData()->m_Address;
@@ -156,7 +153,6 @@ void* DvigEngine::HashMap::FindIndex(const dvint32 index)
 
         for (dvisize j = 0; j < (dvisize)entriesPerBlock; ++j, ++cycle)
         {
-            dvuchar** chars = (dvuchar**)&entries[j].chars;
             void** value = (void**)&entries[j].value;
 
             if (searchIndex == cycle)
@@ -184,15 +180,10 @@ void DvigEngine::HashMap::InsertToMemoryBlock(dvuint32 hash, dvstring key, void*
 {
     MemoryObject* mo = Engine::AllocateObject(1, String::CharactersCount((dvuchar*)key));
     memcpy(mo->GetData()->m_Address, &key[0], String::CharactersCount((dvuchar*)key));
-    dvmachword pair[2];
-    pair[0] = (dvmachword)mo->GetData()->m_Address;
-    pair[1] = (dvmachword)value;
 
     dvint32 memoryBlockCount = (const dvint32)m_Data.m_MemoryBlocks.GetData()->m_EntryCount;
-    dvusize memoryBlockEntryByteWidth = m_Data.m_MemoryBlocks.GetData()->m_EntryValueByteWidth;
     MemoryObject* memoryObject = (MemoryObject*)m_Data.m_MemoryBlocks.Find( memoryBlockCount - 1 );
     HASH_MAP_MEMORY_BLOCK* memoryBlock = memoryObject->Unwrap<HASH_MAP_MEMORY_BLOCK>();
-    dvmachword* pMemoryBlockEntryCount = &memoryBlock->m_EntryCount;
     dvuint32 memoryBlockEntryCount = memoryBlock->m_EntryCount;
     
     // Check if memory block is full
