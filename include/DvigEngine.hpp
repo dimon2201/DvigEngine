@@ -42,6 +42,7 @@ namespace DvigEngine
         typedef dvuint64        dvmachuint;
         typedef dvmachuint      dvmachword;
     #endif
+    typedef dvuint8             dvbool;
     typedef dvuint8             dvuchar;
     typedef dvmachint           dvisize;
     typedef size_t              dvusize;
@@ -319,6 +320,7 @@ namespace DvigEngine
             HashMap m_TypeAllocationPoolID;
             HashMap m_Components;
             HashMap m_Systems;
+            HashMap m_Objects;
     };
 
     struct ENGINE_DATA : IData
@@ -418,6 +420,8 @@ namespace DvigEngine
 
             template<typename T>
             DV_FUNCTION_INLINE T* GetComponent(Entity* entity) {
+                DV_ASSERT_PTR(entity)
+
                 void* componentAddress = entity->GetData()->m_SubStorageAddress;
                 for (dvisize i = 0; i < (dvisize)entity->GetData()->m_ComponentCount; ++i)
                 {
@@ -445,7 +449,7 @@ namespace DvigEngine
             template<typename T>
             DV_FUNCTION_INLINE void CallCreate(dvmachword* argumentMemory, dvusize jobIndex) {
                 const T** result = (const T**)argumentMemory[ 0 ];
-                const char* objectID = (const char*)argumentMemory[ 1 ];
+                dvuchar* objectID = (dvuchar*)argumentMemory[ 1 ];
                 IData* objectData = (IData*)argumentMemory[ 2 ];
                 const dvusize allocationPoolID = (const dvusize)m_RegistryData.m_TypeAllocationPoolID.Find( (dvuchar*)typeid(T).name() );
                 MemoryObject* memoryObject = AllocateObject(allocationPoolID, sizeof(T));
@@ -459,6 +463,7 @@ namespace DvigEngine
                 }
                 IData* actualObjectData = typedObject->GetData();
                 Engine::CopyMemory(actualObjectData, objectData, sizeof(typedObject->m_Data));
+                m_RegistryData.m_Objects.Insert( objectID, typedObject );
             }
 
         private:

@@ -34,6 +34,23 @@ int main()
     engineInputData.m_SystemMemoryPoolID = 1;
     engineInputData.m_StorageMemoryPoolID = 2;
     engineInputData.m_RequestedThreadCount = 1;
+    
+    /*
+        float myVertexBuffer[9];
+        BufferC bufferC;
+        buffer.CPUVisible = True;
+        buffer.GPUVisible = True;
+        buffer.pData = &myVertexBuffer;
+        Buffer buffer;
+        buffer->AddComponent<BufferC>(&bufferC);
+
+        GeometryC geomC;
+        geomC.pBuffer = &buffer;
+        Create<Entity>(&entity);
+
+        [---------------------]
+        [---------------------]
+    */
 
     Engine::Init(&engineInputData);
     Engine* engine = Engine::GetInstance();

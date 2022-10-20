@@ -1,5 +1,5 @@
-#include "../include/DvigEngine.hpp"
-#include "../include/DvigEngineMacros.hpp"
+#include "../../include/DvigEngine.hpp"
+#include "../../include/DvigEngineMacros.hpp"
 
 DvigEngine::STRING_DATA::STRING_DATA(const char* str)
 {

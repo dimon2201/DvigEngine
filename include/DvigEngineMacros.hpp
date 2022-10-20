@@ -88,7 +88,7 @@
         DV_FUNCTION_INLINE dvuchar* GetSID() { return &m_SID[0]; } \
         DV_FUNCTION_INLINE dvusize GetSIDByteWidth() { return m_SIDByteWidth; } \
     private: \
-        DV_FUNCTION_INLINE void SetSID(const char* stringID) { \
+        DV_FUNCTION_INLINE void SetSID(dvuchar* stringID) { \
             m_SIDByteWidth = 0; \
             while (stringID[m_SIDByteWidth] != 0) { m_SID[m_SIDByteWidth] = stringID[m_SIDByteWidth]; ++m_SIDByteWidth; } \
             m_SID[m_SIDByteWidth] = 0; \

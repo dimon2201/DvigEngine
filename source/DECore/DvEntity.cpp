@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../include/DvigEngine.hpp"
+#include "../../include/DvigEngine.hpp"
 
 void DvigEngine::ENTITY_DATA::Init(Engine* engine, Entity* entity)
 {

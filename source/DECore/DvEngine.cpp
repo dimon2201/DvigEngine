@@ -1,4 +1,4 @@
-#include "../include/DvigEngine.hpp"
+#include "../../include/DvigEngine.hpp"
 
 #include <iostream>
 #include <typeinfo>
