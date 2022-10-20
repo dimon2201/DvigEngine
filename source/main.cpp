@@ -7,19 +7,6 @@
 
 using namespace DvigEngine;
 
-class MemoryPoolShell : IShell
-{
-    public:
-        void printMemoryPoolInfo(Engine* engine)
-        {
-            MEMORY_POOL_DATA* mp0 = (MEMORY_POOL_DATA*)engine->GetMemoryPoolByID(0)->GetData();
-            MEMORY_POOL_DATA* mp1 = (MEMORY_POOL_DATA*)engine->GetMemoryPoolByID(1)->GetData();
-            
-            std::cout << "Pool 0 Address : " << (dvmachword)mp0->m_Address << std::endl;
-            std::cout << "Pool 1 Address : " << (dvmachword)mp1->m_Address << std::endl;
-        }
-};
-
 int main()
 {
     MEMORY_POOL_DATA memoryPoolsData[3];

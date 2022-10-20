@@ -87,19 +87,25 @@ namespace DvigEngine
         public:
             void* m_Address;
             dvusize m_ByteWidth;
-            dvmachword m_MemoryPoolID;
+            dvint32 m_MemoryPoolIndex;
     };
 
     class MemoryObject: public IObject
     {
         public:
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
-            DV_XMACRO_GETTER_DATA(MEMORY_OBJECT_DATA)
+
+            DV_FUNCTION_INLINE void* GetAddress() { return m_Data.m_Address; };
+            DV_FUNCTION_INLINE dvusize GetByteWidth() { return m_Data.m_ByteWidth; };
+            DV_FUNCTION_INLINE dvint32 GetMemoryPoolIndex() { return m_Data.m_MemoryPoolIndex; };
 
             template<typename T>
             DV_FUNCTION_INLINE T* Unwrap() {
                 return (T*)m_Data.m_Address;
             }
+
+        private:
+            DV_XMACRO_GETTER_DATA(MEMORY_OBJECT_DATA)
 
         private:
             MEMORY_OBJECT_DATA m_Data;
@@ -108,7 +114,7 @@ namespace DvigEngine
     struct MEMORY_POOL_DATA : IData
     {
         public:
-            dvmachword m_ID;
+            dvint32 m_Index;
             dvstring m_Label;
             void* m_Address;
             void* m_AddressOffset;
@@ -119,11 +125,18 @@ namespace DvigEngine
     {
         public:
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
+
+            DV_FUNCTION_INLINE dvint32 GetIndex() { return m_Data.m_Index; };
+            DV_FUNCTION_INLINE dvuchar* GetLabel() { return &m_Data.m_Label[0]; };
+            DV_FUNCTION_INLINE void* GetAddress() { return m_Data.m_Address; };
+            DV_FUNCTION_INLINE void* GetAddressOffset() { return m_Data.m_AddressOffset; };
+            DV_FUNCTION_INLINE dvusize GetByteWidth() { return m_Data.m_ByteWidth; };
+
+        private:
             DV_XMACRO_GETTER_DATA(MEMORY_POOL_DATA)
 
         private:
             MEMORY_POOL_DATA m_Data;
-            MemoryObject* m_MemoryObject;
     };
 
     struct STRING_DATA : IData
@@ -140,7 +153,9 @@ namespace DvigEngine
     {
         public:
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
-            DV_XMACRO_GETTER_DATA(STRING_DATA)
+
+            DV_FUNCTION_INLINE dvuchar* GetString() { return &m_Data.m_Chars[0]; };
+            DV_FUNCTION_INLINE dvusize GetByteWidth() { return m_Data.m_ByteWidth; };
 
             static dvusize CharactersCount(dvstring op1);
             static dvresult Compare(STRING_DATA* op1, STRING_DATA* op2);
@@ -150,6 +165,9 @@ namespace DvigEngine
             DV_FUNCTION_INLINE String& operator=(const char* str) { m_Data = STRING_DATA(str); return *this; }
             DV_FUNCTION_INLINE dvuchar* operator()() { return &m_Data.m_Chars[0]; }
             
+        private:
+            DV_XMACRO_GETTER_DATA(STRING_DATA)
+
         private:
             STRING_DATA m_Data;
     };
@@ -172,7 +190,11 @@ namespace DvigEngine
     {
         public:
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
-            DV_XMACRO_GETTER_DATA(LINKED_LIST_DATA)
+
+            DV_FUNCTION_INLINE dvusize GetEntryCount() { return m_Data.m_EntryCount; };
+            DV_FUNCTION_INLINE dvusize GetEntryByteWidth() { return m_Data.m_EntryByteWidth; };
+            DV_FUNCTION_INLINE dvusize GetEntryValueByteWidth() { return m_Data.m_EntryValueByteWidth; };
+            DV_FUNCTION_INLINE LINKED_LIST_DATA_ENTRY* GetListHead() { return m_Data.m_Head; };
 
             LINKED_LIST_DATA_ENTRY* MakeEntry(void* const value);
 
@@ -180,6 +202,9 @@ namespace DvigEngine
             dvint32 Insert(void* const value);
             void Replace(const dvint32 index, void* const value);
             void* Find(const dvint32 index);
+
+        private:
+            DV_XMACRO_GETTER_DATA(LINKED_LIST_DATA)
 
         private:
             LINKED_LIST_DATA m_Data;
@@ -197,7 +222,7 @@ namespace DvigEngine
             HASH_MAP_DATA_ENTRY() {};
             HASH_MAP_DATA_ENTRY(String* key, void* value);
             
-            STRING_DATA m_Key;
+            void* m_Key;
             void* m_Value;
     };
 
@@ -211,13 +236,15 @@ namespace DvigEngine
             dvmachword m_HashTable[DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH];
     };
 
-    struct Entry { dvmachword chars; void* value; };
-
     class HashMap : public IObject
     {
         public:
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
-            DV_XMACRO_GETTER_DATA(HASH_MAP_DATA)
+
+            DV_FUNCTION_INLINE dvusize GetListEntryCount() { return m_Data.m_ListEntryCount; };
+            DV_FUNCTION_INLINE LinkedList* GetList() { return &m_Data.m_MemoryBlocks; };
+            DV_FUNCTION_INLINE dvmachword* GetHashTable() { return &m_Data.m_HashTable[0]; };
+            DV_FUNCTION_INLINE void SetHashTableEntry(dvint32 index, dvmachword value) { m_Data.m_HashTable[index] = value; };
 
             static dvuint32 Hash(dvstring input);
 
@@ -227,9 +254,12 @@ namespace DvigEngine
             void* FindIndex(const dvint32 index);
 
         private:
+            DV_XMACRO_GETTER_DATA(HASH_MAP_DATA)
+
             MemoryObject* AllocateBlock();
             void InsertToMemoryBlock(dvuint32 hash, dvstring key, void* value);
 
+        private:
             HASH_MAP_DATA m_Data;
     };
 
@@ -269,10 +299,19 @@ namespace DvigEngine
     class Entity : public IObject
     {
         public:
-            DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
-            DV_XMACRO_GETTER_DATA(ENTITY_DATA)
+            DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell, DvigEngine::ENTITY_DATA)
         
+            DV_FUNCTION_INLINE void* GetSubStorageAddress() { return m_Data.m_SubStorageAddress; };
+            DV_FUNCTION_INLINE dvusize GetSubStorageByteWidth() { return m_Data.m_SubStorageByteWidth; };
+            DV_FUNCTION_INLINE dvusize GetComponentCount() { return m_Data.m_ComponentCount; };
+            DV_FUNCTION_INLINE dvbool GetComponentBit(dvuint32 arrayOffset, dvuint32 bitOffset) { return (m_Data.m_ComponentBits[arrayOffset] >> bitOffset) & 1; };
+            DV_FUNCTION_INLINE void SetComponentBit(dvuint32 arrayOffset, dvuint32 bit) { m_Data.m_ComponentBits[arrayOffset] |= bit; };
+
         private:
+            DV_XMACRO_GETTER_DATA(ENTITY_DATA)
+
+        private:
+            static dvuint32 m_EntityCount;
             ENTITY_DATA m_Data;
     };
 
@@ -290,11 +329,20 @@ namespace DvigEngine
     {
         public:
             DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
-            DV_XMACRO_GETTER_DATA(JOB_QUEUE_DATA)
+
+            DV_FUNCTION_INLINE std::atomic<dvmachword>& GetStopFlag() { return m_Data.m_StopFlag; };
+            DV_FUNCTION_INLINE std::atomic<dvmachword>& GetReturnFlag() { return m_Data.m_ReturnFlag; };
+            DV_FUNCTION_INLINE std::thread& GetThread() { return m_Data.m_Thread; };
+            DV_FUNCTION_INLINE dvusize GetJobCount() { return m_Data.m_JobCount; };
+            DV_FUNCTION_INLINE dvmachword GetJobArgument(dvint32 arrayOffset) { return m_Data.m_JobArguments[arrayOffset]; };
+            DV_FUNCTION_INLINE dvcallback& GetJob(dvint32 arrayOffset) { return m_Data.m_Jobs[arrayOffset]; };
             
             void Push(dvcallback callback, void* argumentMemory, const dvusize argumentCount);
             void Start();
             void Stop();
+
+        private:
+            DV_XMACRO_GETTER_DATA(JOB_QUEUE_DATA)
 
         private:
             JOB_QUEUE_DATA m_Data;
@@ -331,7 +379,6 @@ namespace DvigEngine
             JobQueue* m_JobQueues;
             dvusize m_MaxThreadCount;
             dvusize m_RequestedThreadCount;
-            dvusize m_EntityCount;
             void* m_UserData;
     };
 
@@ -341,7 +388,13 @@ namespace DvigEngine
         DV_MACRO_DECLARE_SINGLETON(Engine, public)
 
         public:
-            DV_XMACRO_GETTER_DATA(ENGINE_DATA)
+            DV_FUNCTION_INLINE MemoryPool* GetMemoryPools() { return &m_Data.m_MemoryPools[0]; };
+            DV_FUNCTION_INLINE dvmachword GetCurrentJobQueueCursor() { return m_Data.m_CurrentJobQueueCursor; };
+            DV_FUNCTION_INLINE JobQueue* GetJobQueues() { return &m_Data.m_JobQueues[0]; };
+            DV_FUNCTION_INLINE dvusize GetMaxThreadCount() { return m_Data.m_MaxThreadCount; };
+            DV_FUNCTION_INLINE dvusize GetRequestedThreadCount() { return m_Data.m_RequestedThreadCount; };
+            DV_FUNCTION_INLINE void* GetUserData() { return m_Data.m_UserData; };
+            DV_FUNCTION_INLINE void SetUserData(void* address) { m_Data.m_UserData = address; };
 
             static void Init(ENGINE_INPUT_DATA* engineInputData);
             static void Free();
@@ -465,6 +518,9 @@ namespace DvigEngine
                 Engine::CopyMemory(actualObjectData, objectData, sizeof(typedObject->m_Data));
                 m_RegistryData.m_Objects.Insert( objectID, typedObject );
             }
+
+        private:
+            DV_XMACRO_GETTER_DATA(ENGINE_DATA)
 
         private:
             ENGINE_INPUT_DATA m_InputData;

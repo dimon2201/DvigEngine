@@ -25,7 +25,8 @@ compile :
 # $(call COMPILE,$(SOURCES_DIR))
 # Compile and link DECore library
 	$(call COMPILE, source/DECore)
-	$(call MAKE_LIB, libs/DECore.a)
+	$(call CXX_OBJECT)
+# $(call MAKE_LIB, libs/DECore.a)
 
 link: compile
 # $(MAKE_LIB)

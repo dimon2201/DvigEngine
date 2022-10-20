@@ -81,7 +81,7 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
 
     // Assign Global memory pool for Engine
     DvigEngine::MEMORY_POOL_DATA globalMemoryPoolData;
-    globalMemoryPoolData.m_ID = memoryPoolsCount;
+    globalMemoryPoolData.m_Index = memoryPoolsCount;
     globalMemoryPoolData.m_Address = globalMemoryPoolAddress;
     globalMemoryPoolData.m_AddressOffset = globalMemoryPoolData.m_Address;
     globalMemoryPoolData.m_ByteWidth = globalMemoryPoolByteWidth;
@@ -89,15 +89,13 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
     DvigEngine::Engine::CopyMemory(globalMemoryPool->GetData(), &globalMemoryPoolData, sizeof(DvigEngine::MEMORY_POOL_DATA));
 
     // Assign Storage memory pools (both Entity and Component) for Engine
-    storageMemoryPoolData->m_ID = storageMemoryPoolID;
-    // DvigEngine::Engine::CopyMemory(componentStorageMemoryPool->GetData(), &componentStorageMemoryPoolData, sizeof(DvigEngine::MEMORY_POOL_DATA));
-    m_Instance->m_Data.m_MemoryPools[ storageMemoryPoolID ].GetData()->m_ID = storageMemoryPoolID;
+    storageMemoryPoolData->m_Index = storageMemoryPoolID;
+    m_Instance->m_Data.m_MemoryPools[ storageMemoryPoolID ].GetData()->m_Index = storageMemoryPoolID;
 
     // Copy user input data to Engine
     DvigEngine::Engine::CopyMemory(&m_Instance->m_InputData, engineInputData, sizeof(ENGINE_INPUT_DATA));
     m_Instance->m_InputData.m_MemoryPoolsCount += 1;
     
-    m_Instance->m_Data.m_EntityCount = 0;
     // Initialize registry hashmap for Engine
     m_Instance->m_RegistryData.m_StorageAddress = storageMemoryPoolData->m_AddressOffset;
     m_Instance->m_RegistryData.m_UniqueComponentCount = 0;
@@ -146,13 +144,13 @@ DvigEngine::MemoryObject* DvigEngine::Engine::AllocateObject(dvusize memoryPoolI
     void* prevPoolOffset = memoryPoolInfo->m_AddressOffset;
     memoryPoolInfo->m_AddressOffset = (void*)((dvusize)memoryPoolInfo->m_AddressOffset + allocByteWidth);
 
-    DvigEngine::MemoryObject* memoryChunk = (DvigEngine::MemoryObject*)prevPoolOffset;
-    DvigEngine::MEMORY_OBJECT_DATA* memoryChunkData = (DvigEngine::MEMORY_OBJECT_DATA*)memoryChunk->GetData();
-    memoryChunkData->m_Address = (void*)((dvusize)prevPoolOffset + sizeof(DvigEngine::MemoryObject));
-    memoryChunkData->m_ByteWidth = byteWidth;
-    memoryChunkData->m_MemoryPoolID = memoryPoolID;
+    DvigEngine::MemoryObject* memoryObject = (DvigEngine::MemoryObject*)prevPoolOffset;
+    DvigEngine::MEMORY_OBJECT_DATA* memoryObjectData = (DvigEngine::MEMORY_OBJECT_DATA*)memoryObject->GetData();
+    memoryObjectData->m_Address = (void*)((dvusize)prevPoolOffset + sizeof(DvigEngine::MemoryObject));
+    memoryObjectData->m_ByteWidth = byteWidth;
+    memoryObjectData->m_MemoryPoolIndex = memoryPoolID;
 
-    return memoryChunk;
+    return memoryObject;
 }
 
 void* DvigEngine::Engine::AllocateUsingData(MEMORY_POOL_DATA* memoryPool, dvusize byteWidth)
@@ -169,11 +167,11 @@ void* DvigEngine::Engine::AllocateUsingData(MEMORY_POOL_DATA* memoryPool, dvusiz
 void DvigEngine::Engine::DeleteObject(MemoryObject** ppMemoryObject)
 {
     MemoryObject* memoryObject = *ppMemoryObject;
-    const dvisize memoryPoolID = memoryObject->m_Data.m_MemoryPoolID;
-    MemoryPool* const memoryPool = &m_Instance->m_Data.m_MemoryPools[memoryPoolID];
+    const dvint32 memoryPoolIndex = memoryObject->GetMemoryPoolIndex();
+    MemoryPool* const memoryPool = &m_Instance->m_Data.m_MemoryPools[memoryPoolIndex];
 
     void* curAddress = (void*)memoryObject;
-    dvusize deletedObjectByteWidth = sizeof(MemoryObject) + memoryObject->GetData()->m_ByteWidth;
+    dvusize deletedObjectByteWidth = sizeof(MemoryObject) + memoryObject->GetByteWidth();
     void* nextAddress = (void*)((dvmachword)curAddress + deletedObjectByteWidth);
     
     MemoryObject* curMemoryObject = (MemoryObject*)curAddress;
@@ -241,13 +239,13 @@ void DvigEngine::Engine::UpdateSystems()
     const dvisize uniqueSystemCount = m_RegistryData.m_UniqueSystemCount;
     HashMap* const systemList = (HashMap* const)&m_RegistryData.m_Systems;
     MemoryObject* storageAddress = (MemoryObject*)m_RegistryData.m_StorageAddress; // array of all Entities means Entity Storage
-    const dvisize entityCount = m_Data.m_EntityCount;
+    const dvisize entityCount = Entity::m_EntityCount;
 
     // Run through each System
     for (dvisize i = 0; i < uniqueSystemCount; ++i)
     {
         ISystem* system = (ISystem*)systemList->FindIndex( i );
-        void* entityCursor = (void*)storageAddress->GetData()->m_Address;
+        void* entityCursor = (void*)storageAddress->GetAddress();
         
         // Run through each Entity
         for (dvisize i = 0; i < entityCount; ++i)

@@ -27,7 +27,7 @@ void DvigEngine::LinkedList::Replace(const dvint32 index, void* const value)
         entry = entry->m_PrevAddress;
     }
 
-    Engine::CopyMemory(entry->m_Value->GetData()->m_Address, value, m_Data.m_EntryValueByteWidth);
+    Engine::CopyMemory(entry->m_Value->GetAddress(), value, m_Data.m_EntryValueByteWidth);
 }
 
 void* DvigEngine::LinkedList::Find(const dvint32 index)

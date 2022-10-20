@@ -1,9 +1,11 @@
 #include <iostream>
 #include "../../include/DvigEngine.hpp"
 
+DvigEngine::dvuint32 DvigEngine::Entity::m_EntityCount = 0u;
+
 void DvigEngine::ENTITY_DATA::Init(Engine* engine, Entity* entity)
 {
-    engine->GetData()->m_EntityCount += 1;
+    Entity::m_EntityCount += 1;
     
     m_SubStorageAddress = (void*)((dvmachword)entity + sizeof(Entity)); //Engine::Allocate(2, sizeof(IComponent));
     m_SubStorageByteWidth = 0; //sizeof(IComponent);

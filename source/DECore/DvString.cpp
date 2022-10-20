@@ -59,7 +59,7 @@ DvigEngine::MemoryObject* DvigEngine::String::ConcateCharacters(dvstring op1, dv
     const dvusize op2ByteWidth = String::CharactersCount(op2);
 
     MemoryObject* memoryObject = Engine::AllocateObject(0, op1ByteWidth + op2ByteWidth);
-    dvuchar* chars = (dvuchar*)memoryObject->GetData()->m_Address;
+    dvuchar* chars = (dvuchar*)memoryObject->GetAddress();
     
     Engine::CopyMemory(chars, &op1[0], op1ByteWidth);
     Engine::CopyMemory(&chars[op1ByteWidth], &op2[0], op2ByteWidth);
