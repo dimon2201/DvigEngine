@@ -1,13 +1,18 @@
-#include "../../include/DvigEngine.hpp"
+#include "../../include/DECore.hpp"
 
-void DvigEngine::LinkedList::Init(const DvigEngine::dvusize entryValueByteWidth)
+void DvigEngine::LINKED_LIST_DATA::Init(Engine* engine, LinkedList* object)
+{
+    
+}
+
+void DvigEngine::LinkedList::Init(const DvigEngine::deusize entryValueByteWidth)
 {
     m_Data.m_EntryCount = 0;
     m_Data.m_EntryByteWidth = sizeof(LINKED_LIST_DATA_ENTRY) + sizeof(MemoryObject) + entryValueByteWidth;
     m_Data.m_EntryValueByteWidth = entryValueByteWidth;
 }
 
-DvigEngine::dvint32 DvigEngine::LinkedList::Insert(void* const value)
+DvigEngine::deint32 DvigEngine::LinkedList::Insert(void* const value)
 {
     LINKED_LIST_DATA_ENTRY* newEntry = MakeEntry(value);
 
@@ -17,10 +22,10 @@ DvigEngine::dvint32 DvigEngine::LinkedList::Insert(void* const value)
     return m_Data.m_EntryCount++;
 }
 
-void DvigEngine::LinkedList::Replace(const dvint32 index, void* const value)
+void DvigEngine::LinkedList::Replace(const deint32 index, void* const value)
 {
-    dvint32 cycle = 0;
-    dvint32 indexOfInterest = m_Data.m_EntryCount - index - 1;
+    deint32 cycle = 0;
+    deint32 indexOfInterest = m_Data.m_EntryCount - index - 1;
     LINKED_LIST_DATA_ENTRY* entry = m_Data.m_Head;
     while (entry->m_PrevAddress != nullptr && cycle++ < indexOfInterest)
     {
@@ -30,10 +35,10 @@ void DvigEngine::LinkedList::Replace(const dvint32 index, void* const value)
     Engine::CopyMemory(entry->m_Value->GetAddress(), value, m_Data.m_EntryValueByteWidth);
 }
 
-void* DvigEngine::LinkedList::Find(const dvint32 index)
+void* DvigEngine::LinkedList::Find(const deint32 index)
 {
-    dvint32 cycle = 0;
-    dvint32 indexOfInterest = m_Data.m_EntryCount - index - 1;
+    deint32 cycle = 0;
+    deint32 indexOfInterest = m_Data.m_EntryCount - index - 1;
     LINKED_LIST_DATA_ENTRY* entry = m_Data.m_Head;
     while (entry->m_PrevAddress != nullptr && cycle++ < indexOfInterest)
     {

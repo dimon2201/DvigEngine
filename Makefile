@@ -2,31 +2,42 @@ TARGET 				:= main.exe
 CXXFLAGS 			:= -std=c++11 -O0 #-Werror -Wpedantic -Wall -pedantic
 CXX					:= g++
 CXX_SOURCE    		= $(CXX) $(CXXFLAGS) -c $(1) -o $(2) &&
-CXX_OBJECT    		= $(CXX) $(CXXFLAGS) -o main.exe $(OBJECT_FILES)
-MAKE_LIB			= ar -rcs $(1) $(OBJECT_FILES)
+CXX_OBJECT    		= $(CXX) $(CXXFLAGS) -o main.exe $(1) libs/DECore.a
+MAKE_LIB			= ar -rcs $(1) $(call OBJECT_FILES, $(2))
+CLEAR_FOLDER		= @del $(subst /,\,$(call PARSE_DIR, $(1), $(LIB_EXTENSION)))
+CLEAR_OBJECTS		= @del $(subst /,\,$(call OBJECT_FILES, $(1)))
 
+LIB_EXTENSION		:= .a
 SOURCE_EXTENSION	:= .cpp
 SOURCES_DIR 		:= source/
 BUILD_DIR       	:= build/
-PARSE_DIR			= $(wildcard $(1)*$(SOURCE_EXTENSION)) $(foreach d,$(dir $(wildcard $(1)*/.)),$(call PARSE_DIR,$(d)))
-SOURCE_FILES  		= $(call PARSE_DIR,$(SOURCES_DIR))
-OBJECT_FILES    	= $(addprefix $(BUILD_DIR),$(notdir $(subst $(SOURCE_EXTENSION),.o,$(SOURCE_FILES))))
+PARSE_DIR			= $(wildcard $(1)*$(2)) $(foreach d,$(dir $(wildcard $(1)*/.)),$(call PARSE_DIR,$(d),$(2)))
+SOURCE_FILES  		= $(call PARSE_DIR,$(1),$(SOURCE_EXTENSION))
+OBJECT_FILES    	= $(addprefix $(BUILD_DIR),$(notdir $(subst $(SOURCE_EXTENSION),.o,$(call SOURCE_FILES, $(1)))))
 TO_OBJECT       	= $(addprefix $(BUILD_DIR),$(notdir $(subst $(SOURCE_EXTENSION),.o,$(1))))
-COMPILE         	= $(foreach d, $(SOURCE_FILES),$(call CXX_SOURCE,$(d),$(call TO_OBJECT,$(d)))) @echo
+COMPILE         	= $(foreach d, $(call SOURCE_FILES, $(1)),$(call CXX_SOURCE,$(d),$(call TO_OBJECT,$(d)))) @echo
 
 all: pre-compile compile link clear
 
 pre-compile :
+	@echo DvigEngine gets compiled ...
 	@del /f /s /q "build\"
 	@rmdir build
 	@mkdir build
+	cd libs/ && echo This file is not a library. This file is used for Makefile to work correctly. Leave it in the libs folder. > _not_a_library && cd ../
 
 compile :
 # $(call COMPILE,$(SOURCES_DIR))
-# Compile and link DECore library
-	$(call COMPILE, source/DECore)
-	$(call CXX_OBJECT)
-# $(call MAKE_LIB, libs/DECore.a)
+# Compile and link libraries
+	$(call CLEAR_FOLDER, libs/)
+	$(call COMPILE, source/DECore/)
+	$(call MAKE_LIB, libs/DECore.a, source/DECore/)
+	$(call CLEAR_OBJECTS, source/DECore/)
+	$(call COMPILE, source/DEGraphics/)
+	$(call MAKE_LIB, libs/DEGraphics.a, source/DEGraphics/)
+	$(call CLEAR_OBJECTS, source/DEGraphics/)
+# Compile main example
+	$(call CXX_SOURCE, source/main.cpp, build/main.o) $(call CXX_OBJECT, build/main.o)
 
 link: compile
 # $(MAKE_LIB)

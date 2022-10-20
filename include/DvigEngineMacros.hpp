@@ -85,19 +85,19 @@
     public: \
         T(); \
         virtual ~T() {}; \
-        DV_FUNCTION_INLINE dvuchar* GetSID() { return &m_SID[0]; } \
-        DV_FUNCTION_INLINE dvusize GetSIDByteWidth() { return m_SIDByteWidth; } \
+        DV_FUNCTION_INLINE deuchar* GetSID() { return &m_SID[0]; } \
+        DV_FUNCTION_INLINE deusize GetSIDByteWidth() { return m_SIDByteWidth; } \
     private: \
-        DV_FUNCTION_INLINE void SetSID(dvuchar* stringID) { \
+        DV_FUNCTION_INLINE void SetSID(deuchar* stringID) { \
             m_SIDByteWidth = 0; \
             while (stringID[m_SIDByteWidth] != 0) { m_SID[m_SIDByteWidth] = stringID[m_SIDByteWidth]; ++m_SIDByteWidth; } \
             m_SID[m_SIDByteWidth] = 0; \
         }; \
     private: \
-        dvmachword m_IID; \
-        dvuchar m_SID[DV_MEMORY_COMMON_STRING_BYTE_WIDTH]; \
-        dvusize m_SIDByteWidth; \
-        dvuchar m_ExtraData[DV_MEMORY_COMMON_EXTRA_DATA];
+        demachword m_IID; \
+        deuchar m_SID[DV_MEMORY_COMMON_STRING_BYTE_WIDTH]; \
+        deusize m_SIDByteWidth; \
+        deuchar m_ExtraData[DV_MEMORY_COMMON_EXTRA_DATA];
 
 #define DV_MACRO_DECLARE_CREATION_DEPENDENT_CLASS(T) \
     public: \
@@ -113,7 +113,7 @@
         T(T&&) = delete; \
         T& operator=(T&&) = delete; \
         void operator=(const T&) = delete; \
-        void* operator new(dvuint64) = delete; \
+        void* operator new(deuint64) = delete; \
         static T* m_Instance;
 
 #define DV_MACRO_DEFINE_SINGLETON(T) \
@@ -134,8 +134,8 @@
         DV_FUNCTION_INLINE T* GetData() { DV_MACRO_GETTER((T*)&m_Data) };
 
 #define DV_XMACRO_STRING(T, TO) \
-    dvusize strByteWidth = 0; \
-    dvuchar* strCopy = (dvuchar*)T; \
+    deusize strByteWidth = 0; \
+    deuchar* strCopy = (deuchar*)T; \
     while (*strCopy != 0) { TO.m_Chars[strByteWidth++] = *strCopy++; }
 
 #define DV_XMACRO_XCONCATE(A, B) A ## B
@@ -163,20 +163,20 @@
 #define DV_XMACRO_XFRIENDS(...) DV_MACRO_CONCATE(DV_XMACRO_FRIENDS_SEQ_, DV_MACRO_ARGS_CNT(__VA_ARGS__))(__VA_ARGS__, DV_XMACRO_FRIEND_BLANK)
 #define DV_MACRO_FRIENDS(...) DV_XMACRO_XFRIENDS(__VA_ARGS__)
 
-#define DV_XMACRO_PUSH_JOB_ARGS_1(_0, ...) argumentMemory[0] = (dvmachword)_0 ;
-#define DV_XMACRO_PUSH_JOB_ARGS_2(_0, _1, ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ;
-#define DV_XMACRO_PUSH_JOB_ARGS_3(_0, _1, _2, ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ; argumentMemory[2] = (dvmachword)_2 ;
-#define DV_XMACRO_PUSH_JOB_ARGS_4(_0, _1, _2, _3, ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ; argumentMemory[2] = (dvmachword)_2 ; argumentMemory[3] = (dvmachword)_3 ;
-#define DV_XMACRO_PUSH_JOB_ARGS_5(_0, _1, _2, _3, _4, ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ; argumentMemory[2] = (dvmachword)_2 ; argumentMemory[3] = (dvmachword)_3 ; argumentMemory[4] = (dvmachword)_4 ;
-#define DV_XMACRO_PUSH_JOB_ARGS_6(_0, _1, _2, _3, _4, _5, ...) argumentMemory[0] = (dvmachword)_0 ; argumentMemory[1] = (dvmachword)_1 ; argumentMemory[2] = (dvmachword)_2 ; argumentMemory[3] = (dvmachword)_3 ; argumentMemory[4] = (dvmachword)_4 ; argumentMemory[5] = (dvmachword)_5 ;
+#define DV_XMACRO_PUSH_JOB_ARGS_1(_0, ...) argumentMemory[0] = (demachword)_0 ;
+#define DV_XMACRO_PUSH_JOB_ARGS_2(_0, _1, ...) argumentMemory[0] = (demachword)_0 ; argumentMemory[1] = (demachword)_1 ;
+#define DV_XMACRO_PUSH_JOB_ARGS_3(_0, _1, _2, ...) argumentMemory[0] = (demachword)_0 ; argumentMemory[1] = (demachword)_1 ; argumentMemory[2] = (demachword)_2 ;
+#define DV_XMACRO_PUSH_JOB_ARGS_4(_0, _1, _2, _3, ...) argumentMemory[0] = (demachword)_0 ; argumentMemory[1] = (demachword)_1 ; argumentMemory[2] = (demachword)_2 ; argumentMemory[3] = (demachword)_3 ;
+#define DV_XMACRO_PUSH_JOB_ARGS_5(_0, _1, _2, _3, _4, ...) argumentMemory[0] = (demachword)_0 ; argumentMemory[1] = (demachword)_1 ; argumentMemory[2] = (demachword)_2 ; argumentMemory[3] = (demachword)_3 ; argumentMemory[4] = (demachword)_4 ;
+#define DV_XMACRO_PUSH_JOB_ARGS_6(_0, _1, _2, _3, _4, _5, ...) argumentMemory[0] = (demachword)_0 ; argumentMemory[1] = (demachword)_1 ; argumentMemory[2] = (demachword)_2 ; argumentMemory[3] = (demachword)_3 ; argumentMemory[4] = (demachword)_4 ; argumentMemory[5] = (demachword)_5 ;
 #define DV_XMACRO_XPUSH_JOB(...) DV_MACRO_CONCATE(DV_XMACRO_PUSH_JOB_ARGS_, DV_MACRO_ARGS_CNT(__VA_ARGS__))(__VA_ARGS__)
 #define DV_XMACRO_PUSH_JOB(T, E, ...) \
-    const dvisize argumentCount = DV_MACRO_ARGS_CNT(__VA_ARGS__); \
-    dvmachword argumentMemory[DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT]; \
+    const deisize argumentCount = DV_MACRO_ARGS_CNT(__VA_ARGS__); \
+    demachword argumentMemory[DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT]; \
     DV_XMACRO_XPUSH_JOB(__VA_ARGS__) \
     m_Instance->m_Data.m_CurrentJobQueueCursor++; \
     if (m_Instance->m_Data.m_CurrentJobQueueCursor >= m_Instance->m_Data.m_RequestedThreadCount) { m_Instance->m_Data.m_CurrentJobQueueCursor = 0; } \
-    auto l = [] (dvmachword* arg0, dvusize arg1) { E->T(arg0, arg1); }; \
+    auto l = [] (demachword* arg0, deusize arg1) { E->T(arg0, arg1); }; \
     m_Instance->m_Data.m_JobQueues[m_Instance->m_Data.m_CurrentJobQueueCursor].Push(l, &argumentMemory[0], argumentCount);
 
 #define DV_XMACRO_CREATE_STRING(array, index, var, id, text) \
