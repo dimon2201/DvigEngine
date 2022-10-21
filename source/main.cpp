@@ -19,19 +19,27 @@ int main()
     engineInputData.m_StorageMemoryPoolID = 3;
     engineInputData.m_RequestedThreadCount = 1;
 
-    DV_XMACRO_DEFINE_COMPONENT( MyComponent, demachword, _m_Reserved );
-
     Engine::Init(&engineInputData);
-    Engine* engine = Engine::GetInstance();
+    Engine* engine = Engine::GetClassInstance();
 
-    engine->RegisterComponent <MyComponent> ();
+    DV_XMACRO_DEFINE_COMPONENT( MyComponent1, deuint32, a, deuint32, b );
+    DV_XMACRO_DEFINE_COMPONENT( MyComponent2, deuint32, a );
+    engine->RegisterComponent <MyComponent1> ();
+    engine->RegisterComponent <MyComponent2> ();
 
     Prototype* prototype[1];
     engine->ObjectCreate <Prototype> ( &prototype[0], "Prototype_0", nullptr );
-    engine->PrototypeSetComponent <MyComponent> ( prototype[0] );
+    engine->PrototypeSetComponent <MyComponent1> ( prototype[0] );
+    engine->PrototypeSetComponent <MyComponent2> ( prototype[0] );
 
-    std::cout << engine->GetMemoryPoolByID( 2 )->GetAddressOffset() << std::endl;
-    std::cout << engine->GetMemoryPoolByID( 3 )->GetAddressOffset() << std::endl;
+    Instance* protoInstance0 = engine->PrototypeInstantiate ( "Prototype_0_Instance_0", prototype[0] );
+    MyComponent1 myComponent1; myComponent1.a = 255;
+    MyComponent2 myComponent2; myComponent2.a = 128;
+    engine->InstanceAddComponent <MyComponent1> ( protoInstance0, &myComponent1 );
+    engine->InstanceAddComponent <MyComponent2> ( protoInstance0, &myComponent2 );
+    MyComponent1* getMyComponent1 = engine->InstanceGetComponent <MyComponent1> ( protoInstance0 );
+    MyComponent2* getMyComponent2 = engine->InstanceGetComponent <MyComponent2> ( protoInstance0 );
+    std::cout << getMyComponent1->a << " " << getMyComponent2->a << std::endl;
 
     Engine::Free();
 

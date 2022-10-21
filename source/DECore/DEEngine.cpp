@@ -110,8 +110,8 @@ void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
     m_Instance->m_RegistryData.m_Systems.Init();
 
     // Initialize allocation pool ID for basic types
-    const deuchar* const typeName = (const deuchar* const)typeid(Entity).name();
-    m_Instance->m_RegistryData.m_TypeAllocationPoolID.Insert( (deuchar*)typeName, (void*)(demachword)storageMemoryPoolID );
+    const deuchar* const typeName = (const deuchar* const)typeid(Prototype).name();
+    m_Instance->m_RegistryData.m_TypeAllocationPoolID.Insert( (deuchar*)typeName, (void*)(demachword)prototypeStorageMemoryPoolID );
 }
 
 void DvigEngine::Engine::Free()

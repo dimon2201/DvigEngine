@@ -83,8 +83,6 @@
 
 #define DV_XMACRO_DECLARE_COMMON_CLASS(T) \
     public: \
-        T(); \
-        virtual ~T() {}; \
         DV_FUNCTION_INLINE deuchar* GetSID() { return &m_SID[0]; } \
         DV_FUNCTION_INLINE deusize GetSIDByteWidth() { return m_SIDByteWidth; } \
     private: \
@@ -94,19 +92,19 @@
             m_SID[m_SIDByteWidth] = 0; \
         }; \
     private: \
+        void* m_Engine; \
         demachword m_IID; \
         deuchar m_SID[DV_MEMORY_COMMON_STRING_BYTE_WIDTH]; \
         deusize m_SIDByteWidth; \
         deuchar m_ExtraData[DV_MEMORY_COMMON_EXTRA_DATA];
 
-#define DV_MACRO_DECLARE_CREATION_DEPENDENT_CLASS(T) \
+#define DV_XMACRO_DECLARE_CREATION_DEPENDENT_CLASS(T) \
     public: \
-        T(); \
-        virtual ~T() {}; \
+        T();
 
 #define DV_MACRO_DECLARE_SINGLETON(T, function_access) \
     function_access: \
-        static T* GetInstance(); \
+        static T* GetClassInstance(); \
     private: \
         T(); \
         T(const T&) = delete; \
@@ -118,7 +116,7 @@
 
 #define DV_MACRO_DEFINE_SINGLETON(T) \
     T* T::m_Instance = nullptr; \
-    T* T::GetInstance() { DV_ASSERT_PTR(m_Instance); return m_Instance; }
+    T* T::GetClassInstance() { DV_ASSERT_PTR(m_Instance); return m_Instance; }
 
 #define DV_MACRO_GETTER(T) \
     return T;
@@ -184,14 +182,32 @@
     String** var = &array[index]; \
     **var = text;
 
-#define DV_XMACRO_DEFINE_COMPONENT_LAYOUT_ARGS_2(T, _0T, _0V, ...) \
-    struct T : IComponent \
+#define DV_XMACRO_XDEFINE_COMPONENT_OPEN(T) \
+    struct T : public IComponent \
     { \
-        private: \
-            _0T _0V; \
+        T() { \
+            const char* typeName = typeid(T).name(); \
+            Engine::CopyMemory( &m_TypeName[0], &typeName[0], String::CharactersCount( (const deuchar*)typeName ) ); \
+            m_LayoutByteWidth = sizeof(T); \
+        }
+#define DV_XMACRO_XDEFINE_COMPONENT_CLOSE \
     }
-#define DV_XMACRO_DEFINE_COMPONENT_BLANK
-#define DV_XMACRO_XDEFINE_COMPONENT(T, ...) DV_MACRO_CONCATE(DV_XMACRO_DEFINE_COMPONENT_LAYOUT_ARGS_, DV_MACRO_ARGS_CNT(__VA_ARGS__))(T, __VA_ARGS__, DV_XMACRO_DEFINE_COMPONENT_BLANK)
+#define DV_XMACRO_XDEFINE_COMPONENT_LAYOUT_ARGS_1(T, ...) \
+    DV_XMACRO_XDEFINE_COMPONENT_OPEN(T) \
+    DV_XMACRO_XDEFINE_COMPONENT_CLOSE
+#define DV_XMACRO_XDEFINE_COMPONENT_LAYOUT_ARGS_2(T, _0T, _0V, ...) \
+    DV_XMACRO_XDEFINE_COMPONENT_OPEN(T) \
+        public: \
+            _0T _0V; \
+    DV_XMACRO_XDEFINE_COMPONENT_CLOSE
+#define DV_XMACRO_XDEFINE_COMPONENT_LAYOUT_ARGS_4(T, _0T, _0V, _1T, _1V ...) \
+    DV_XMACRO_XDEFINE_COMPONENT_OPEN(T) \
+        public: \
+            _0T _0V; \
+            _1T _1V; \
+    DV_XMACRO_XDEFINE_COMPONENT_CLOSE
+#define DV_XMACRO_XDEFINE_COMPONENT_BLANK
+#define DV_XMACRO_XDEFINE_COMPONENT(T, ...) DV_MACRO_CONCATE(DV_XMACRO_XDEFINE_COMPONENT_LAYOUT_ARGS_, DV_MACRO_ARGS_CNT(__VA_ARGS__))(T, __VA_ARGS__)
 #define DV_XMACRO_DEFINE_COMPONENT(T, ...) DV_XMACRO_XDEFINE_COMPONENT(T, __VA_ARGS__)
 
 _DV_EOF
