@@ -17,17 +17,17 @@ int main()
     engineInputData.m_StorageMemoryPoolID = 2;
     engineInputData.m_RequestedThreadCount = 1;
 
+    DV_XMACRO_DEFINE_COMPONENT( MyComponent, demachword, _m_Reserved );
+
     Engine::Init(&engineInputData);
     Engine* engine = Engine::GetInstance();
 
-    DynamicBuffer* dyBuffers[1];
-    engine->Create<DynamicBuffer>((const void**)&dyBuffers[0], "MyDynamicBuffer_0", nullptr);
-
-    deint32 value = 255;
-    dyBuffers[0]->CopyToBuffer( &value, sizeof(deint32) );
-    dyBuffers[0]->RequestFromBuffer( 0, &value, sizeof(deint32) );
-    std::cout << value << std::endl;
+    engine->RegisterComponent <MyComponent> ();
     
+    Prototype* prototype[1];
+    engine->ObjectCreate <Prototype> ( &prototype[0], "Prototype_0", nullptr );
+    engine->PrototypeSetComponent <MyComponent> ( prototype[0] );
+
     Engine::Free();
 
     // Prototype** monster;

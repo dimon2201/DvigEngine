@@ -19,7 +19,7 @@ void DvigEngine::DynamicBuffer::CopyToBuffer(const void* dataAddress, const deus
     {
         const deusize newByteWidth = m_Data.m_AllocatedByteWidth + byteWidth;
         const deusize newAllocatedByteWidth = m_Data.m_AheadByteWidth + byteWidth;
-        m_Data.m_Address = DvigEngine::Engine::AllocateObject( memoryPoolIndex, newAllocatedByteWidth )->Unwrap<void>();
+        m_Data.m_Address = DvigEngine::Engine::ObjectAllocate( memoryPoolIndex, newAllocatedByteWidth )->Unwrap<void>();
         m_Data.m_AddressOffset = m_Data.m_Address;
         Engine::CopyMemory( m_Data.m_AddressOffset, (void*)dataAddress, byteWidth );
         m_Data.m_AddressOffset = (void*)((demachword)m_Data.m_Address + newByteWidth);
@@ -31,7 +31,7 @@ void DvigEngine::DynamicBuffer::CopyToBuffer(const void* dataAddress, const deus
     {
         const deusize newByteWidth = m_Data.m_AllocatedByteWidth + byteWidth;
         const deusize newAllocatedByteWidth = m_Data.m_AllocatedByteWidth + m_Data.m_AheadByteWidth + byteWidth;
-        void* const tempAddress = DvigEngine::Engine::AllocateObject( memoryPoolIndex, newAllocatedByteWidth )->Unwrap<void>();
+        void* const tempAddress = DvigEngine::Engine::ObjectAllocate( memoryPoolIndex, newAllocatedByteWidth )->Unwrap<void>();
         Engine::CopyMemory( m_Data.m_AddressOffset, (void*)dataAddress, byteWidth );
         m_Data.m_AddressOffset = (void*)((demachword)tempAddress + newAllocatedByteWidth);
         m_Data.m_ByteWidth = newByteWidth;

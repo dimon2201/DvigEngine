@@ -185,11 +185,11 @@
     **var = text;
 
 #define DV_XMACRO_DEFINE_COMPONENT_LAYOUT_ARGS_2(T, _0T, _0V, ...) \
-    struct T : public IComponent \
+    struct T : IComponent \
     { \
-        _0T _0V; \
+        private: \
+            _0T _0V; \
     }
-
 #define DV_XMACRO_DEFINE_COMPONENT_BLANK
 #define DV_XMACRO_XDEFINE_COMPONENT(T, ...) DV_MACRO_CONCATE(DV_XMACRO_DEFINE_COMPONENT_LAYOUT_ARGS_, DV_MACRO_ARGS_CNT(__VA_ARGS__))(T, __VA_ARGS__, DV_XMACRO_DEFINE_COMPONENT_BLANK)
 #define DV_XMACRO_DEFINE_COMPONENT(T, ...) DV_XMACRO_XDEFINE_COMPONENT(T, __VA_ARGS__)

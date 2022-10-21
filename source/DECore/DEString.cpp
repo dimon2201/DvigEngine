@@ -12,10 +12,10 @@ DvigEngine::STRING_DATA::STRING_DATA(const char* str)
 
 void DvigEngine::STRING_DATA::Init(Engine* engine, String* object)
 {
-    
+
 }
 
-DvigEngine::deusize DvigEngine::String::CharactersCount(destring op1)
+DvigEngine::deusize DvigEngine::String::CharactersCount(const destring op1)
 {
     deuchar* op1Copy = (deuchar*)op1;
     while (*++op1Copy != 0);
@@ -42,7 +42,7 @@ DvigEngine::deresult DvigEngine::String::Compare(STRING_DATA* op1, STRING_DATA* 
     return DV_TRUE;
 }
 
-DvigEngine::deresult DvigEngine::String::CompareCharacters(destring op1, destring op2)
+DvigEngine::deresult DvigEngine::String::CompareCharacters(const destring op1, const destring op2)
 {
     const deusize op1ByteWidth = String::CharactersCount(op1);
     const deusize op2ByteWidth = String::CharactersCount(op2);
@@ -63,7 +63,7 @@ DvigEngine::MemoryObject* DvigEngine::String::ConcateCharacters(destring op1, de
     const deusize op1ByteWidth = String::CharactersCount(op1);
     const deusize op2ByteWidth = String::CharactersCount(op2);
 
-    MemoryObject* memoryObject = Engine::AllocateObject(0, op1ByteWidth + op2ByteWidth);
+    MemoryObject* memoryObject = Engine::ObjectAllocate(0, op1ByteWidth + op2ByteWidth);
     deuchar* chars = (deuchar*)memoryObject->GetAddress();
     
     Engine::CopyMemory(chars, &op1[0], op1ByteWidth);

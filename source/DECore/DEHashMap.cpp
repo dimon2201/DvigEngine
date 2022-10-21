@@ -11,7 +11,7 @@ void DvigEngine::HASH_MAP_DATA::Init(Engine* engine, HashMap* object)
 
 }
 
-DvigEngine::deuint32 DvigEngine::HashMap::Hash(destring input)
+DvigEngine::deuint32 DvigEngine::HashMap::Hash(const destring input)
 {
     deuint32 hash = 0u;
     deuchar* string = (deuchar*)input;
@@ -67,7 +67,7 @@ void DvigEngine::HashMap::Insert(destring key, void* value)
                 if (String::CompareCharacters(key, *chars) == DV_TRUE)
                 {
                     // Just update value for key
-                    MemoryObject* mo = Engine::AllocateObject(1, String::CharactersCount((deuchar*)key));
+                    MemoryObject* mo = Engine::ObjectAllocate(1, String::CharactersCount((deuchar*)key));
                     Engine::CopyMemory( mo->GetAddress(), &key[0], String::CharactersCount((deuchar*)key) );
                     *chars = (deuchar*)mo->GetAddress();
                     *value = (demachword)value;
@@ -83,7 +83,7 @@ void DvigEngine::HashMap::Insert(destring key, void* value)
     }
 }
 
-void* DvigEngine::HashMap::Find(destring key)
+void* DvigEngine::HashMap::Find(const destring key)
 {
     deuint32 hash = HashMap::Hash(key);
     struct Entry { demachword chars; demachword value; };
@@ -92,7 +92,7 @@ void* DvigEngine::HashMap::Find(destring key)
     if (entry == nullptr) { return nullptr; }
 
     // MemoryObject* memoryObject = (MemoryObject*)m_Data.m_LinkedList.Find( index );
-    deuchar* chars = (deuchar*)entry->m_Key;
+    const deuchar* chars = (const deuchar*)entry->m_Key;
     void* value = (void*)entry->m_Value;
 
     // std::cout << "chars : " << chars << " " << key << std::endl;
@@ -169,7 +169,7 @@ void* DvigEngine::HashMap::FindIndex(const deint32 index)
 
 DvigEngine::MemoryObject* DvigEngine::HashMap::AllocateBlock()
 {
-    MemoryObject* memoryObject = Engine::AllocateObject( 1, sizeof(HASH_MAP_MEMORY_BLOCK) );
+    MemoryObject* memoryObject = Engine::ObjectAllocate( 1, sizeof(HASH_MAP_MEMORY_BLOCK) );
     HASH_MAP_MEMORY_BLOCK* hashMapMemoryBlock = memoryObject->Unwrap<HASH_MAP_MEMORY_BLOCK>();
     m_Data.m_MemoryBlocks.Insert( (void*)memoryObject );
     hashMapMemoryBlock->m_EntryCount = 0;
@@ -179,7 +179,7 @@ DvigEngine::MemoryObject* DvigEngine::HashMap::AllocateBlock()
 
 void DvigEngine::HashMap::InsertToMemoryBlock(deuint32 hash, destring key, void* value)
 {
-    MemoryObject* mo = Engine::AllocateObject(1, String::CharactersCount((deuchar*)key));
+    MemoryObject* mo = Engine::ObjectAllocate(1, String::CharactersCount((deuchar*)key));
     Engine::CopyMemory( mo->GetAddress(), &key[0], String::CharactersCount((deuchar*)key) );
 
     deint32 memoryBlockCount = (const deint32)m_Data.m_MemoryBlocks.GetEntryCount();

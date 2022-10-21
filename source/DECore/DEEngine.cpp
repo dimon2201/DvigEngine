@@ -155,7 +155,7 @@ void* DvigEngine::Engine::Allocate(deusize memoryPoolID, deusize byteWidth)
     return prevPoolOffset;
 }
 
-DvigEngine::MemoryObject* DvigEngine::Engine::AllocateObject(deusize memoryPoolID, deusize byteWidth)
+DvigEngine::MemoryObject* DvigEngine::Engine::ObjectAllocate(deusize memoryPoolID, deusize byteWidth)
 {
     DV_ASSERT_PTR(m_Instance)
     DV_ASSERT(byteWidth)
@@ -186,7 +186,7 @@ void* DvigEngine::Engine::AllocateUsingData(MEMORY_POOL_DATA* memoryPool, deusiz
     return prevPoolOffset;
 }
 
-void DvigEngine::Engine::DeleteObject(MemoryObject** ppMemoryObject)
+void DvigEngine::Engine::ObjectDelete(MemoryObject** ppMemoryObject)
 {
     MemoryObject* memoryObject = *ppMemoryObject;
     const deint32 memoryPoolIndex = memoryObject->GetMemoryPoolIndex();
