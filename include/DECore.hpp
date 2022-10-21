@@ -26,6 +26,7 @@ namespace DvigEngine
     class DynamicBuffer;
     class ISystem;
     class Entity;
+    class Prototype;
     class JobQueue;
     class Engine;
 
@@ -327,6 +328,7 @@ namespace DvigEngine
         
         public:
             virtual ~ISystem() {};
+
             virtual void Update(Engine* engine, Entity* entity) {};
             
             destring m_TypeName;
@@ -361,6 +363,31 @@ namespace DvigEngine
         private:
             static deuint32 m_EntityCount;
             ENTITY_DATA m_Data;
+    };
+
+    struct PROTOTYPE_DATA : IData
+    {
+        public:
+            void Init(Engine* engine, Prototype* object);
+
+            deusize m_ComponentCount;
+            dedword m_ComponentBits[DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT];
+    };
+
+    class Prototype : public IObject
+    {
+        public:
+            DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell, DvigEngine::PROTOTYPE_DATA)
+        
+            DV_FUNCTION_INLINE deusize GetComponentCount() { return m_Data.m_ComponentCount; };
+            DV_FUNCTION_INLINE debool GetComponentBit(deuint32 arrayOffset, deuint32 bitOffset) { return (m_Data.m_ComponentBits[arrayOffset] >> bitOffset) & 1u; };
+            
+        private:
+            DV_XMACRO_GETTER_DATA(PROTOTYPE_DATA)
+
+        private:
+            static deuint32 m_PrototypeCount;
+            PROTOTYPE_DATA m_Data;
     };
 
     struct JOB_QUEUE_DATA : IData

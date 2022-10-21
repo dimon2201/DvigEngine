@@ -27,8 +27,16 @@ int main()
     dyBuffers[0]->CopyToBuffer( &value, sizeof(deint32) );
     dyBuffers[0]->RequestFromBuffer( 0, &value, sizeof(deint32) );
     std::cout << value << std::endl;
-
+    
     Engine::Free();
+
+    // Prototype** monster;
+    // engine->Create <Prototype> ( monster );
+    // monster->AddComponent <Geometry> ( &mesh );
+    // monster->AddComponent <Script> ( &script );
+
+    // Instance* monster_Instance0 = monster->Instantiate(  );
+    // monster_Instance0->SetComponent <Script> ( &userScript );
 
     std::cout << "Success!" << std::endl;
 
