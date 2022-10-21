@@ -4,17 +4,19 @@ using namespace DvigEngine;
 
 int main()
 {
-    MEMORY_POOL_DATA memoryPoolsData[3];
+    MEMORY_POOL_DATA memoryPoolsData[4];
     memoryPoolsData[0].m_ByteWidth = 465536;
     memoryPoolsData[1].m_ByteWidth = 465536;
     memoryPoolsData[2].m_ByteWidth = 465536;
+    memoryPoolsData[3].m_ByteWidth = 465536;
 
     ENGINE_INPUT_DATA engineInputData;
     engineInputData.m_Version = DV_ENGINE_VERSION_NUMBER;
-    engineInputData.m_MemoryPoolsCount = 3u;
+    engineInputData.m_MemoryPoolsCount = 4u;
     engineInputData.m_MemoryPoolsData = memoryPoolsData;
     engineInputData.m_SystemMemoryPoolID = 1;
-    engineInputData.m_StorageMemoryPoolID = 2;
+    engineInputData.m_PrototypeStorageMemoryPoolID = 2;
+    engineInputData.m_StorageMemoryPoolID = 3;
     engineInputData.m_RequestedThreadCount = 1;
 
     DV_XMACRO_DEFINE_COMPONENT( MyComponent, demachword, _m_Reserved );
@@ -23,10 +25,13 @@ int main()
     Engine* engine = Engine::GetInstance();
 
     engine->RegisterComponent <MyComponent> ();
-    
+
     Prototype* prototype[1];
     engine->ObjectCreate <Prototype> ( &prototype[0], "Prototype_0", nullptr );
     engine->PrototypeSetComponent <MyComponent> ( prototype[0] );
+
+    std::cout << engine->GetMemoryPoolByID( 2 )->GetAddressOffset() << std::endl;
+    std::cout << engine->GetMemoryPoolByID( 3 )->GetAddressOffset() << std::endl;
 
     Engine::Free();
 

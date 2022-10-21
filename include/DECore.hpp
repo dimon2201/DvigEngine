@@ -442,6 +442,7 @@ namespace DvigEngine
             deuint32 m_MemoryPoolsCount;
             MEMORY_POOL_DATA* m_MemoryPoolsData;
             deint32 m_SystemMemoryPoolID;
+            deint32 m_PrototypeStorageMemoryPoolID;
             deint32 m_StorageMemoryPoolID;
             deusize m_RequestedThreadCount;
     };
@@ -482,6 +483,7 @@ namespace DvigEngine
             DV_FUNCTION_INLINE deusize GetRequestedThreadCount() { return m_Data.m_RequestedThreadCount; };
             DV_FUNCTION_INLINE void* GetUserData() { return m_Data.m_UserData; };
             DV_FUNCTION_INLINE MemoryPool* GetMemoryPoolByID(const deint32 memoryPoolID) { return &(m_Instance->m_Data.m_MemoryPools[memoryPoolID]); }
+            DV_FUNCTION_INLINE ENGINE_INPUT_DATA* GetPrivateInputData() { return &m_InputData; };
             DV_FUNCTION_INLINE void SetUserData(void* address) { m_Data.m_UserData = address; };
 
             static void Init(ENGINE_INPUT_DATA* engineInputData);
