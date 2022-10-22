@@ -52,10 +52,13 @@
 #define DV_MEMORY_MiB                                   DV_MEMORY_KiB * DV_MEMORY_KiB
 #define DV_MEMORY_GiB                                   DV_MEMORY_KiB * DV_MEMORY_MiB
 
+#define DV_MAX_DWORD_VALUE                              0xFFFFFFFFU
+#define DV_MAX_QWORD_VALUE                              0xFFFFFFFFFFFFFFFFULL
+
 #define DV_MEMORY_COMMON_STRING_BYTE_WIDTH              32
 #define DV_MEMORY_COMMON_HASH_MAP_TABLE_SIZE            1024
 #define DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH      DV_MEMORY_COMMON_HASH_MAP_TABLE_SIZE * DV_MACRO_ARCH_WORD_BYTE_WIDTH
-#define DV_MEMORY_COMMON_EXTRA_DATA                     DV_MACRO_ARCH_WORD_BYTE_WIDTH
+#define DV_MEMORY_COMMON_EXTRA_DATA                     1 * DV_MACRO_ARCH_WORD_BYTE_WIDTH
 
 #define DV_MEMORY_POOL_RESERVED_ID                      0
 #define DV_MEMORY_POOL_BYTE_WIDTH                       32 * DV_MEMORY_MiB

@@ -319,6 +319,7 @@ namespace DvigEngine
         public:
             destring m_TypeName;
             deusize m_LayoutByteWidth;
+            deint32 m_RegistryIndex;
     };
 
     class ISystem
@@ -386,6 +387,10 @@ namespace DvigEngine
             void* m_InstanceSubStorageAddress;
             deusize m_InstanceSubStorageByteWidth;
             deusize m_InstanceLayoutByteWidth;
+            deusize m_SharedComponentCount;
+            void* m_SharedComponentSubStorageAddress;
+            deusize m_SharedComponentSubStorageByteWidth;
+            dedword m_SharedComponentBits[DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT];
             deusize m_ComponentCount;
             dedword m_ComponentBits[DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT];
     };
@@ -395,9 +400,14 @@ namespace DvigEngine
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell, DvigEngine::PROTOTYPE_DATA)
 
         public:
+            DV_FUNCTION_INLINE deusize GetInstanceCount() { return m_Data.m_InstanceCount; };
             DV_FUNCTION_INLINE deusize GetInstanceLayoutSize() { return m_Data.m_InstanceLayoutByteWidth; };
             DV_FUNCTION_INLINE void* GetInstanceSubStorageAddress() { return m_Data.m_InstanceSubStorageAddress; };
             DV_FUNCTION_INLINE deusize GetInstanceSubStorageSize() { return m_Data.m_InstanceSubStorageByteWidth; };
+            DV_FUNCTION_INLINE void* GetSharedComponentSubStorageAddress() { return m_Data.m_SharedComponentSubStorageAddress; };
+            DV_FUNCTION_INLINE deusize GetSharedComponentSubStorageSize() { return m_Data.m_SharedComponentSubStorageByteWidth; };
+            DV_FUNCTION_INLINE deusize GetSharedComponentCount() { return m_Data.m_SharedComponentCount; };
+            DV_FUNCTION_INLINE debool GetSharedComponentBit(deuint32 arrayOffset, deuint32 bitOffset) { return (m_Data.m_SharedComponentBits[arrayOffset] >> bitOffset) & 1u; };
             DV_FUNCTION_INLINE deusize GetComponentCount() { return m_Data.m_ComponentCount; };
             DV_FUNCTION_INLINE debool GetComponentBit(deuint32 arrayOffset, deuint32 bitOffset) { return (m_Data.m_ComponentBits[arrayOffset] >> bitOffset) & 1u; };
 
@@ -566,59 +576,122 @@ namespace DvigEngine
             }
 
             template<typename T>
-            DV_FUNCTION_INLINE void PrototypeSetComponent(Prototype* const prototype) {
+            DV_FUNCTION_INLINE void PrototypeAddSharedComponent(Prototype* const prototype, IComponent* const component) {
                 const deuchar* const typeName = (const deuchar* const)typeid(T).name();
                 const deint32 registryIndex = (deint32)(demachword)m_RegistryData.m_Components.Find( typeName );
                 const deint32 maskIndex = (deint32)((dedword)registryIndex >> 5u);
                 const dedword maskBit = 1u << ((dedword)registryIndex & 31u);
-                if ((prototype->m_Data.m_ComponentBits[ maskIndex ] >> maskBit) & 1u) { return; };
+                if ((prototype->m_Data.m_ComponentBits[ maskIndex ] >> maskBit) & 1u) { return; } // check base
                 prototype->m_Data.m_InstanceLayoutByteWidth += sizeof(T);
                 prototype->m_Data.m_ComponentCount += 1;
                 prototype->m_Data.m_ComponentBits[ maskIndex ] |= 1u << maskBit;
+
+                if (component == nullptr) { return; }
+
+                if ((prototype->m_Data.m_SharedComponentBits[ maskIndex ] >> maskBit) & 1u) { return; } // check shared
+                
+                const deusize sharedComponentByteWidth = sizeof(T);
+                const deint32 prototypeStorageMemoryPoolIndex = m_Instance->GetPrivateInputData()->m_PrototypeStorageMemoryPoolID;
+                void* const nextAddress = (void* const)((demachword)prototype->GetSharedComponentSubStorageAddress() + prototype->GetSharedComponentSubStorageSize());
+                void* const moveToAddress = (void* const)((demachword)nextAddress + sharedComponentByteWidth);
+                Engine::Allocate( prototypeStorageMemoryPoolIndex, sharedComponentByteWidth );
+                Engine::MoveMemory( moveToAddress, nextAddress, sharedComponentByteWidth );
+
+                T* const sharedComponent = (T* const)nextAddress;
+                Engine::CopyMemory( sharedComponent, component, sharedComponentByteWidth );
+                const deusize typeNameByteWidth = String::CharactersCount( typeName );
+                Engine::CopyMemory( &sharedComponent->m_TypeName[0], &typeName[0], typeNameByteWidth );
+                sharedComponent->m_TypeName[typeNameByteWidth] = 0;
+                sharedComponent->m_LayoutByteWidth = sizeof(T);
+                sharedComponent->m_RegistryIndex = registryIndex;
+
+                prototype->m_Data.m_SharedComponentCount += 1;
+                prototype->m_Data.m_SharedComponentSubStorageByteWidth += sharedComponentByteWidth;
+                prototype->m_Data.m_SharedComponentBits[ maskIndex ] |= 1u << maskBit;
             }
 
             INSTANCE_LAYOUT* PrototypeInstantiate(const char* SID, Prototype* const prototype);
             
             template<typename T>
-            DV_FUNCTION_INLINE void InstanceAddComponent(Instance* const instance, IComponent* component) {
+            DV_FUNCTION_INLINE void InstanceAddComponent(Instance* const instance, IComponent* const component) {
                 Prototype* parentPrototype = instance->m_ParentPrototype;
                 void* curAddress = (void*)((demachword)instance + sizeof(Instance));
-                void* const lastAddress = (void* const)((demachword)parentPrototype->GetData()->m_InstanceSubStorageAddress + parentPrototype->GetData()->m_InstanceSubStorageByteWidth);
                 deusize componentLayoutByteWidth = 0;
-                while (curAddress < lastAddress)
+                for (deint32 i = 0; i < parentPrototype->GetComponentCount(); ++i)
                 {
                     curAddress = (void*)((demachword)curAddress + componentLayoutByteWidth);
                     IComponent* curComponent = (IComponent*)curAddress;
                     componentLayoutByteWidth = curComponent->m_LayoutByteWidth;
                     if (componentLayoutByteWidth == 0)
                     {
-                        // Insert T Component to free space
-                        Engine::CopyMemory( curComponent, component, sizeof(T) );
-                        break;
+                        componentLayoutByteWidth = sizeof(T);
+                        const deuchar* const typeName = (const deuchar* const)typeid(T).name();
+                        const deint32 registryIndex = (deint32)(demachword)m_RegistryData.m_Components.Find( typeName );
+                        if (component == nullptr)
+                        {
+                            const deint32 maskIndex = (deint32)((dedword)registryIndex >> 5u);
+                            const dedword maskBit = 1u << ((dedword)registryIndex & 31u);
+                            if ((parentPrototype->m_Data.m_SharedComponentBits[ maskIndex ] >> maskBit) & 1u) {
+                                const T* const copyComponent = (const T* const)FindComponent<T>( parentPrototype->GetSharedComponentCount(), parentPrototype->GetSharedComponentSubStorageAddress() );
+                                Engine::CopyMemory( curComponent, copyComponent, componentLayoutByteWidth );
+                            }
+                            instance->m_ComponentCount += 1;
+                            return;
+                        }else{
+                            const deusize typeNameByteWidth = String::CharactersCount( typeName );
+                            Engine::CopyMemory( curComponent, component, componentLayoutByteWidth );
+                            Engine::CopyMemory( &curComponent->m_TypeName[0], &typeName[0], typeNameByteWidth );
+                            curComponent->m_TypeName[typeNameByteWidth] = 0;
+                            curComponent->m_LayoutByteWidth = sizeof(T);
+                            curComponent->m_RegistryIndex = registryIndex;
+                            instance->m_ComponentCount += 1;
+                            return;
+                        }
                     }
                 }
-
-                instance->m_ComponentCount += 1;
             }
 
             template<typename T>
-            DV_FUNCTION_INLINE T* InstanceGetComponent(Instance* const instance) {
-                DV_ASSERT_PTR(instance)
-
-                Prototype* parentPrototype = instance->m_ParentPrototype;
-                const deisize instanceComponentCount = (deisize)instance->m_ComponentCount;
-                void* componentAddress = (void*)((demachword)instance + sizeof(Instance));
-                for (deisize i = 0; i < instanceComponentCount; ++i)
+            DV_FUNCTION_INLINE T* FindComponent(const deusize count, const void* const address) {
+                deuint32 componentCount = (const deuint32)count;
+                if (componentCount == 0) { componentCount = DV_MAX_DWORD_VALUE; }
+                const void* componentAddress = (void*)address;
+                for (deuint32 i = 0u; i < componentCount; ++i)
                 {
                     IComponent* baseComponent = (IComponent*)componentAddress;
                     deuchar* typeName = (deuchar*)typeid(T).name();
                     if (String::CompareCharacters( &baseComponent->m_TypeName[0], &typeName[0] )) {
                         return (T*)baseComponent;
                     }
+                    if (baseComponent->m_LayoutByteWidth <= 0) { break; }
+
                     componentAddress = (void*)((demachword)componentAddress + (demachword)baseComponent->m_LayoutByteWidth);
                 }
 
                 return nullptr;
+            }
+
+            template<typename T>
+            DV_FUNCTION_INLINE T* InstanceGetComponent(Instance* const instance) {
+                
+                return FindComponent <T> ( instance->m_ComponentCount, (void*)((demachword)instance + sizeof(Instance)) );
+                
+                // DV_ASSERT_PTR(instance)
+
+                // Prototype* parentPrototype = instance->m_ParentPrototype;
+                // const deisize instanceComponentCount = (deisize)instance->m_ComponentCount;
+                // void* componentAddress = (void*)((demachword)instance + sizeof(Instance));
+                // for (deisize i = 0; i < instanceComponentCount; ++i)
+                // {
+                //     IComponent* baseComponent = (IComponent*)componentAddress;
+                //     deuchar* typeName = (deuchar*)typeid(T).name();
+                //     if (String::CompareCharacters( &baseComponent->m_TypeName[0], &typeName[0] )) {
+                //         return (T*)baseComponent;
+                //     }
+                //     componentAddress = (void*)((demachword)componentAddress + (demachword)baseComponent->m_LayoutByteWidth);
+                // }
+
+                // return nullptr;
             }
 
             // Wrapper functions

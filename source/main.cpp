@@ -29,14 +29,15 @@ int main()
 
     Prototype* prototype[1];
     engine->ObjectCreate <Prototype> ( &prototype[0], "Prototype_0", nullptr );
-    engine->PrototypeSetComponent <MyComponent1> ( prototype[0] );
-    engine->PrototypeSetComponent <MyComponent2> ( prototype[0] );
+    MyComponent2 myComponent2; myComponent2.a = 155;
+    engine->PrototypeAddSharedComponent <MyComponent1> ( prototype[0], nullptr );
+    engine->PrototypeAddSharedComponent <MyComponent2> ( prototype[0], &myComponent2 );
 
     Instance* protoInstance0 = engine->PrototypeInstantiate ( "Prototype_0_Instance_0", prototype[0] );
     MyComponent1 myComponent1; myComponent1.a = 255;
-    MyComponent2 myComponent2; myComponent2.a = 128;
+    // // MyComponent2 myComponent2; myComponent2.a = 128;
     engine->InstanceAddComponent <MyComponent1> ( protoInstance0, &myComponent1 );
-    engine->InstanceAddComponent <MyComponent2> ( protoInstance0, &myComponent2 );
+    engine->InstanceAddComponent <MyComponent2> ( protoInstance0, nullptr );
     MyComponent1* getMyComponent1 = engine->InstanceGetComponent <MyComponent1> ( protoInstance0 );
     MyComponent2* getMyComponent2 = engine->InstanceGetComponent <MyComponent2> ( protoInstance0 );
     std::cout << getMyComponent1->a << " " << getMyComponent2->a << std::endl;
