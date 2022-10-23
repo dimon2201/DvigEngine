@@ -12,7 +12,6 @@ void DvigEngine::PROTOTYPE_DATA::Init(Engine* engine, Prototype* object)
     m_SharedComponentCount = 0;
     m_SharedComponentSubStorageAddress = engine->GetMemoryPoolByID(prototypeStorageMemoryPoolIndex)->GetAddressOffset();//Engine::Allocate( prototypeStorageMemoryPoolIndex, sizeof(IComponent) );
     m_SharedComponentSubStorageByteWidth = 0;
-    std::cout << "init shared : " << (demachword)m_SharedComponentSubStorageAddress << std::endl;
     Engine::SetMemory( &m_SharedComponentBits[0], 0, 4 * DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT );
     
     INSTANCE_LAYOUT* const firstInstance = (INSTANCE_LAYOUT* const)m_InstanceSubStorageAddress;

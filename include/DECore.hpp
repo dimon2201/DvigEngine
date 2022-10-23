@@ -617,27 +617,40 @@ namespace DvigEngine
                 Prototype* parentPrototype = instance->m_ParentPrototype;
                 void* curAddress = (void*)((demachword)instance + sizeof(Instance));
                 deusize componentLayoutByteWidth = 0;
+                const deuchar* const typeName = (const deuchar* const)typeid(T).name();
+                const deint32 registryIndex = (deint32)(demachword)m_RegistryData.m_Components.Find( typeName );
                 for (deint32 i = 0; i < parentPrototype->GetComponentCount(); ++i)
                 {
                     curAddress = (void*)((demachword)curAddress + componentLayoutByteWidth);
                     IComponent* curComponent = (IComponent*)curAddress;
                     componentLayoutByteWidth = curComponent->m_LayoutByteWidth;
-                    if (componentLayoutByteWidth == 0)
+                    // std::cout << &curComponent->m_TypeName[0] << " " << &typeName[0] << std::endl;
+                    if ((curComponent->m_TypeName != nullptr &&
+                        String::CompareCharacters( &curComponent->m_TypeName[0], &typeName[0] ))
+                        || (componentLayoutByteWidth == 0))
                     {
-                        componentLayoutByteWidth = sizeof(T);
-                        const deuchar* const typeName = (const deuchar* const)typeid(T).name();
-                        const deint32 registryIndex = (deint32)(demachword)m_RegistryData.m_Components.Find( typeName );
+                        // Free space in Instance layout
                         if (component == nullptr)
                         {
+                            // From Prototype
+                            printf("prototype %s\n", typeName);
+                            componentLayoutByteWidth = sizeof(T);
                             const deint32 maskIndex = (deint32)((dedword)registryIndex >> 5u);
                             const dedword maskBit = 1u << ((dedword)registryIndex & 31u);
                             if ((parentPrototype->m_Data.m_SharedComponentBits[ maskIndex ] >> maskBit) & 1u) {
+                                // Insert
                                 const T* const copyComponent = (const T* const)FindComponent<T>( parentPrototype->GetSharedComponentCount(), parentPrototype->GetSharedComponentSubStorageAddress() );
                                 Engine::CopyMemory( curComponent, copyComponent, componentLayoutByteWidth );
+                                instance->m_ComponentCount += 1;
                             }
-                            instance->m_ComponentCount += 1;
+
                             return;
-                        }else{
+                        }
+                        else
+                        {
+                            // From function argument
+                            // Insert
+                            componentLayoutByteWidth = sizeof(T);
                             const deusize typeNameByteWidth = String::CharactersCount( typeName );
                             Engine::CopyMemory( curComponent, component, componentLayoutByteWidth );
                             Engine::CopyMemory( &curComponent->m_TypeName[0], &typeName[0], typeNameByteWidth );
@@ -645,6 +658,7 @@ namespace DvigEngine
                             curComponent->m_LayoutByteWidth = sizeof(T);
                             curComponent->m_RegistryIndex = registryIndex;
                             instance->m_ComponentCount += 1;
+
                             return;
                         }
                     }
@@ -660,6 +674,7 @@ namespace DvigEngine
                 {
                     IComponent* baseComponent = (IComponent*)componentAddress;
                     deuchar* typeName = (deuchar*)typeid(T).name();
+                    std::cout << baseComponent->m_TypeName << std::endl;
                     if (String::CompareCharacters( &baseComponent->m_TypeName[0], &typeName[0] )) {
                         return (T*)baseComponent;
                     }
