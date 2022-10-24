@@ -180,6 +180,7 @@ void DvigEngine::Engine::ObjectDelete(MemoryObject** ppMemoryObject)
     void* nextAddress = (void*)((demachword)curAddress + deletedObjectByteWidth);
     
     MemoryObject* curMemoryObject = (MemoryObject*)curAddress;
+    delete curMemoryObject->Unwrap<IObject>();
     IObject* curObject = (IObject*)((demachword)curMemoryObject + sizeof(MemoryObject));
     MemoryObject** pCurMemoryObjectPointer = curObject->GetMemoryObject();
     IObject** pCurCreatee = curObject->GetCreatee();

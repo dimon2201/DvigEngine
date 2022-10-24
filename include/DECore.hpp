@@ -77,8 +77,10 @@ namespace DvigEngine
         DV_XMACRO_DECLARE_CREATION_DEPENDENT_CLASS(IObject)
 
         public:
+            virtual ~IObject() {}
+
             DV_FUNCTION_INLINE IObject** GetCreatee() { return m_Createe; }
-            DV_FUNCTION_INLINE MemoryObject** GetMemoryObject() { return &m_MemoryObject; };
+            DV_FUNCTION_INLINE MemoryObject** GetMemoryObject() { return &m_MemoryObject; }
 
         private:
             void SetCreateeAndMemoryObject(IObject** createe, MemoryObject* memoryObject);
@@ -342,6 +344,7 @@ namespace DvigEngine
             void Init(Engine* engine, Instance* object);
 
         public:
+            deint32 m_GlobalIndex;
             Prototype* m_ParentPrototype;
             deusize m_ComponentCount;
             void* m_ComponentSubStorageAddress;
@@ -352,6 +355,8 @@ namespace DvigEngine
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell, DvigEngine::INSTANCE_DATA)
         
         public:
+            ~Instance();
+
             DV_FUNCTION_INLINE Prototype* GetPrototype() { return m_Data.m_ParentPrototype; }
             DV_FUNCTION_INLINE deusize GetComponentCount() { return m_Data.m_ComponentCount; }
             DV_FUNCTION_INLINE void* GetComponentSubStorageAddress() { return m_Data.m_ComponentSubStorageAddress; };
@@ -365,9 +370,9 @@ namespace DvigEngine
 
     struct PROTOTYPE_DATA : public IData
     {
-        DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell, DvigEngine::Prototype)
+        DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell, DvigEngine::Prototype, DvigEngine::Instance)
 
-        private:
+        public:
             void Init(Engine* engine, Prototype* object);
 
         private:
@@ -385,9 +390,12 @@ namespace DvigEngine
 
     class Prototype : public IObject
     {
-        DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell, DvigEngine::PROTOTYPE_DATA)
+        DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell, DvigEngine::Instance)
 
         public:
+            ~Prototype();
+
+            DV_FUNCTION_INLINE deusize GetGlobalInstanceCount() { return m_GlobalInstanceCount; };
             DV_FUNCTION_INLINE deusize GetInstanceCount() { return m_Data.m_InstanceCount; };
             DV_FUNCTION_INLINE deusize GetInstanceLayoutSize() { return m_Data.m_InstanceLayoutByteWidth; };
             DV_FUNCTION_INLINE void* GetInstanceSubStorageAddress() { return m_Data.m_InstanceSubStorageAddress; };
@@ -420,8 +428,10 @@ namespace DvigEngine
     
     class JobQueue : public IObject
     {
+        DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
+
         public:
-            DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
+            ~JobQueue();
 
             DV_FUNCTION_INLINE std::atomic<demachword>& GetStopFlag() { return m_Data.m_StopFlag; };
             DV_FUNCTION_INLINE std::atomic<demachword>& GetReturnFlag() { return m_Data.m_ReturnFlag; };

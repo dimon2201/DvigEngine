@@ -1,5 +1,10 @@
 #include "../../include/DECore.hpp"
 
+DvigEngine::JobQueue::~JobQueue()
+{
+
+}
+
 void DvigEngine::JobQueue::Push(decallback callback, void* argumentMemory, const deusize argumentCount)
 {    
     if (m_Data.m_JobCount >= DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT) { return; }

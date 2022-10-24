@@ -56,10 +56,11 @@ int main()
 
     MyComponent1* getComp1 = engine->InstanceGetComponent <MyComponent1> ( instances[0] );
     Comp1* getComp3 = engine->InstanceGetComponent <Comp1> ( instances[0] );
-    std::cout << "look" << std::endl;
-    Comp0* getComp2 = engine->InstanceGetComponent <Comp0> ( instances[1] );
+    // std::cout << "look" << std::endl;
+    delete instances[1];
+    // Comp0* getComp2 = engine->InstanceGetComponent <Comp0> ( instances[1] );
 
-    std::cout << getComp1->a << " " << getComp2->a << " " << getComp3->a << std::endl;
+    std::cout << getComp1->a << " " << getComp3->a << " " << getComp3->a << std::endl;
 
     Engine::Free();
 
