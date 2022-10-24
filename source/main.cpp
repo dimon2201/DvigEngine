@@ -38,9 +38,8 @@ int main()
     engine->PrototypeAddSharedComponent <MyComponent1> ( prototype[0], nullptr );
     engine->PrototypeAddSharedComponent <Comp0> ( prototype[1], nullptr );
     engine->PrototypeAddSharedComponent <Comp1> ( prototype[0], nullptr );
-    // engine->PrototypeAddSharedComponent <Comp0> ( prototype[1], nullptr );
 
-    Instancex* instances[2];
+    Instance* instances[2];
     engine->PrototypeInstantiate( &instances[0], "inst_proto_0", prototype[0] );
     engine->PrototypeInstantiate( &instances[1], "inst_proto_1", prototype[1] );
 

@@ -241,26 +241,26 @@ void DvigEngine::Engine::StopThreads()
 
 void DvigEngine::Engine::UpdateSystems()
 {
-    const deisize uniqueSystemCount = m_RegistryData.m_UniqueSystemCount;
-    HashMap* const systemList = (HashMap* const)&m_RegistryData.m_Systems;
-    MemoryObject* storageAddress = (MemoryObject*)m_RegistryData.m_StorageAddress; // array of all Entities means Entity Storage
-    const deisize entityCount = Entity::m_EntityCount;
+    // const deisize uniqueSystemCount = m_RegistryData.m_UniqueSystemCount;
+    // HashMap* const systemList = (HashMap* const)&m_RegistryData.m_Systems;
+    // MemoryObject* storageAddress = (MemoryObject*)m_RegistryData.m_StorageAddress; // array of all Entities means Entity Storage
+    // const deisize entityCount = Entity::m_EntityCount;
 
-    // Run through each System
-    for (deisize i = 0; i < uniqueSystemCount; ++i)
-    {
-        ISystem* system = (ISystem*)systemList->FindIndex( i );
-        void* entityCursor = (void*)storageAddress->GetAddress();
+    // // Run through each System
+    // for (deisize i = 0; i < uniqueSystemCount; ++i)
+    // {
+    //     ISystem* system = (ISystem*)systemList->FindIndex( i );
+    //     void* entityCursor = (void*)storageAddress->GetAddress();
         
-        // Run through each Entity
-        for (deisize i = 0; i < entityCount; ++i)
-        {
-            Entity* entity = (Entity*)entityCursor;
+    //     // Run through each Entity
+    //     for (deisize i = 0; i < entityCount; ++i)
+    //     {
+    //         Entity* entity = (Entity*)entityCursor;
 
-            // Update derived system
-            system->Update( m_Instance, entity );
+    //         // Update derived system
+    //         system->Update( m_Instance, entity );
             
-            entityCursor = (void*)((demachword)entityCursor + entity->m_Data.m_SubStorageByteWidth);
-        }
-    }
+    //         entityCursor = (void*)((demachword)entityCursor + entity->m_Data.m_SubStorageByteWidth);
+    //     }
+    // }
 }

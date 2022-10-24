@@ -25,7 +25,7 @@ namespace DvigEngine
     class HashMap;
     class DynamicBuffer;
     class ISystem;
-    class Entity;
+    class Instance;
     class Prototype;
     class JobQueue;
     class Engine;
@@ -108,7 +108,8 @@ namespace DvigEngine
             DV_FUNCTION_INLINE deint32 GetMemoryPoolIndex() { return m_Data.m_MemoryPoolIndex; };
 
             template<typename T>
-            DV_FUNCTION_INLINE T* Unwrap() {
+            DV_FUNCTION_INLINE T* Unwrap()
+            {
                 return (T*)m_Data.m_Address;
             }
 
@@ -152,7 +153,6 @@ namespace DvigEngine
     struct STRING_DATA : IData
     {
         public:
-            STRING_DATA() {};
             STRING_DATA(const char* str);
 
             void Init(Engine* engine, String* object);
@@ -235,7 +235,6 @@ namespace DvigEngine
     struct HASH_MAP_DATA_ENTRY : IData
     {
         public:
-            HASH_MAP_DATA_ENTRY() {};
             HASH_MAP_DATA_ENTRY(String* key, void* value);
             
             void* m_Key;
@@ -284,6 +283,7 @@ namespace DvigEngine
         public:
             void Init(const Engine* const engine, DynamicBuffer* const object);
 
+        public:
             void* m_Address;
             void* m_AddressOffset;
             deusize m_ByteWidth;
@@ -329,54 +329,33 @@ namespace DvigEngine
         public:
             virtual ~ISystem() {};
 
-            virtual void Update(Engine* engine, Entity* entity) {};
+            virtual void Update(Engine* engine, Instance* instance) {};
             
+        private:
             destring m_TypeName;
             deint32 m_RegistryIndex;
     };
 
-    struct ENTITY_DATA : IData
-    {
-        public:
-            void Init(Engine* engine, Entity* object);
-
-            void* m_SubStorageAddress;
-            deusize m_SubStorageByteWidth;
-            deusize m_ComponentCount;
-            deuint32 m_ComponentBits[DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT];
-    };
-
-    class Entity : public IObject
-    {
-        public:
-            DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell, DvigEngine::ENTITY_DATA)
-        
-            DV_FUNCTION_INLINE void* GetSubStorageAddress() { return m_Data.m_SubStorageAddress; };
-            DV_FUNCTION_INLINE deusize GetSubStorageByteWidth() { return m_Data.m_SubStorageByteWidth; };
-            DV_FUNCTION_INLINE deusize GetComponentCount() { return m_Data.m_ComponentCount; };
-            DV_FUNCTION_INLINE debool GetComponentBit(deuint32 arrayOffset, deuint32 bitOffset) { return (m_Data.m_ComponentBits[arrayOffset] >> bitOffset) & 1; };
-            DV_FUNCTION_INLINE void SetComponentBit(deuint32 arrayOffset, deuint32 bit) { m_Data.m_ComponentBits[arrayOffset] |= bit; };
-
-        private:
-            DV_XMACRO_GETTER_DATA(ENTITY_DATA)
-
-        private:
-            static deuint32 m_EntityCount;
-            ENTITY_DATA m_Data;
-    };
-
     struct INSTANCE_DATA : public IData
     {
+        public:
+            void Init(Engine* engine, Instance* object);
+
         public:
             Prototype* m_ParentPrototype;
             deusize m_ComponentCount;
             void* m_ComponentSubStorageAddress;
     };
     
-    class Instancex : public IObject
+    class Instance : public IObject
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell, DvigEngine::INSTANCE_DATA)
         
+        public:
+            DV_FUNCTION_INLINE Prototype* GetPrototype() { return m_Data.m_ParentPrototype; }
+            DV_FUNCTION_INLINE deusize GetComponentCount() { return m_Data.m_ComponentCount; }
+            DV_FUNCTION_INLINE void* GetComponentSubStorageAddress() { return m_Data.m_ComponentSubStorageAddress; };
+
         private:
             DV_XMACRO_GETTER_DATA(INSTANCE_DATA)
 
@@ -391,6 +370,7 @@ namespace DvigEngine
         private:
             void Init(Engine* engine, Prototype* object);
 
+        private:
             deusize m_InstanceCount;
             void* m_InstanceSubStorageAddress;
             deusize m_InstanceSubStorageByteWidth;
@@ -531,7 +511,8 @@ namespace DvigEngine
 
             // ECS related functions
             template<typename T>
-            void RegisterComponent() {
+            void RegisterComponent()
+            {
                 deuchar* typeName = (deuchar*)typeid(T).name();
                 const deint32 componentIndex = ++m_RegistryData.m_UniqueComponentCount;
                 if (m_RegistryData.m_Components.Find(typeName) != nullptr) { return; }
@@ -539,7 +520,8 @@ namespace DvigEngine
             }
 
             template<typename T>
-            void RegisterSystem() {
+            void RegisterSystem()
+            {
                 deuchar* typeName = (deuchar*)typeid(T).name();
                 const deint32 systemIndex = ++m_RegistryData.m_UniqueSystemCount;
                 if (m_RegistryData.m_Systems.Find(typeName) != nullptr) { return; }
@@ -550,37 +532,6 @@ namespace DvigEngine
                 Engine::CopyMemory( &system->m_TypeName[0], &typeName[0], String::CharactersCount( typeName ) );
                 system->m_RegistryIndex = systemIndex;
                 m_RegistryData.m_Systems.Insert( typeName, (void*)(demachword)system );
-            }
-
-            template<typename T>
-            void AddComponent(Entity* entity, IComponent* component) {
-                DV_ASSERT_PTR(component)
-
-                deuchar* typeName = (deuchar*)typeid(T).name();
-                const deusize typeNameByteWidth = String::CharactersCount( typeName );
-                const deint32 registryIndex = (deint32)(demachword)m_RegistryData.m_Components.Find( typeName );
-                Engine::CopyMemory( &component->m_TypeName[0], &typeName[0], typeNameByteWidth );
-                component->m_TypeName[typeNameByteWidth] = 0;
-                component->m_LayoutByteWidth = sizeof(T);
-                // component->m_RegistryIndex = registryIndex;
-
-                const deint32 maskIndex = (deint32)((dedword)registryIndex >> 5u);
-                const dedword maskBit = 1u << (dedword)registryIndex & 31u;
-                if ((entity->GetData()->m_ComponentBits[ maskIndex ] >> maskBit) & 1u) { return; }
-                entity->GetData()->m_ComponentBits[ maskIndex ] |= 1u << maskBit;
-
-                const deint32 storageMemoryPoolID = m_Instance->m_InputData.m_StorageMemoryPoolID;
-                MemoryPool* storageMemoryPool = &m_Instance->GetData()->m_MemoryPools[storageMemoryPoolID];
-                
-                Engine::ObjectAllocate( storageMemoryPoolID, sizeof(T) )->Unwrap<void>();
-                void* const lastSubStorageAddress = (void* const)((demachword)entity->GetData()->m_SubStorageAddress + (demachword)entity->GetData()->m_SubStorageByteWidth);
-                void* const moveToAddress = (void* const)((demachword)lastSubStorageAddress + sizeof(T));
-                const deusize moveByteWidth = (demachword)storageMemoryPool->GetData()->m_AddressOffset - (demachword)lastSubStorageAddress;
-                Engine::MoveMemory( moveToAddress, lastSubStorageAddress, moveByteWidth );
-                Engine::CopyMemory( lastSubStorageAddress, component, sizeof(T) );
-
-                entity->GetData()->m_SubStorageByteWidth += sizeof(T);
-                entity->GetData()->m_ComponentCount += 1;
             }
 
             template<typename T>
@@ -618,10 +569,10 @@ namespace DvigEngine
                 prototype->m_Data.m_SharedComponentBits[ maskIndex ] |= 1u << maskBit;
             }
 
-            void PrototypeInstantiate(Instancex** const result, const char* SID, Prototype* const prototype);
+            void PrototypeInstantiate(Instance** const result, const char* SID, Prototype* const prototype);
             
             template<typename T>
-            DV_FUNCTION_INLINE void InstanceAddComponent(Instancex* const instance, IComponent* const component)
+            DV_FUNCTION_INLINE void InstanceAddComponent(Instance* const instance, IComponent* const component)
             {
                 std::cout << "i : " << (demachword)instance << std::endl; 
                 deusize componentLayoutByteWidth = 0;
@@ -678,7 +629,8 @@ namespace DvigEngine
             }
 
             template<typename T>
-            DV_FUNCTION_INLINE T* FindComponent(const deusize count, const void* const address) {
+            DV_FUNCTION_INLINE T* FindComponent(const deusize count, const void* const address)
+            {
                 deuint32 componentCount = (const deuint32)count;
                 if (componentCount == 0) { componentCount = DV_MAX_DWORD_VALUE; }
                 const void* componentAddress = (void*)address;
@@ -699,12 +651,14 @@ namespace DvigEngine
             }
 
             template<typename T>
-            DV_FUNCTION_INLINE T* InstanceGetComponent(Instancex* const instance) {
+            DV_FUNCTION_INLINE T* InstanceGetComponent(Instance* const instance)
+            {
                 return FindComponent <T> ( instance->m_Data.m_ComponentCount, instance->m_Data.m_ComponentSubStorageAddress );
             }
 
             template <typename T>
-            DV_FUNCTION_INLINE deint32 CheckType(const dedword* const bitSet) {
+            DV_FUNCTION_INLINE deint32 CheckType(const dedword* const bitSet)
+            {
                 const deuchar* const typeName = (const deuchar* const)typeid(T).name();
                 const deint32 registryIndex = (deint32)(demachword)m_RegistryData.m_Components.Find( typeName );
                 const deint32 maskIndex = (deint32)((dedword)registryIndex >> 5u);
@@ -715,7 +669,8 @@ namespace DvigEngine
 
             // Wrapper functions
             template<typename T>
-            DV_FUNCTION_INLINE void ObjectCreate(T** const result, const char* ID, IData* data) {
+            DV_FUNCTION_INLINE void ObjectCreate(T** const result, const char* ID, IData* data)
+            {
                 // DV_XMACRO_PUSH_JOB(CallCreate<T>, m_Instance, result, stringID, data)
                 demachword argumentMemory[3] = { (demachword)result, (demachword)ID, (demachword)data };
                 CallObjectCreate<T>(&argumentMemory[0], 0);
@@ -724,7 +679,8 @@ namespace DvigEngine
         private:
             // Job functions
             template<typename T>
-            DV_FUNCTION_INLINE void CallObjectCreate(demachword* argumentMemory, deusize jobIndex) {
+            DV_FUNCTION_INLINE void CallObjectCreate(demachword* argumentMemory, deusize jobIndex)
+            {
                 T** const result = (T** const)argumentMemory[ 0 ];
                 deuchar* objectID = (deuchar*)argumentMemory[ 1 ];
                 IData* objectData = (IData*)argumentMemory[ 2 ];
