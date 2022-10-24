@@ -34,40 +34,35 @@ int main()
     Prototype* prototype[2];
     engine->ObjectCreate <Prototype> ( &prototype[0], "Prototype_0", nullptr );
     engine->ObjectCreate <Prototype> ( &prototype[1], "Prototype_1", nullptr );
-    MyComponent2 myComponent2_1; myComponent2_1.a = 155;
-    engine->PrototypeAddSharedComponent <MyComponent1> ( prototype[0], nullptr );
-    engine->PrototypeAddSharedComponent <MyComponent2> ( prototype[0], &myComponent2_1 );
-    engine->PrototypeAddSharedComponent <Comp0> ( prototype[1], nullptr );
-    engine->PrototypeAddSharedComponent <Comp1> ( prototype[1], nullptr );
 
-    Instance* protoInstance0 = engine->PrototypeInstantiate ( "Prototype_0_Instance_0", prototype[0] );
-    Instance* protoInstance1 = engine->PrototypeInstantiate ( "Prototype_0_Instance_1", prototype[0] );
-    Instance* protoCompInstance = engine->PrototypeInstantiate ( "Prototype_0_CompInstance_0", prototype[1] );
-    MyComponent1 myComponent1_1; myComponent1_1.a = 255;
-    MyComponent1 myComponent1_2; myComponent1_2.a = 205;
-    engine->InstanceAddComponent <MyComponent1> ( protoInstance0, &myComponent1_1 );
-    engine->InstanceAddComponent <MyComponent1> ( protoInstance0, &myComponent1_2 );
-    engine->InstanceAddComponent <MyComponent2> ( protoInstance0, nullptr );
-    Comp0 comp0; comp0.b = 99;
-    Comp1 comp1; comp1.a = 109;
-    engine->InstanceAddComponent <Comp0> ( protoCompInstance, &comp0 );
-    engine->InstanceAddComponent <Comp1> ( protoCompInstance, &comp1 );
-    // MyComponent1* getMyComponent1 = engine->InstanceGetComponent <MyComponent1> ( protoInstance0 );
-    // MyComponent2* getMyComponent2 = engine->InstanceGetComponent <MyComponent2> ( protoInstance0 );
-    // Comp0* getComp0 = engine->InstanceGetComponent <Comp0> ( protoCompInstance );
-    // Comp1* getComp1 = engine->InstanceGetComponent <Comp1> ( protoCompInstance );
-    // std::cout << getMyComponent1->a << " " << getMyComponent2->a <<std::endl;
-    // std::cout << getComp0->b << " " << getComp1->a <<std::endl;
+    engine->PrototypeAddSharedComponent <MyComponent1> ( prototype[0], nullptr );
+    engine->PrototypeAddSharedComponent <Comp0> ( prototype[1], nullptr );
+    engine->PrototypeAddSharedComponent <Comp1> ( prototype[0], nullptr );
+    // engine->PrototypeAddSharedComponent <Comp0> ( prototype[1], nullptr );
+
+    Instancex* instances[2];
+    engine->PrototypeInstantiate( &instances[0], "inst_proto_0", prototype[0] );
+    engine->PrototypeInstantiate( &instances[1], "inst_proto_1", prototype[1] );
+
+    std::cout << "addrs : " << (demachword)instances[1] << " " << (demachword)instances[0] << std::endl;
+
+    // MyComponent1 comp1; comp1.a = 1;
+    // engine->InstanceAddComponent <MyComponent1> ( instances[0], &comp1 );
+    Comp0 comp2; comp2.a = 2;
+    engine->InstanceAddComponent <Comp0> ( instances[1], &comp2 );
+    Comp1 comp3; comp3.a = 3;
+    engine->InstanceAddComponent <Comp1> ( instances[0], &comp3 );
+    MyComponent1 comp1; comp1.a = 1;
+    engine->InstanceAddComponent <MyComponent1> ( instances[0], &comp1 );
+
+    MyComponent1* getComp1 = engine->InstanceGetComponent <MyComponent1> ( instances[0] );
+    Comp1* getComp3 = engine->InstanceGetComponent <Comp1> ( instances[0] );
+    std::cout << "look" << std::endl;
+    Comp0* getComp2 = engine->InstanceGetComponent <Comp0> ( instances[1] );
+
+    std::cout << getComp1->a << " " << getComp2->a << " " << getComp3->a << std::endl;
 
     Engine::Free();
-
-    // Prototype** monster;
-    // engine->Create <Prototype> ( monster );
-    // monster->AddComponent <Geometry> ( &mesh );
-    // monster->AddComponent <Script> ( &script );
-
-    // Instance* monster_Instance0 = monster->Instantiate(  );
-    // monster_Instance0->SetComponent <Script> ( &userScript );
 
     std::cout << "Success!" << std::endl;
 
