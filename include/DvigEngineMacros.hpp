@@ -88,6 +88,7 @@
     public: \
         DV_FUNCTION_INLINE deuchar* GetSID() { return &m_SID[0]; } \
         DV_FUNCTION_INLINE deusize GetSIDByteWidth() { return m_SIDByteWidth; } \
+        DV_FUNCTION_INLINE Engine* GetEngine() { return (Engine*)m_Engine; } \
     private: \
         DV_FUNCTION_INLINE void SetSID(deuchar* stringID) { \
             m_SIDByteWidth = 0; \

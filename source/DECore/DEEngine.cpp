@@ -125,18 +125,18 @@ void DvigEngine::Engine::Free()
     free(globalMemoryPool->GetData()->m_Address);
 }
 
-void* DvigEngine::Engine::Allocate(deusize memoryPoolID, deusize byteWidth)
-{
-    DV_ASSERT_PTR(m_Instance)
-    DV_ASSERT(byteWidth)
+// void* DvigEngine::Engine::Allocate(deusize memoryPoolID, deusize byteWidth)
+// {
+//     DV_ASSERT_PTR(m_Instance)
+//     DV_ASSERT(byteWidth)
 
-    const deusize allocByteWidth = byteWidth;
-    DvigEngine::MemoryPool* const memoryPool = m_Instance->GetMemoryPoolByID(memoryPoolID);
-    void* prevPoolOffset = ((DvigEngine::MEMORY_POOL_DATA*)memoryPool->GetData())->m_AddressOffset;
-    ((DvigEngine::MEMORY_POOL_DATA*)memoryPool->GetData())->m_AddressOffset = (void*)((deusize)((DvigEngine::MEMORY_POOL_DATA*)memoryPool->GetData())->m_AddressOffset + allocByteWidth);
+//     const deusize allocByteWidth = byteWidth;
+//     DvigEngine::MemoryPool* const memoryPool = m_Instance->GetMemoryPoolByID(memoryPoolID);
+//     void* prevPoolOffset = ((DvigEngine::MEMORY_POOL_DATA*)memoryPool->GetData())->m_AddressOffset;
+//     ((DvigEngine::MEMORY_POOL_DATA*)memoryPool->GetData())->m_AddressOffset = (void*)((deusize)((DvigEngine::MEMORY_POOL_DATA*)memoryPool->GetData())->m_AddressOffset + allocByteWidth);
 
-    return prevPoolOffset;
-}
+//     return prevPoolOffset;
+// }
 
 DvigEngine::MemoryObject* DvigEngine::Engine::ObjectAllocate(deusize memoryPoolID, deusize byteWidth)
 {
@@ -178,9 +178,8 @@ void DvigEngine::Engine::ObjectDelete(MemoryObject** ppMemoryObject)
     void* curAddress = (void*)memoryObject;
     deusize deletedObjectByteWidth = sizeof(MemoryObject) + memoryObject->GetByteWidth();
     void* nextAddress = (void*)((demachword)curAddress + deletedObjectByteWidth);
-    
+
     MemoryObject* curMemoryObject = (MemoryObject*)curAddress;
-    delete curMemoryObject->Unwrap<IObject>();
     IObject* curObject = (IObject*)((demachword)curMemoryObject + sizeof(MemoryObject));
     MemoryObject** pCurMemoryObjectPointer = curObject->GetMemoryObject();
     IObject** pCurCreatee = curObject->GetCreatee();
@@ -190,7 +189,6 @@ void DvigEngine::Engine::ObjectDelete(MemoryObject** ppMemoryObject)
     void* lastAddress = (void*)memoryPool->m_Data.m_AddressOffset;
     Engine::MoveMemory(curAddress, nextAddress, (deusize)lastAddress - (deusize)nextAddress);
     memoryPool->GetData()->m_AddressOffset = (void*)((demachword)memoryPool->GetData()->m_AddressOffset - deletedObjectByteWidth);
-    lastAddress = (void*)memoryPool->m_Data.m_AddressOffset;
 
     while (curAddress < lastAddress)
     {
@@ -198,6 +196,7 @@ void DvigEngine::Engine::ObjectDelete(MemoryObject** ppMemoryObject)
         IObject* curObject = (IObject*)((demachword)curMemoryObject + sizeof(MemoryObject));
         MemoryObject** pCurMemoryObjectPointer = curObject->GetMemoryObject();
         IObject** pCurCreatee = curObject->GetCreatee();
+        std::cout << (demachword)curAddress << " " << (demachword)lastAddress << std::endl;
 
         *pCurMemoryObjectPointer = (MemoryObject*)((demachword)curAddress);
         *pCurCreatee = (IObject*)((demachword)curAddress + sizeof(MemoryObject));

@@ -7,25 +7,32 @@ void DvigEngine::INSTANCE_DATA::Init(DvigEngine::Engine* engine, DvigEngine::Ins
 
 DvigEngine::Instance::~Instance()
 {
-    void* curAddress = (void*)this;
-    Instance* const curInstance = (Instance* const)curAddress;
-    Prototype* const parentPrototype = curInstance->m_Data.m_ParentPrototype;
-    const deusize curInstanceLayoutByteWidth = parentPrototype->GetInstanceLayoutSize();
+    /*
+        Change destructor to DELETE Function
+    */
+    // void* curAddress = (void*)this;
+    // Instance* const curInstance = (Instance* const)curAddress;
+    // Prototype* const parentPrototype = curInstance->m_Data.m_ParentPrototype;
+    // const deusize curInstanceLayoutByteWidth = parentPrototype->GetInstanceLayoutSize();
 
-    const deint32 curInstanceGlobalIndex = curInstance->m_Data.m_GlobalIndex;
-    const deisize globalInstanceCount = m_Data.m_ParentPrototype->GetGlobalInstanceCount();
-    
-    for (deisize i = curInstanceGlobalIndex + 1; i < globalInstanceCount; ++i)
-    {
-        const deusize instanceLayoutByteWidth = parentPrototype->GetInstanceLayoutSize();
-        curAddress = (void*)((demachword)curAddress + instanceLayoutByteWidth);
-        Instance* const curInstance = (Instance* const)curAddress;
-        Instance* nextInstance = (Instance*)((demachword)curInstance + instanceLayoutByteWidth);
-        // Engine::CopyMemory( curInstance, nextInstance, instanceLayoutByteWidth );
-        *(nextInstance->GetCreatee()) = (IObject*)((demachword)curInstance - curInstanceLayoutByteWidth);
-        nextInstance->m_Data.m_ComponentSubStorageAddress = (void*)(((demachword)curInstance - curInstanceLayoutByteWidth) + sizeof(Instance));
-    }
+    // const deint32 curInstanceGlobalIndex = curInstance->m_Data.m_GlobalIndex;
+    // const deisize globalInstanceCount = m_Data.m_ParentPrototype->GetGlobalInstanceCount();
 
-    parentPrototype->GetData()->m_InstanceCount -= 1;
-    parentPrototype->GetData()->m_InstanceSubStorageByteWidth -= curInstanceLayoutByteWidth;
+    // if (curInstanceGlobalIndex == globalInstanceCount)
+    // {
+    //     // Last instance
+    //     // Delete memory object
+    //     Engine* engine = GetEngine();
+    //     MemoryObject* instanceMemoryObject = (MemoryObject*)((demachword)this - sizeof(MemoryObject));
+    //     engine->ObjectDelete( &instanceMemoryObject );
+    // }
+    // else
+    // {
+        
+    // }
+
+    // parentPrototype->GetData()->m_InstanceCount -= 1;
+    // parentPrototype->GetData()->m_InstanceSubStorageByteWidth -= curInstanceLayoutByteWidth;
+
+    Prototype::m_GlobalInstanceCount -= 1;
 }

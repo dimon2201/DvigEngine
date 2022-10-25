@@ -63,6 +63,8 @@ namespace DvigEngine
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine)
         DV_XMACRO_DECLARE_COMMON_CLASS(ICommon)
+        public:
+            ICommon() {}
     };
 
     class IShell : public ICommon
@@ -74,9 +76,9 @@ namespace DvigEngine
     class IObject : public ICommon
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine)
-        DV_XMACRO_DECLARE_CREATION_DEPENDENT_CLASS(IObject)
 
         public:
+            IObject() {}
             virtual ~IObject() {}
 
             DV_FUNCTION_INLINE IObject** GetCreatee() { return m_Createe; }
@@ -102,9 +104,9 @@ namespace DvigEngine
 
     class MemoryObject: public IObject
     {
-        public:
-            DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
+        DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
 
+        public:
             DV_FUNCTION_INLINE void* GetAddress() { return m_Data.m_Address; };
             DV_FUNCTION_INLINE deusize GetByteWidth() { return m_Data.m_ByteWidth; };
             DV_FUNCTION_INLINE deint32 GetMemoryPoolIndex() { return m_Data.m_MemoryPoolIndex; };
@@ -136,9 +138,9 @@ namespace DvigEngine
 
     class MemoryPool : public IObject
     {
+        DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
+        
         public:
-            DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
-
             DV_FUNCTION_INLINE deint32 GetIndex() { return m_Data.m_Index; };
             DV_FUNCTION_INLINE deuchar* GetLabel() { return &m_Data.m_Label[0]; };
             DV_FUNCTION_INLINE void* GetAddress() { return m_Data.m_Address; };
@@ -165,9 +167,9 @@ namespace DvigEngine
 
     class String : public IObject
     {
-        public:
-            DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
+        DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
 
+        public:
             DV_FUNCTION_INLINE deuchar* GetString() { return &m_Data.m_Chars[0]; };
             DV_FUNCTION_INLINE deusize GetByteWidth() { return m_Data.m_ByteWidth; };
 
@@ -206,9 +208,11 @@ namespace DvigEngine
 
     class LinkedList : public IObject
     {
-        public:
-            DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
+        DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
 
+        public:
+            virtual void Delete() {}
+            
             DV_FUNCTION_INLINE deusize GetEntryCount() { return m_Data.m_EntryCount; };
             DV_FUNCTION_INLINE deusize GetEntryByteWidth() { return m_Data.m_EntryByteWidth; };
             DV_FUNCTION_INLINE deusize GetEntryValueByteWidth() { return m_Data.m_EntryValueByteWidth; };
@@ -255,9 +259,9 @@ namespace DvigEngine
 
     class HashMap : public IObject
     {
-        public:
-            DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
+        DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
 
+        public:
             DV_FUNCTION_INLINE deusize GetListEntryCount() { return m_Data.m_ListEntryCount; };
             DV_FUNCTION_INLINE LinkedList* GetList() { return &m_Data.m_MemoryBlocks; };
             DV_FUNCTION_INLINE demachword* GetHashTable() { return &m_Data.m_HashTable[0]; };
@@ -296,9 +300,9 @@ namespace DvigEngine
 
     class DynamicBuffer : public IObject
     {
+        DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
+        
         public:
-            DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
-
             DV_FUNCTION_INLINE void* GetAddress() { return m_Data.m_Address; };
             DV_FUNCTION_INLINE void* GetAddressOffset() { return m_Data.m_AddressOffset; };
             DV_FUNCTION_INLINE deusize GetSize() { return m_Data.m_ByteWidth; };
@@ -349,13 +353,13 @@ namespace DvigEngine
             deusize m_ComponentCount;
             void* m_ComponentSubStorageAddress;
     };
-    
+
     class Instance : public IObject
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell, DvigEngine::INSTANCE_DATA)
         
         public:
-            ~Instance();
+            virtual ~Instance();
 
             DV_FUNCTION_INLINE Prototype* GetPrototype() { return m_Data.m_ParentPrototype; }
             DV_FUNCTION_INLINE deusize GetComponentCount() { return m_Data.m_ComponentCount; }
@@ -393,7 +397,8 @@ namespace DvigEngine
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell, DvigEngine::Instance)
 
         public:
-            ~Prototype();
+            Prototype() {}
+            virtual ~Prototype() {}
 
             DV_FUNCTION_INLINE deusize GetGlobalInstanceCount() { return m_GlobalInstanceCount; };
             DV_FUNCTION_INLINE deusize GetInstanceCount() { return m_Data.m_InstanceCount; };
@@ -431,7 +436,7 @@ namespace DvigEngine
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
 
         public:
-            ~JobQueue();
+            virtual void Delete();
 
             DV_FUNCTION_INLINE std::atomic<demachword>& GetStopFlag() { return m_Data.m_StopFlag; };
             DV_FUNCTION_INLINE std::atomic<demachword>& GetReturnFlag() { return m_Data.m_ReturnFlag; };
@@ -504,7 +509,7 @@ namespace DvigEngine
 
             static void Init(ENGINE_INPUT_DATA* engineInputData);
             static void Free();
-            static void* Allocate(deusize memoryPoolID, deusize byteWidth);
+            // static void* Allocate(deusize memoryPoolID, deusize byteWidth);
             static MemoryObject* ObjectAllocate(deusize memoryPoolID, deusize byteWidth);
             static void* AllocateUsingData(MEMORY_POOL_DATA* memoryPool, deusize byteWidth);
             static void ObjectDelete(MemoryObject** ppMemoryObject);
@@ -563,11 +568,11 @@ namespace DvigEngine
                 const deusize sharedComponentByteWidth = sizeof(T);
                 const deint32 prototypeStorageMemoryPoolIndex = m_Instance->GetPrivateInputData()->m_PrototypeStorageMemoryPoolID;
                 void* moveFromAddress = (void*)((demachword)prototype->GetSharedComponentSubStorageAddress());
-                void* moveToAddress = (void*)((demachword)moveFromAddress + sharedComponentByteWidth);
-                Engine::Allocate( prototypeStorageMemoryPoolIndex, sharedComponentByteWidth );
+                void* moveToAddress = (void*)((demachword)moveFromAddress + sizeof(MemoryObject) + sharedComponentByteWidth);
+                Engine::ObjectAllocate( prototypeStorageMemoryPoolIndex, sharedComponentByteWidth );
                 Engine::MoveMemory( moveToAddress, moveFromAddress, sharedComponentByteWidth );
 
-                T* sharedComponent = (T*)moveFromAddress;
+                T* sharedComponent = (T*)((demachword)moveFromAddress + sizeof(MemoryObject));
                 Engine::CopyMemory( sharedComponent, component, sharedComponentByteWidth );
                 Engine::CopyMemory( &sharedComponent->m_TypeName[0], &typeName[0], typeNameByteWidth );
                 sharedComponent->m_TypeName[typeNameByteWidth] = 0;
@@ -688,7 +693,7 @@ namespace DvigEngine
 
         private:
             // Job functions
-            template<typename T>
+            template<class T>
             DV_FUNCTION_INLINE void CallObjectCreate(demachword* argumentMemory, deusize jobIndex)
             {
                 T** const result = (T** const)argumentMemory[ 0 ];
@@ -697,11 +702,14 @@ namespace DvigEngine
                 const deusize allocationPoolID = (const deusize)m_RegistryData.m_TypeAllocationPoolID.Find( (deuchar*)typeid(T).name() );
                 MemoryObject* memoryObject = ObjectAllocate(allocationPoolID, sizeof(T));
                 T* typedObject = (T*)memoryObject->Unwrap<T>();
+                T typedObjectOnStack;
+                Engine::CopyMemory( typedObject, (const void*)&typedObjectOnStack, sizeof(T) );
                 typedObject->SetSID( &objectID[0] );
                 typedObject->SetCreateeAndMemoryObject( (IObject**)result, memoryObject );
                 typedObject->m_Data.m_Engine = (void*)m_Instance;
                 *result = typedObject;
-                if (objectData == nullptr) {
+                if (objectData == nullptr)
+                {
                     typedObject->m_Data.Init( m_Instance, typedObject );
                     return;
                 }
