@@ -1,5 +1,5 @@
 TARGET 				:= main.exe
-CXXFLAGS 			:= -std=c++11 -O3 #-Werror -Wpedantic -Wall -pedantic
+CXXFLAGS 			:= -std=c++11 -O3 -Werror -Wpedantic -Wall -pedantic
 CXX					:= g++
 CXX_SOURCE    		= $(CXX) $(CXXFLAGS) -c $(1) -o $(2) &&
 CXX_OBJECT    		= $(CXX) $(CXXFLAGS) -o main.exe $(1) libs/DECore.a
@@ -33,9 +33,6 @@ compile :
 	$(call COMPILE, source/DECore/)
 	$(call MAKE_LIB, libs/DECore.a, source/DECore/)
 	$(call CLEAR_OBJECTS, source/DECore/)
-	$(call COMPILE, source/DEGraphics/)
-	$(call MAKE_LIB, libs/DEGraphics.a, source/DEGraphics/)
-	$(call CLEAR_OBJECTS, source/DEGraphics/)
 # Compile main example
 	$(call CXX_SOURCE, source/main.cpp, build/main.o) $(call CXX_OBJECT, build/main.o)
 

@@ -14,6 +14,346 @@
 
 #include "DvigEngineMacros.hpp"
 
+namespace DvigEngine2
+{
+    class MemoryObject;
+    class HashMap;
+    class Engine;
+
+    /*** Typenames ***/
+    typedef int8_t              deint8;
+    typedef uint8_t             deuint8;
+    typedef int16_t             deint16;
+    typedef uint16_t            deuint16;
+    typedef int32_t             deint32;
+    typedef uint32_t            deuint32;
+    typedef int64_t             deint64;
+    typedef uint64_t            deuint64;
+    #if defined(DV_MACRO_ARCH_32_BIT)
+        typedef int32           demachint;
+        typedef uint32          demachuint;
+        typedef demachuint      demachword;
+    #elif defined(DV_MACRO_ARCH_64_BIT)
+        typedef deint64         demachint;
+        typedef deuint64        demachuint;
+        typedef demachuint      demachword;
+    #endif
+    typedef deuint8             debool;
+    typedef deuint8             deuchar;
+    typedef demachint           deisize;
+    typedef size_t              deusize;
+    typedef deuint32            dedword;
+    typedef deuint64            deqword;
+    typedef demachword          deresult;
+    typedef deuchar             destring[DV_MEMORY_COMMON_STRING_BYTE_WIDTH];
+    typedef void                (*decallback)(demachword*, deusize);
+
+    class ICommon
+    {
+        public:
+            destring m_SID;
+            demachword m_IID;
+    };
+
+    class IProperty : public ICommon
+    { };
+
+    class IObject : public ICommon
+    {
+        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+
+        public:
+            DV_FUNCTION_INLINE IObject** GetCreatee() { return m_Createe; }
+            DV_FUNCTION_INLINE MemoryObject** GetMemoryObject() { return m_MemoryObject; }
+            DV_FUNCTION_INLINE Engine* GetEngine() { return m_Engine; }
+
+        private:
+            void SetSIDAndCreateeAndMemoryObjectAndEngine(deuchar* SID, IObject** createe, MemoryObject** memoryObject, Engine* engine);
+
+        private:
+            IObject** m_Createe;
+            MemoryObject** m_MemoryObject;
+            Engine* m_Engine;
+    };
+
+    template <typename T>
+    class Ptr : public ICommon
+    {
+        public:
+            DV_FUNCTION_INLINE static T Add(T* ptr, const deusize value) { return (T)((demachword)*ptr + (demachword)value); }
+            DV_FUNCTION_INLINE static T Subtract(T* ptr, const deusize value) { return (T)((demachword)*ptr - (demachword)value); }
+    };
+
+    class MemoryObjectProperty : public IProperty
+    {
+        public:
+            void* m_Address;
+            deusize m_ByteWidth;
+            deint32 m_MemoryPoolIndex;
+    };
+    
+    class MemoryObject : public IObject
+    {
+        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+
+        public:
+            DV_FUNCTION_INLINE void* GetAddress() { return m_Prop.m_Address; }
+            DV_FUNCTION_INLINE deusize GetByteWidth() { return m_Prop.m_ByteWidth; }
+            DV_FUNCTION_INLINE deint32 GetMemoryPoolIndex() { return m_Prop.m_MemoryPoolIndex; }
+
+            template<typename T>
+            DV_FUNCTION_INLINE T Unwrap() { return (T)m_Prop.m_Address; }
+
+        private:
+            DV_XMACRO_GETTER_PROPERTY(MemoryObjectProperty)
+
+        private:
+            MemoryObjectProperty m_Prop;
+    };
+
+    class StringProperty : public IProperty
+    {
+        public:
+            destring m_Chars;
+            deusize m_ByteWidth;
+    };
+
+    class String : public IObject
+    {
+        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+
+        public:
+            DV_FUNCTION_INLINE deuchar* GetString() { return &m_Data.m_Chars[0]; };
+            DV_FUNCTION_INLINE deusize GetByteWidth() { return m_Data.m_ByteWidth; };
+
+            static deusize CharactersCount(const destring op1);
+            static deresult CompareCharacters(const destring op1, const destring op2, const deusize opByteWidth);
+            static deresult CompareCharacterStrings(const destring op1, const destring op2);
+            static MemoryObject* ConcateCharacters(destring op1, destring op2);
+
+            // DV_FUNCTION_INLINE String& operator=(const char* str) { m_Data = STRING_DATA(str); return *this; }
+            DV_FUNCTION_INLINE deuchar* operator()() { return &m_Data.m_Chars[0]; }
+            
+        private:
+            DV_XMACRO_GETTER_DATA(StringProperty)
+
+        private:
+            StringProperty m_Data;
+    };
+
+    class FixedSetProperty : public IProperty
+    {
+        public:
+            deusize m_Capacity;
+            deusize m_EntryByteWidth;
+            MemoryObject* m_DataObject;
+            deusize m_AllocatedDataByteWidth;
+            deusize m_DataByteWidth;
+    };
+
+    class FixedSet : public IObject
+    {
+        DV_MACRO_FRIENDS(DvigEngine2::Engine, DvigEngine2::HashMap)
+
+        public:
+            void Init(const deusize entryByteWidth);
+            deint32 Insert(void* entry);
+            void Remove(const deint32 index);
+            template <typename T>
+            T Find(const deint32 index)
+            {
+                if (index >= (deint32)this->GetData()->m_Capacity) { return (T)nullptr; }
+                void* dataAddress = this->GetData()->m_DataObject->Unwrap<void*>();
+                void* entryAddress = DvigEngine2::Ptr<void*>::Add( &dataAddress, index * this->GetData()->m_EntryByteWidth );
+                std::cout << "fnd : " << (demachword)entryAddress << std::endl;
+                return (T)entryAddress;
+            }
+            deint32 FindValue(void* entry);
+
+        private:
+            DV_XMACRO_GETTER_PROPERTY(FixedSetProperty)
+
+        private:
+            FixedSetProperty m_Prop;
+    };
+
+    class HashMapKeyValuePair
+    {
+        public:
+            destring m_Key;
+            void* m_Value;
+    };
+
+    class HashMapProperty : public IProperty
+    {
+        public:
+            deusize m_Capacity;
+            deusize m_EntryValueByteWidth;
+            FixedSet m_Entries;
+            demachword m_HashTable[ DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH ];
+    };
+
+    class HashMap : public IObject
+    {
+        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+
+        public:
+            static deuint32 Hash(const destring input);
+            void Init(const deusize entryValueByteWidth);
+            deint32 Insert(const char* key, void* value);
+            void* Find(const char* key);
+
+        private:
+            DV_XMACRO_GETTER_PROPERTY(HashMapProperty)
+
+        private:
+            HashMapProperty m_Prop;
+    };
+
+    class MemoryPoolProperty : public IProperty
+    {
+        public:
+            deint32 m_Index;
+            destring m_Label;
+            void* m_Address;
+            void* m_AddressOffset;
+            deusize m_ByteWidth;
+    };
+
+    class MemoryPool : public IObject
+    {
+        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+
+        private:
+            DV_XMACRO_GETTER_PROPERTY(MemoryPoolProperty)
+
+        private:
+            MemoryPoolProperty m_Prop;
+    };
+
+    class JobQueueProperty : public IProperty
+    {
+        public:
+            std::atomic<demachword> m_StopFlag;
+            std::atomic<demachword> m_ReturnFlag;
+            std::thread m_Thread;
+            dedword m_JobCount;
+            demachword m_JobArguments[DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT * DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
+            decallback m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
+    };
+    
+    class JobQueue : public IObject
+    {
+        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+
+        public:
+            DV_FUNCTION_INLINE std::atomic<demachword>& GetStopFlag() { return m_Prop.m_StopFlag; }
+            DV_FUNCTION_INLINE std::atomic<demachword>& GetReturnFlag() { return m_Prop.m_ReturnFlag; }
+            DV_FUNCTION_INLINE std::thread& GetThread() { return m_Prop.m_Thread; }
+            DV_FUNCTION_INLINE deusize GetJobCount() { return m_Prop.m_JobCount; }
+            DV_FUNCTION_INLINE demachword GetJobArgument(deint32 arrayOffset) { return m_Prop.m_JobArguments[arrayOffset]; }
+            DV_FUNCTION_INLINE decallback& GetJob(deint32 arrayOffset) { return m_Prop.m_Jobs[arrayOffset]; }
+            
+            virtual void Delete();
+            void Push(decallback callback, void* argumentMemory, const deusize argumentCount);
+            void Start();
+            void Stop();
+
+        private:
+            DV_XMACRO_GETTER_PROPERTY(JobQueueProperty)
+
+        private:
+            JobQueueProperty m_Prop;
+    };
+
+    class EngineRegistryProperty : public IProperty
+    {
+        public:
+            HashMap m_MemoryPoolIndexForType;
+    };
+
+    class EngineInputProperty : public IProperty
+    {
+        public:
+            dedword m_Version;
+            deuint32 m_MemoryPoolsCount;
+            MemoryPoolProperty* m_MemoryPoolsData;
+            deint32 m_SystemMemoryPoolIndex;
+            deint32 m_PrototypeStorageMemoryPoolIndex;
+            deint32 m_StorageMemoryPoolIndex;
+            deusize m_RequestedThreadCount;
+    };
+
+    class EngineProperty : public IProperty
+    {
+        public:
+            MemoryPool* m_MemoryPools;
+            demachword m_CurrentJobQueueCursor;
+            JobQueue* m_JobQueues;
+            deusize m_MaxThreadCount;
+            deusize m_RequestedThreadCount;
+            void* m_UserData;
+    };
+
+    class Engine
+    {
+        DV_MACRO_DECLARE_SINGLETON(Engine, public)
+
+        public:
+            DV_FUNCTION_INLINE MemoryPool* GetMemoryPoolByIndex(const deint32 memoryPoolIndex) { return &(m_Instance->m_Prop.m_MemoryPools[memoryPoolIndex]); }
+
+            static void Init(EngineInputProperty* engineInputProperty);
+            static MemoryObject* Allocate(deint32 memoryPoolIndex, deusize byteWidth);
+            static void CopyMemory(void* destAddress, const void* srcAddress, const deusize byteWidth);
+            static void MoveMemory(void* destAddress, const void* srcAddress, const deusize byteWidth);
+            static void SetMemory(void* destAddress, const demachword value, const deusize byteWidth);
+            void Delete(MemoryObject** ppMemoryObject);
+            
+            template <typename T>
+            DV_FUNCTION_INLINE T* ObjectCreate(T** const result, const char* ID, DvigEngine2::IProperty* data)
+            {
+                // DV_XMACRO_PUSH_JOB(CallCreate<T>, m_Instance, result, stringID, data)
+                demachword argumentMemory[3] = { (demachword)result, (demachword)&ID[0], (demachword)data };
+                return CallObjectCreate<T>(&argumentMemory[0], 0);
+            }
+
+        private:
+            DV_XMACRO_GETTER_PROPERTY(EngineProperty)
+
+            template <typename T>
+            T* CallObjectCreate(demachword* argumentMemory, deint32 jobIndex)
+            {
+                T** result = (T**)argumentMemory[ 0 ];
+                deuchar* objectID = (deuchar*)argumentMemory[ 1 ];
+                // IProperty* const objectData = (IProperty* const)argumentMemory[ 2 ];
+                // const deusize allocationPoolID = (const deusize)m_RegistryData.m_TypeAllocationPoolID.Find( (deuchar*)typeid(T).name() );
+                MemoryObject* memoryObject = DvigEngine2::Engine::Allocate(0, sizeof(T));
+                T* typedObject = memoryObject->Unwrap<T*>();
+                typedObject->SetSIDAndCreateeAndMemoryObjectAndEngine( objectID, (IObject**)result, &memoryObject, m_Instance );
+                // T typedObjectOnStack;
+                // Engine::CopyMemory( typedObject, &typedObjectOnStack, sizeof(T) );
+                // typedObject->SetSID( &objectID[0] );
+                // typedObject->SetCreateeAndMemoryObject( (IObject**)result, memoryObject );
+                // typedObject->m_Engine = (void*)m_Instance;
+                *result = typedObject;
+                // if (objectData == nullptr)
+                // {
+                //     typedObject->m_Data.Init( m_Instance, typedObject );
+                //     return;
+                // }
+                // IData* actualObjectData = typedObject->GetData();
+                // Engine::CopyMemory(actualObjectData, objectData, sizeof(typedObject->m_Data));
+                // m_RegistryData.m_Objects.Insert( objectID, typedObject );
+                return typedObject;
+            }
+
+        private:
+            EngineRegistryProperty m_RegistryProp;
+            EngineInputProperty m_InputProp;
+            EngineProperty m_Prop;
+    };
+}
+
 namespace DvigEngine
 {
     /*** Forward declaration & Prototypes ***/

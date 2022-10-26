@@ -24,7 +24,7 @@ void DvigEngine::Engine::PrototypeInstantiate(Instance** const result, const cha
     MemoryObject* memoryObject = Engine::ObjectAllocate( componentStorageMemoryPoolIndex, instanceLayoutByteWidth );
 
     void* curAddress = m_Instance->GetMemoryPoolByID(componentStorageMemoryPoolIndex)->m_Data.m_Address;
-    for (deisize i = 0; i < Prototype::m_GlobalInstanceCount; ++i)
+    for (deisize i = 0; i < (deisize)Prototype::m_GlobalInstanceCount; ++i)
     {
         Instance* const curInstance = (Instance* const)((demachword)curAddress + sizeof(MemoryObject));
         Prototype* const parentPrototype = curInstance->m_Data.m_ParentPrototype;

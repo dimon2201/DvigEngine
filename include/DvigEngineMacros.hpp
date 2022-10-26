@@ -64,6 +64,7 @@
 #define DV_MEMORY_POOL_BYTE_WIDTH                       32 * DV_MEMORY_MiB
 #define DV_MEMORY_POOL_COMPONENT_STORAGE_BYTE_WIDTH     DV_MEMORY_POOL_BYTE_WIDTH / 2
 
+#define DV_MAX_UNSORTED_SET_RESERVED_BYTE_WIDTH         8
 #define DV_MAX_HASH_MAP_MEMORY_BLOCK_BYTE_WIDTH         1024
 #define DV_MAX_HASH_MAP_LIST_ENTRY_COUNT                100
 #define DV_MAX_REGISTERED_COMPONENT_COUNT               512
@@ -135,6 +136,9 @@
 #define DV_XMACRO_GETTER_DATA(T) \
         DV_FUNCTION_INLINE T* GetData() { DV_MACRO_GETTER((T*)&m_Data) };
 
+#define DV_XMACRO_GETTER_PROPERTY(T) \
+        DV_FUNCTION_INLINE T* GetData() { DV_MACRO_GETTER((T*)&m_Prop) };
+
 #define DV_XMACRO_STRING(T, TO) \
     deusize strByteWidth = 0; \
     deuchar* strCopy = (deuchar*)T; \
@@ -204,7 +208,7 @@
         public: \
             _0T _0V; \
     DV_XMACRO_XDEFINE_COMPONENT_CLOSE
-#define DV_XMACRO_XDEFINE_COMPONENT_LAYOUT_ARGS_4(T, _0T, _0V, _1T, _1V ...) \
+#define DV_XMACRO_XDEFINE_COMPONENT_LAYOUT_ARGS_4(T, _0T, _0V, _1T, _1V, ...) \
     DV_XMACRO_XDEFINE_COMPONENT_OPEN(T) \
         public: \
             _0T _0V; \
