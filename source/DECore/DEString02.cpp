@@ -14,7 +14,6 @@ DvigEngine2::deresult DvigEngine2::String::CompareCharacters(const destring op1,
 {
     deusize cycle = 0;
     while (op1[cycle] == op2[cycle] && ++cycle < opByteWidth);
-
     if (cycle == opByteWidth) {
         return DV_TRUE;
     } else {

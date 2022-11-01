@@ -4,7 +4,7 @@
 int main()
 {
     DvigEngine2::MemoryPoolProperty memoryPoolsData[4];
-    memoryPoolsData[0].m_ByteWidth = 465536;
+    memoryPoolsData[0].m_ByteWidth = 1 * 1024 * 1024;
     memoryPoolsData[1].m_ByteWidth = 465536;
     memoryPoolsData[2].m_ByteWidth = 465536;
     memoryPoolsData[3].m_ByteWidth = 465536;
@@ -19,15 +19,21 @@ int main()
     engineInputData.m_RequestedThreadCount = 1;
 
     DvigEngine2::Engine::Init(&engineInputData);
-    DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
+    // DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
 
-    DvigEngine2::HashMap* hashMaps[1];
-    auto hashMap = engine->ObjectCreate <DvigEngine2::HashMap> ( &hashMaps[0], "MyHashMap_0", nullptr );
-    hashMap->Init( sizeof(DvigEngine2::demachword) );
-    DvigEngine2::demachword value = 255;
-    hashMap->Insert( "id_test_0", &value );
-    DvigEngine2::demachword* getValue = (DvigEngine2::demachword*)hashMap->Find( "id_test_0" );
-    std::cout << *getValue << std::endl;
+    // DvigEngine2::HashMap* hashMaps[1];
+    // auto hashMap = engine->NodeCreate <DvigEngine2::HashMap> ( &hashMaps[0], "MyHashMap_0", nullptr );
+    // hashMap->Init( 1024, sizeof(DvigEngine2::HashMapKeyValuePair), 1024 );
+    // for (DvigEngine2::deisize i = 0; i < 128; ++i)
+    // {
+    //     char buff[1024];
+    //     itoa(i, &buff[0], 10);
+    //     const char* id = DvigEngine2::String::ConcateCharacters( (DvigEngine2::deuchar*)"id_test_", (DvigEngine2::deuchar*)&buff[0] )->Unwrap<const char*>();
+    //     DvigEngine2::demachword i64 = (DvigEngine2::demachword)i;
+    //     hashMap->Insert( id, (void*)i64 );
+    // }
+    // DvigEngine2::demachword* getValue = (DvigEngine2::demachword*)hashMap->Find( "id_test_100" );
+    // std::cout << (DvigEngine2::demachword)getValue << std::endl;
 
     std::cout << "Success!" << std::endl;
 
