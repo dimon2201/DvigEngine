@@ -31,7 +31,7 @@ void DvigEngine2::Engine::Init(DvigEngine2::EngineInputProperty* engineInputProp
     // Allocate memory for Engine Job queues
     const deusize allocJobQueuesByteWidth = requestedThreadCount * sizeof(DvigEngine2::JobQueue);
     m_Instance->m_Prop.m_JobQueues = (DvigEngine2::JobQueue*)sharedMemoryPoolData.m_AddressOffset;
-    DvigEngine2::Ptr<void*>::Add( &sharedMemoryPoolData.m_AddressOffset, allocMemoryPoolsByteWidth );
+    DvigEngine2::Ptr<void*>::Add( &sharedMemoryPoolData.m_AddressOffset, allocJobQueuesByteWidth );
 
     // Assign Engine property
     m_Instance->m_Prop.m_MaxThreadCount = maxThreadCount;
@@ -197,7 +197,7 @@ void DvigEngine2::Engine::Delete(MemoryObject** ppMemoryObject)
     maxMemoryPoolAddress = DvigEngine2::Ptr<const void*>::Subtract( &maxMemoryPoolAddress, deletedMemoryObjectByteWidth );
     while ((const void* const)curMemoryObject < maxMemoryPoolAddress)
     {
-        IObject* curObject = curMemoryObject->Unwrap<IObject*>();
+        // IHelperObject* curObject = curMemoryObject->Unwrap<IHelperObject*>();
         if (curMemoryObject->m_Createe != nullptr) { *curMemoryObject->m_Createe = (ICommon*)DvigEngine2::Ptr<void*>::Subtract( (void**)curMemoryObject->m_Createe, deletedMemoryObjectByteWidth ); }
         if (curMemoryObject->m_MemoryObject != nullptr) { *curMemoryObject->m_MemoryObject = (MemoryObject*)DvigEngine2::Ptr<void*>::Subtract( (void**)curMemoryObject->m_MemoryObject, deletedMemoryObjectByteWidth ); }
 

@@ -1,28 +1,49 @@
 #include "../../include/DECore.hpp"
 
-// void DvigEngine2::INode::AddChildNode(INode* node)
-// {
-//     this->m_ChildNodes->Insert((const char*)node->GetSID(), (void*)node);
-// }
-
-// void DvigEngine2::INode::RemoveChildNode(const char* SID)
-// {
-//     this->m_ChildNodes->Remove(&SID[0]);
-// }
-
-void DvigEngine2::ICommon::SetSIDAndCreateeAndMemoryObjectAndEngine(deuchar* SID, ICommon** createe, MemoryObject** memoryObject, Engine* engine)
+void DvigEngine2::INode::Init()
 {
-    // deisize m_SIDByteWidth = 0;
-    // while (SID[m_SIDByteWidth] != 0) { this->m_SID[m_SIDByteWidth] = SID[m_SIDByteWidth]; ++m_SIDByteWidth; }
-    // this->m_SID[m_SIDByteWidth] = 0;
-    // this->m_IID = IID;
+    DvigEngine2::Engine* engine = this->GetEngine();
 
-    this->m_Createe = createe;
-    this->m_MemoryObject = memoryObject;
-    this->m_Engine = engine;
-    // this->m_ParentNode = nullptr;
-    // DvigEngine2::HashMap* hms[1];
-    // engine->NodeCreate<DvigEngine2::HashMap>( &hms, "_ChildNodesHashMap", nullptr );
-    // this->m_ChildNodes->m_IID = Engine::GetGlobalIID();
-    // this->m_ChildNodes->Init( 1024, sizeof(DvigEngine2::HashMapKeyValuePair), 1024 );
+    this->m_ParentNode = nullptr;
+    engine->ObjectCreate<DvigEngine2::HashMap>( &this->m_ChildNodes, "_ChildNodesContainer", nullptr );
+    this->m_ChildNodes->Init( 128, sizeof(DvigEngine2::HashMapKeyValuePair), 1024 );
+    engine->ObjectCreate<DvigEngine2::HashMap>( &this->m_Components, "_ComponentsContainer", nullptr );
+    this->m_ChildNodes->Init( 128, sizeof(DvigEngine2::HashMapKeyValuePair), 1024 );
+    engine->ObjectCreate<DvigEngine2::HashMap>( &this->m_HelperObjects, "_HelperObjectsContainer", nullptr );
+    this->m_ChildNodes->Init( 128, sizeof(DvigEngine2::HashMapKeyValuePair), 1024 );
+}
+
+void DvigEngine2::INode::AddChildNode(INode* const node)
+{
+    this->m_ChildNodes->Insert((const char*)node->GetSID(), node);
+}
+
+void DvigEngine2::INode::AddComponent(IComponent* const component)
+{
+    this->m_Components->Insert((const char*)component->GetSID(), component);
+}
+
+void DvigEngine2::INode::AddHelperObject(IHelperObject* const helperObject)
+{
+    this->m_HelperObjects->Insert((const char*)helperObject->GetSID(), helperObject);
+}
+
+void DvigEngine2::INode::RemoveChildNode(const char* SID)
+{
+    this->m_ChildNodes->Remove(&SID[0]);
+}
+
+DvigEngine2::INode* DvigEngine2::INode::GetChildNode(const char* SID)
+{
+    return (DvigEngine2::INode*)this->m_ChildNodes->Find( &SID[0] );
+}
+
+DvigEngine2::IComponent* DvigEngine2::INode::GetComponent(const char* SID)
+{
+    return (DvigEngine2::IComponent*)this->m_Components->Find( &SID[0] );
+}
+
+DvigEngine2::IHelperObject* DvigEngine2::INode::GetHelperObject(const char* SID)
+{
+    return (DvigEngine2::IHelperObject*)this->m_HelperObjects->Find( &SID[0] );
 }

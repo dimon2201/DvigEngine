@@ -1,36 +1,76 @@
 #include "../../include/DECore.hpp"
 
-DvigEngine2::deuint32 DvigEngine2::HashMap::Hash(const destring input, const demachword mask)
+DvigEngine2::deuint32 DvigEngine2::HashMap::Hash(const destring input, const demachword bitMask)
 {
     deuint32 hash = 0u;
     deuchar* string = (deuchar*)input;
     const deisize stringSize = String::CharactersCount((deuchar*)string);
-    deuint32 hashMask = mask / DV_MACRO_ARCH_WORD_BYTE_WIDTH;
-    deuint32 bitsPerEntry = DV_TRAILING_ZEROS_COUNT(mask);
+    deuint32 bitsPerEntry = DV_TRAILING_ZEROS_COUNT(bitMask);
     for (deisize i = 0; i < stringSize; ++i)
     {
         deuint32 shift = i & (bitsPerEntry - 8u);
-        hash = (hash ^ (string[i] << shift)) & (mask - 1u);
+        hash = (hash ^ (string[i] << shift)) & (bitMask - 1u);
     }
 
     return hash;
+}
+
+DvigEngine2::deuint32 DvigEngine2::HashMap::HashMurMur(const destring input, const demachword bitMask)
+{
+    const demachuint m = 0x5bd1e995;
+    const demachuint seed = 0;
+    const demachint r = 24;
+
+    demachuint len = String::CharactersCount(input);
+    demachuint h = seed ^ len;
+
+    const deuchar* data = (const deuchar*)input;
+    demachuint k = 0;
+
+    while (len >= 4)
+    {
+        k  = data[0];
+        k |= data[1] << 8;
+        k |= data[2] << 16;
+        k |= data[3] << 24;
+
+        k *= m;
+        k ^= k >> r;
+        k *= m;
+
+        h *= m;
+        h ^= k;
+
+        data += 4;
+        len -= 4;
+    }
+
+    switch (len)
+    {
+        case 3:
+        h ^= data[2] << 16;
+        case 2:
+        h ^= data[1] << 8;
+        case 1:
+        h ^= data[0];
+        h *= m;
+    };
+
+    h ^= h >> 13;
+    h *= m;
+    h ^= h >> 15;
+
+    return h & bitMask;
 }
 
 void DvigEngine2::HashMap::Init(const deusize reservedCapacity, const deusize entryValueByteWidth, const deusize hashTableSize)
 {
     m_Prop.m_Capacity = 0;
     m_Prop.m_EntryValueByteWidth = entryValueByteWidth;
-            std::cout << "a";
-
     m_Prop.m_Entries.Init( reservedCapacity, entryValueByteWidth );
-            std::cout << "a";
-
     m_Prop.m_HashTableSize = hashTableSize;
-        std::cout << "a";
-
     m_Prop.m_HashTable = Engine::Allocate( 0, sizeof(demachword) * hashTableSize )->Unwrap<demachword*>();
-    std::cout << "a";
-    for (deisize i = 0; i < m_Prop.m_HashTableSize; ++i)
+    for (deisize i = 0; i < (deisize)m_Prop.m_HashTableSize; ++i)
     {
         m_Prop.m_HashTable[ i ] = 0;
     }
@@ -38,7 +78,7 @@ void DvigEngine2::HashMap::Init(const deusize reservedCapacity, const deusize en
 
 DvigEngine2::deint32 DvigEngine2::HashMap::Insert(const char* key, void* value)
 {
-    const deuint32 hash = HashMap::Hash( (deuchar*)key, this->GetData()->m_HashTableSize );
+    const deuint32 hash = HashMap::Hash( (deuchar*)key, (this->GetData()->m_HashTableSize - 1) );
     deint32 entryIndex = (deint32)this->GetData()->m_HashTable[ hash ];
     
     const deusize keyByteWidth = String::CharactersCount((deuchar*)&key[0]);
@@ -99,7 +139,7 @@ DvigEngine2::deint32 DvigEngine2::HashMap::Insert(const char* key, void* value)
 
 void* DvigEngine2::HashMap::Find(const char* key)
 {
-    const deuint32 hash = HashMap::Hash( (deuchar*)key, this->GetData()->m_HashTableSize );
+    const deuint32 hash = HashMap::Hash( (deuchar*)key, (this->GetData()->m_HashTableSize - 1) );
     deint32 entryIndex = (deint32)this->GetData()->m_HashTable[ hash ];
 
     HashMapKeyValuePair* foundPair = this->GetData()->m_Entries.Find<HashMapKeyValuePair*>( entryIndex );
@@ -132,7 +172,7 @@ void* DvigEngine2::HashMap::Find(const char* key)
 
 void DvigEngine2::HashMap::Remove(const char* key)
 {
-    const deuint32 hash = HashMap::Hash( (deuchar*)key, this->GetData()->m_HashTableSize );
+    const deuint32 hash = HashMap::Hash( (deuchar*)key, (this->GetData()->m_HashTableSize - 1) );
     deint32 entryIndex = (deint32)this->GetData()->m_HashTable[ hash ];
 
     HashMapKeyValuePair* foundPair = this->GetData()->m_Entries.Find<HashMapKeyValuePair*>( entryIndex );
@@ -141,7 +181,6 @@ void DvigEngine2::HashMap::Remove(const char* key)
     const deusize keyByteWidth = String::CharactersCount((deuchar*)&key[0]);
     deuchar* compPairKeyAddress = (deuchar*)&foundPair->m_Key[0];
     deuchar* compKeyAddress = (deuchar*)key;
-    std::cout << foundPair->m_Key << " " << (demachword)foundPair->m_Value << std::endl;
     if ( String::CompareCharacters( compPairKeyAddress, compKeyAddress, keyByteWidth ) == DV_FALSE)
     {
         // Possible collision
@@ -157,5 +196,9 @@ void DvigEngine2::HashMap::Remove(const char* key)
                 return;
             }
         }
+    }
+    else
+    {
+        this->GetData()->m_Entries.Remove( entryIndex );
     }
 }

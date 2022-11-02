@@ -69,7 +69,7 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE Engine* GetEngine() { return m_Engine; }
 
         private:
-            void SetSIDAndCreateeAndMemoryObjectAndEngine(deuchar* SID, ICommon** createe, MemoryObject** memoryObject, Engine* engine);
+            void SetSIDAndIIDAndCreateeAndMemoryObjectAndEngine(deuchar* SID, const demachint IID, ICommon** createe, MemoryObject** memoryObject, Engine* engine);
 
         private:
             destring m_SID;
@@ -82,23 +82,36 @@ namespace DvigEngine2
     class IProperty : public ICommon
     { };
 
-    class IObject : public ICommon
+    class IComponent : public IProperty
+    { };
+
+    class IHelperObject : public ICommon
     {
-        DV_XMACRO_DECLARE_CREATION_DEPENDENT_CLASS(IObject)
+        DV_MACRO_FRIENDS(Engine)
     };
 
     class INode : public ICommon
     {
-        DV_MACRO_FRIENDS(Engine)
+        DV_XMACRO_DECLARE_CREATION_DEPENDENT_CLASS(INode)
 
         public:
-            void AddChildNode(INode* node);
-            void RemoveChildNode(const char* SID);
+            DV_FUNCTION_INLINE static INode* GetRootNode() { return m_RootNode; }
             INode* GetChildNode(const char* SID);
+            IComponent* GetComponent(const char* SID);
+            IHelperObject* GetHelperObject(const char* SID);
+
+            void Init();
+            void AddChildNode(INode* const node);
+            void AddComponent(IComponent* const component);
+            void AddHelperObject(IHelperObject* const helperObject);
+            void RemoveChildNode(const char* SID);
 
         private:
+            static INode* m_RootNode;
             INode* m_ParentNode;
             HashMap* m_ChildNodes;
+            HashMap* m_Components;
+            HashMap* m_HelperObjects;
     };
 
     class MemoryObjectProperty : public IProperty
@@ -109,7 +122,7 @@ namespace DvigEngine2
             deint32 m_MemoryPoolIndex;
     };
     
-    class MemoryObject : public IObject
+    class MemoryObject : public IHelperObject
     {
         DV_MACRO_FRIENDS(DvigEngine2::Engine)
 
@@ -135,7 +148,7 @@ namespace DvigEngine2
             deusize m_ByteWidth;
     };
 
-    class String : public IObject
+    class String : public IHelperObject
     {
         DV_MACRO_FRIENDS(DvigEngine2::Engine)
 
@@ -166,7 +179,7 @@ namespace DvigEngine2
             deusize m_DataByteWidth;
     };
 
-    class FixedSet : public IObject
+    class FixedSet : public IHelperObject
     {
         DV_MACRO_FRIENDS(DvigEngine2::Engine, DvigEngine2::HashMap)
 
@@ -211,12 +224,13 @@ namespace DvigEngine2
             demachword* m_HashTable;
     };
 
-    class HashMap : public IObject
+    class HashMap : public IHelperObject
     {
         DV_MACRO_FRIENDS(DvigEngine2::Engine)
 
         public:
-            static deuint32 Hash(const destring input, const demachword mask);
+            static deuint32 Hash(const destring input, const demachword bitMask);
+            static deuint32 HashMurMur(const destring input, const demachword bitMask);
 
             void Init(const deusize reservedCapacity, const deusize entryValueByteWidth, const deusize hashTableSize);
             deint32 Insert(const char* key, void* value);
@@ -240,7 +254,7 @@ namespace DvigEngine2
             deusize m_ByteWidth;
     };
 
-    class MemoryPool : public IObject
+    class MemoryPool : public IHelperObject
     {
         DV_MACRO_FRIENDS(DvigEngine2::Engine)
 
@@ -262,7 +276,7 @@ namespace DvigEngine2
             decallback m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
     };
     
-    class JobQueue : public IObject
+    class JobQueue : public IHelperObject
     {
         DV_MACRO_FRIENDS(DvigEngine2::Engine)
 
@@ -321,6 +335,7 @@ namespace DvigEngine2
 
         public:
             DV_FUNCTION_INLINE MemoryPool* GetMemoryPoolByIndex(const deint32 memoryPoolIndex) { return &(m_Instance->m_Prop.m_MemoryPools[memoryPoolIndex]); }
+            static DV_FUNCTION_INLINE demachint GetGlobalIID() { static demachint globalIID = 0; return globalIID++; }
 
             static void Init(EngineInputProperty* engineInputProperty);
             static MemoryObject* Allocate(deint32 memoryPoolIndex, deusize byteWidth);
@@ -330,18 +345,26 @@ namespace DvigEngine2
             void Delete(MemoryObject** ppMemoryObject);
             
             template <typename T>
-            DV_FUNCTION_INLINE T* NodeCreate(T** const result, const char* SID, const IProperty* const data)
+            DV_FUNCTION_INLINE T* ObjectCreate(T** const result, const char* SID, const IProperty* const data)
             {
                 // DV_XMACRO_PUSH_JOB(CallCreate<T>, m_Instance, result, stringID, data)
                 demachword argumentMemory[3] = { (demachword)result, (demachword)&SID[0], (demachword)data };
-                return CallNodeCreate<T>(&argumentMemory[0], 0);
+                return CallObjectCreate<T>(&argumentMemory[0], 0);
+            }
+
+            template <typename T>
+            DV_FUNCTION_INLINE T* NodeCreate(T** const result, const char* SID)
+            {
+                // DV_XMACRO_PUSH_JOB(CallCreate<T>, m_Instance, result, stringID, data)
+                demachword argumentMemory[2] = { (demachword)result, (demachword)&SID[0] };
+                return CallObjectCreate<T>(&argumentMemory[0], 0);
             }
 
         private:
             DV_XMACRO_GETTER_PROPERTY(EngineProperty)
 
             template <typename T>
-            T* CallNodeCreate(demachword* argumentMemory, deint32 jobIndex)
+            T* CallObjectCreate(demachword* argumentMemory, deint32 jobIndex)
             {
                 T** result = (T**)argumentMemory[ 0 ];
                 deuchar* objectSID = (deuchar*)argumentMemory[ 1 ];
@@ -349,11 +372,12 @@ namespace DvigEngine2
                 // const deusize allocationPoolID = (const deusize)m_RegistryData.m_TypeAllocationPoolID.Find( (deuchar*)typeid(T).name() );
                 MemoryObject* memoryObject = Engine::Allocate(0, sizeof(T));
                 T* typedObject = memoryObject->Unwrap<T*>();
-                typedObject->SetSIDAndCreateeAndMemoryObjectAndEngine( objectSID, (INode**)result, &memoryObject, m_Instance );
+                typedObject->SetSIDAndIIDAndCreateeAndMemoryObjectAndEngine( objectSID, 0, (ICommon**)result, &memoryObject, m_Instance );
+                // typedObject->InitNode();
                 // T typedObjectOnStack;
                 // Engine::CopyMemory( typedObject, &typedObjectOnStack, sizeof(T) );
                 // typedObject->SetSID( &objectID[0] );
-                // typedObject->SetCreateeAndMemoryObject( (IObject**)result, memoryObject );
+                // typedObject->SetCreateeAndMemoryObject( (INode**)result, memoryObject );
                 // typedObject->m_Engine = (void*)m_Instance;
                 *result = typedObject;
                 // if (objectData == nullptr)
@@ -365,6 +389,17 @@ namespace DvigEngine2
                 // Engine::CopyMemory(actualObjectData, objectData, sizeof(typedObject->m_Data));
                 // m_RegistryData.m_Objects.Insert( objectID, typedObject );
                 return typedObject;
+            }
+
+            INode* CallNodeCreate(demachword* argumentMemory, deint32 jobIndex)
+            {
+                INode** result = (INode**)argumentMemory[ 0 ];
+                deuchar* objectSID = (deuchar*)argumentMemory[ 1 ];
+                MemoryObject* memoryObject = Engine::Allocate(0, sizeof(INode));
+                INode* node = memoryObject->Unwrap<INode*>();
+                node->SetSIDAndIIDAndCreateeAndMemoryObjectAndEngine( objectSID, 0, (ICommon**)result, &memoryObject, m_Instance );
+                *result = node;
+                return node;
             }
 
         private:
@@ -433,22 +468,22 @@ namespace DvigEngine
     struct IData : public ICommon
     { };
 
-    class IObject : public ICommon
+    class INode : public ICommon
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine)
 
         public:
-            IObject() {}
-            virtual ~IObject() {}
+            INode() {}
+            virtual ~INode() {}
 
-            DV_FUNCTION_INLINE IObject** GetCreatee() { return m_Createe; }
+            DV_FUNCTION_INLINE INode** GetCreatee() { return m_Createe; }
             DV_FUNCTION_INLINE MemoryObject** GetMemoryObject() { return &m_MemoryObject; }
 
         private:
-            void SetCreateeAndMemoryObject(IObject** createe, MemoryObject* memoryObject);
+            void SetCreateeAndMemoryObject(INode** createe, MemoryObject* memoryObject);
 
         private:
-            IObject** m_Createe;
+            INode** m_Createe;
             MemoryObject* m_MemoryObject;
     };
 
@@ -462,7 +497,7 @@ namespace DvigEngine
             deint32 m_MemoryPoolIndex;
     };
 
-    class MemoryObject: public IObject
+    class MemoryObject: public INode
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
 
@@ -496,7 +531,7 @@ namespace DvigEngine
             deusize m_ByteWidth;
     };
 
-    class MemoryPool : public IObject
+    class MemoryPool : public INode
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
         
@@ -525,7 +560,7 @@ namespace DvigEngine
             deusize m_ByteWidth;
     };
 
-    class String : public IObject
+    class String : public INode
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
 
@@ -566,7 +601,7 @@ namespace DvigEngine
             LINKED_LIST_DATA_ENTRY* m_Head;
     };
 
-    class LinkedList : public IObject
+    class LinkedList : public INode
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
 
@@ -617,7 +652,7 @@ namespace DvigEngine
             demachword m_HashTable[DV_MEMORY_COMMON_HASH_MAP_TABLE_BYTE_WIDTH];
     };
 
-    class HashMap : public IObject
+    class HashMap : public INode
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
 
@@ -658,7 +693,7 @@ namespace DvigEngine
             deint32 m_MemoryPoolIndex;
     };
 
-    class DynamicBuffer : public IObject
+    class DynamicBuffer : public INode
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
         
@@ -714,7 +749,7 @@ namespace DvigEngine
             void* m_ComponentSubStorageAddress;
     };
 
-    class Instance : public IObject
+    class Instance : public INode
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell, DvigEngine::INSTANCE_DATA)
         
@@ -752,7 +787,7 @@ namespace DvigEngine
             dedword m_ComponentBits[DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT];
     };
 
-    class Prototype : public IObject
+    class Prototype : public INode
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell, DvigEngine::Instance)
 
@@ -791,7 +826,7 @@ namespace DvigEngine
             decallback m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
     };
     
-    class JobQueue : public IObject
+    class JobQueue : public INode
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::IShell)
 
@@ -1065,7 +1100,7 @@ namespace DvigEngine
                 T typedObjectOnStack;
                 Engine::CopyMemory( typedObject, (const void*)&typedObjectOnStack, sizeof(T) );
                 typedObject->SetSID( &objectID[0] );
-                typedObject->SetCreateeAndMemoryObject( (IObject**)result, memoryObject );
+                typedObject->SetCreateeAndMemoryObject( (INode**)result, memoryObject );
                 typedObject->m_Data.m_Engine = (void*)m_Instance;
                 *result = typedObject;
                 if (objectData == nullptr)
