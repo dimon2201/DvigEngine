@@ -5,12 +5,15 @@ void DvigEngine2::INode::Init()
     DvigEngine2::Engine* engine = this->GetEngine();
 
     this->m_ParentNode = nullptr;
-    engine->ObjectCreate<DvigEngine2::HashMap>( &this->m_ChildNodes, "_ChildNodesContainer", nullptr );
+    this->m_ChildNodes = nullptr;
+    this->m_Components = nullptr;
+    this->m_HelperObjects = nullptr;
+    engine->Create<DvigEngine2::HashMap>( &this->m_ChildNodes, "_ChildNodesContainer", nullptr );
     this->m_ChildNodes->Init( 128, sizeof(DvigEngine2::HashMapKeyValuePair), 1024 );
-    engine->ObjectCreate<DvigEngine2::HashMap>( &this->m_Components, "_ComponentsContainer", nullptr );
-    this->m_ChildNodes->Init( 128, sizeof(DvigEngine2::HashMapKeyValuePair), 1024 );
-    engine->ObjectCreate<DvigEngine2::HashMap>( &this->m_HelperObjects, "_HelperObjectsContainer", nullptr );
-    this->m_ChildNodes->Init( 128, sizeof(DvigEngine2::HashMapKeyValuePair), 1024 );
+    engine->Create<DvigEngine2::HashMap>( &this->m_Components, "_ComponentsContainer", nullptr );
+    this->m_Components->Init( 128, sizeof(DvigEngine2::HashMapKeyValuePair), 1024 );
+    engine->Create<DvigEngine2::HashMap>( &this->m_HelperObjects, "_HelperObjectsContainer", nullptr );
+    this->m_HelperObjects->Init( 128, sizeof(DvigEngine2::HashMapKeyValuePair), 1024 );
 }
 
 void DvigEngine2::INode::AddChildNode(INode* const node)

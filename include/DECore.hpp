@@ -92,7 +92,7 @@ namespace DvigEngine2
 
     class INode : public ICommon
     {
-        DV_XMACRO_DECLARE_CREATION_DEPENDENT_CLASS(INode)
+        DV_MACRO_FRIENDS(Engine)
 
         public:
             DV_FUNCTION_INLINE static INode* GetRootNode() { return m_RootNode; }
@@ -345,26 +345,25 @@ namespace DvigEngine2
             void Delete(MemoryObject** ppMemoryObject);
             
             template <typename T>
-            DV_FUNCTION_INLINE T* ObjectCreate(T** const result, const char* SID, const IProperty* const data)
+            DV_FUNCTION_INLINE T* Create(T** const result, const char* SID, const IProperty* const data)
             {
                 // DV_XMACRO_PUSH_JOB(CallCreate<T>, m_Instance, result, stringID, data)
                 demachword argumentMemory[3] = { (demachword)result, (demachword)&SID[0], (demachword)data };
-                return CallObjectCreate<T>(&argumentMemory[0], 0);
+                return CallCreate<T>(&argumentMemory[0], 0);
             }
 
-            template <typename T>
-            DV_FUNCTION_INLINE T* NodeCreate(T** const result, const char* SID)
+            DV_FUNCTION_INLINE INode* NodeCreate(INode** const result, const char* SID)
             {
                 // DV_XMACRO_PUSH_JOB(CallCreate<T>, m_Instance, result, stringID, data)
                 demachword argumentMemory[2] = { (demachword)result, (demachword)&SID[0] };
-                return CallObjectCreate<T>(&argumentMemory[0], 0);
+                return CallNodeCreate(&argumentMemory[0], 0);
             }
 
         private:
             DV_XMACRO_GETTER_PROPERTY(EngineProperty)
 
             template <typename T>
-            T* CallObjectCreate(demachword* argumentMemory, deint32 jobIndex)
+            T* CallCreate(demachword* argumentMemory, deint32 jobIndex)
             {
                 T** result = (T**)argumentMemory[ 0 ];
                 deuchar* objectSID = (deuchar*)argumentMemory[ 1 ];
@@ -373,7 +372,11 @@ namespace DvigEngine2
                 MemoryObject* memoryObject = Engine::Allocate(0, sizeof(T));
                 T* typedObject = memoryObject->Unwrap<T*>();
                 typedObject->SetSIDAndIIDAndCreateeAndMemoryObjectAndEngine( objectSID, 0, (ICommon**)result, &memoryObject, m_Instance );
-                // typedObject->InitNode();
+                if (typeid(T) == typeid(INode))
+                {
+                    INode* node = (INode*)typedObject;
+                    node->Init();
+                }
                 // T typedObjectOnStack;
                 // Engine::CopyMemory( typedObject, &typedObjectOnStack, sizeof(T) );
                 // typedObject->SetSID( &objectID[0] );

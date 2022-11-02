@@ -21,8 +21,10 @@ int main()
     DvigEngine2::Engine::Init(&engineInputData);
     DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
 
-    DvigEngine2::INode* node[1];
-    engine->NodeCreate( &node[0], "MyNode_0" );
+    DvigEngine2::ICommon* commons[2];
+    engine->Create( (DvigEngine2::INode**)&commons[0], "MyNode_0", nullptr );
+
+    // node[0]->AddComponent(&comp);
 
     /*
         DvigEngine Info
