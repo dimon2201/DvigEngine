@@ -141,18 +141,21 @@ namespace DvigEngine2
         DV_MACRO_FRIENDS(DvigEngine2::Engine)
 
         public:
-            DV_FUNCTION_INLINE void* GetAddress() { return m_Prop.m_Address; }
-            DV_FUNCTION_INLINE deusize GetByteWidth() { return m_Prop.m_ByteWidth; }
-            DV_FUNCTION_INLINE deint32 GetMemoryPoolIndex() { return m_Prop.m_MemoryPoolIndex; }
+            DV_FUNCTION_INLINE void* GetAddress() { return m_Address; }
+            DV_FUNCTION_INLINE deusize GetByteWidth() { return m_ByteWidth; }
+            DV_FUNCTION_INLINE deint32 GetMemoryPoolIndex() { return m_MemoryPoolIndex; }
 
             template<typename T>
-            DV_FUNCTION_INLINE T Unwrap() { return (T)m_Prop.m_Address; }
+            DV_FUNCTION_INLINE T Unwrap() { return (T)m_Address; }
+
+        // private:
+        //     DV_XMACRO_GETTER_PROPERTY(MemoryObjectProperty)
 
         private:
-            DV_XMACRO_GETTER_PROPERTY(MemoryObjectProperty)
-
-        private:
-            MemoryObjectProperty m_Prop;
+            // MemoryObjectProperty m_Prop;
+            void* m_Address;
+            deusize m_ByteWidth;
+            deint32 m_MemoryPoolIndex;
     };
 
     class StringProperty : public IProperty
@@ -172,14 +175,16 @@ namespace DvigEngine2
             static deresult CompareCharacterStrings(const destring op1, const destring op2);
             static MemoryObject* ConcateCharacters(destring op1, destring op2);
 
-            DV_FUNCTION_INLINE deuchar* GetString() { return &m_Data.m_Chars[0]; };
-            DV_FUNCTION_INLINE deusize GetByteWidth() { return m_Data.m_ByteWidth; };
+            DV_FUNCTION_INLINE deuchar* GetString() { return &m_Chars[0]; };
+            DV_FUNCTION_INLINE deusize GetByteWidth() { return m_ByteWidth; };
             
-        private:
-            DV_XMACRO_GETTER_DATA(StringProperty)
+        // private:
+        //     DV_XMACRO_GETTER_DATA(StringProperty)
 
         private:
-            StringProperty m_Data;
+            // StringProperty m_Data;
+            destring m_Chars;
+            deusize m_ByteWidth;
     };
 
     class DynamicBufferProperty : public IProperty
@@ -197,20 +202,25 @@ namespace DvigEngine2
         DV_MACRO_FRIENDS(DvigEngine2::Engine)
 
         public:
-            DV_FUNCTION_INLINE deusize GetCapacity() { return m_Prop.m_Capacity; }
-            DV_FUNCTION_INLINE deusize GetSize() { return m_Prop.m_DataByteWidth; }
-            DV_FUNCTION_INLINE void* GetDataAddress() { return m_Prop.m_DataObject->Unwrap<void*>(); }
+            DV_FUNCTION_INLINE deusize GetCapacity() { return m_Capacity; }
+            DV_FUNCTION_INLINE deusize GetSize() { return m_DataByteWidth; }
+            DV_FUNCTION_INLINE void* GetDataAddress() { return m_DataObject->Unwrap<void*>(); }
 
             virtual void Init(const deint32 memoryPoolIndex, const deusize bufferByteWidth);
             void Insert(const deisize offset, const void* data, const deusize dataByteWidth);
             void Find(const deisize offset, void* output, const deusize copyByteWidth);
             void Remove(const deisize offset, const deusize removeByteWidth);
 
-        private:
-            DV_XMACRO_GETTER_PROPERTY(DynamicBufferProperty)
+        // private:
+        //     DV_XMACRO_GETTER_PROPERTY(DynamicBufferProperty)
 
         private:
-            DynamicBufferProperty m_Prop;
+            // DynamicBufferProperty m_Prop;
+            deusize m_Capacity;
+            MemoryObject* m_DataObject;
+            deusize m_AllocatedDataByteWidth;
+            deusize m_DataByteWidth;
+            deint32 m_MemoryPoolIndex;
     };
 
     class FixedSetProperty : public IProperty
@@ -230,9 +240,9 @@ namespace DvigEngine2
         DV_MACRO_FRIENDS(DvigEngine2::Engine)
 
         public:
-            DV_FUNCTION_INLINE deusize GetCapacity() { return m_Prop.m_Capacity; }
-            DV_FUNCTION_INLINE deusize GetEntryByteWidth() { return m_Prop.m_EntryByteWidth; }
-            DV_FUNCTION_INLINE deusize GetSize() { return m_Prop.m_DataByteWidth; }
+            DV_FUNCTION_INLINE deusize GetCapacity() { return m_Capacity; }
+            DV_FUNCTION_INLINE deusize GetEntryByteWidth() { return m_EntryByteWidth; }
+            DV_FUNCTION_INLINE deusize GetSize() { return m_DataByteWidth; }
 
             virtual void Init(const deint32 memoryPoolIndex, const deusize reservedCapacity, const deusize entryByteWidth);
             deint32 Insert(void* entry);
@@ -241,18 +251,25 @@ namespace DvigEngine2
             template <typename T>
             T Find(const deint32 index)
             {
-                if (index >= (deint32)this->GetData()->m_Capacity) { return (T)nullptr; }
-                void* dataAddress = this->GetData()->m_DataObject->Unwrap<void*>();
-                void* entryAddress = DvigEngine2::Ptr<void*>::Add( &dataAddress, index * this->GetData()->m_EntryByteWidth );
+                if (index >= (deint32)this->m_Capacity) { return (T)nullptr; }
+                void* dataAddress = this->m_DataObject->Unwrap<void*>();
+                void* entryAddress = DvigEngine2::Ptr<void*>::Add( &dataAddress, index * this->m_EntryByteWidth );
                 return (T)entryAddress;
             }
             deint32 FindValue(void* entry);
 
-        private:
-            DV_XMACRO_GETTER_PROPERTY(FixedSetProperty)
+        // private:
+        //     DV_XMACRO_GETTER_PROPERTY(FixedSetProperty)
 
         private:
-            FixedSetProperty m_Prop;
+            // FixedSetProperty m_Prop;
+            deusize m_Capacity;
+            deusize m_EntryByteWidth;
+            MemoryObject* m_DataObject;
+            deusize m_ReservedDataByteWidth;
+            deusize m_AllocatedDataByteWidth;
+            deusize m_DataByteWidth;
+            deint32 m_MemoryPoolIndex;
     };
 
     class HashMapKeyValuePair
@@ -281,16 +298,27 @@ namespace DvigEngine2
             static deuint32 Hash(const destring input, const demachword bitMask);
             static deuint32 HashMurMur(const destring input, const demachword bitMask);
 
+            DV_FUNCTION_INLINE deusize GetCapacity() { return m_Capacity; }
+            DV_FUNCTION_INLINE deusize GetEntryValueByteWidth() { return m_EntryValueByteWidth; }
+            DV_FUNCTION_INLINE deusize GetHashTableSize() { return m_HashTableSize; }
+            DV_FUNCTION_INLINE demachword* GetHashTable() { return &m_HashTable[0]; }
+
             virtual void Init(const deint32 memoryPoolIndex, const deusize reservedCapacity, const deusize entryValueByteWidth, const deusize hashTableSize);
             deint32 Insert(const char* key, void* value);
             void* Find(const char* key);
             void Remove(const char* key);
 
-        private:
-            DV_XMACRO_GETTER_PROPERTY(HashMapProperty)
+        // private:
+        //     DV_XMACRO_GETTER_PROPERTY(HashMapProperty)
 
         private:
-            HashMapProperty m_Prop;
+            // HashMapProperty m_Prop;
+            deusize m_Capacity;
+            deusize m_EntryValueByteWidth;
+            FixedSet m_Entries;
+            deusize m_HashTableSize;
+            demachword* m_HashTable;
+            deint32 m_MemoryPoolIndex;
     };
 
     class MemoryPoolProperty : public IProperty
@@ -307,11 +335,22 @@ namespace DvigEngine2
     {
         DV_MACRO_FRIENDS(DvigEngine2::Engine)
 
-        private:
-            DV_XMACRO_GETTER_PROPERTY(MemoryPoolProperty)
+        public:
+            DV_FUNCTION_INLINE deuchar* GetLabel() { return &m_Label[0]; }
+            DV_FUNCTION_INLINE void* GetBaseAddress() { return m_Address; }
+            DV_FUNCTION_INLINE void* GetOffsetAddress() { return m_AddressOffset; }
+            DV_FUNCTION_INLINE deusize GetByteWidth() { return m_ByteWidth; }            
+
+        // private: 
+            // DV_XMACRO_GETTER_PROPERTY(MemoryPoolProperty)
 
         private:
-            MemoryPoolProperty m_Prop;
+            // MemoryPoolProperty m_Prop;
+            deint32 m_Index;
+            destring m_Label;
+            void* m_Address;
+            void* m_AddressOffset;
+            deusize m_ByteWidth;
     };
 
     class JobQueueProperty : public IProperty
@@ -330,23 +369,29 @@ namespace DvigEngine2
         DV_MACRO_FRIENDS(DvigEngine2::Engine)
 
         public:
-            DV_FUNCTION_INLINE std::atomic<demachword>& GetStopFlag() { return m_Prop.m_StopFlag; }
-            DV_FUNCTION_INLINE std::atomic<demachword>& GetReturnFlag() { return m_Prop.m_ReturnFlag; }
-            DV_FUNCTION_INLINE std::thread& GetThread() { return m_Prop.m_Thread; }
-            DV_FUNCTION_INLINE deusize GetJobCount() { return m_Prop.m_JobCount; }
-            DV_FUNCTION_INLINE demachword GetJobArgument(deint32 arrayOffset) { return m_Prop.m_JobArguments[arrayOffset]; }
-            DV_FUNCTION_INLINE decallback& GetJob(deint32 arrayOffset) { return m_Prop.m_Jobs[arrayOffset]; }
+            DV_FUNCTION_INLINE std::atomic<demachword>& GetStopFlag() { return m_StopFlag; }
+            DV_FUNCTION_INLINE std::atomic<demachword>& GetReturnFlag() { return m_ReturnFlag; }
+            DV_FUNCTION_INLINE std::thread& GetThread() { return m_Thread; }
+            DV_FUNCTION_INLINE deusize GetJobCount() { return m_JobCount; }
+            DV_FUNCTION_INLINE demachword GetJobArgument(deint32 arrayOffset) { return m_JobArguments[arrayOffset]; }
+            DV_FUNCTION_INLINE decallback& GetJob(deint32 arrayOffset) { return m_Jobs[arrayOffset]; }
             
             virtual void Delete();
             void Push(decallback callback, void* argumentMemory, const deusize argumentCount);
             void Start();
             void Stop();
 
-        private:
-            DV_XMACRO_GETTER_PROPERTY(JobQueueProperty)
+        // private:
+        //     DV_XMACRO_GETTER_PROPERTY(JobQueueProperty)
 
         private:
-            JobQueueProperty m_Prop;
+            // JobQueueProperty m_Prop;
+            std::atomic<demachword> m_StopFlag;
+            std::atomic<demachword> m_ReturnFlag;
+            std::thread m_Thread;
+            dedword m_JobCount;
+            demachword m_JobArguments[DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT * DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
+            decallback m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
     };
 
     class EngineRegistryProperty : public IProperty
@@ -401,13 +446,6 @@ namespace DvigEngine2
                 return CallCreate<T>(&argumentMemory[0], 0);
             }
 
-            DV_FUNCTION_INLINE INode* NodeCreate(INode** const result, const char* USID)
-            {
-                // DV_XMACRO_PUSH_JOB(CallCreate<T>, m_Instance, result, stringID, data)
-                demachword argumentMemory[2] = { (demachword)result, (demachword)&USID[0] };
-                return CallNodeCreate(&argumentMemory[0], 0);
-            }
-
         private:
             DV_XMACRO_GETTER_PROPERTY(EngineProperty)
 
@@ -448,17 +486,6 @@ namespace DvigEngine2
                 // Engine::CopyMemory(actualObjectData, objectData, sizeof(typedObject->m_Data));
                 // m_RegistryData.m_Objects.Insert( objectID, typedObject );
                 return typedObject;
-            }
-
-            INode* CallNodeCreate(demachword* argumentMemory, deint32 jobIndex)
-            {
-                INode** result = (INode**)argumentMemory[ 0 ];
-                deuchar* objectUSID = (deuchar*)argumentMemory[ 1 ];
-                MemoryObject* memoryObject = Engine::Allocate(0, sizeof(INode));
-                INode* node = memoryObject->Unwrap<INode*>();
-                node->SetUSIDAndUIIDAndCreateeAndMemoryObjectAndEngine( objectUSID, 0, (ICommon**)result, &memoryObject, m_Instance );
-                *result = node;
-                return node;
             }
 
         private:

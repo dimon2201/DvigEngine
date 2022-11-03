@@ -47,10 +47,12 @@ void DvigEngine2::Engine::Init(DvigEngine2::EngineInputProperty* engineInputProp
     // Copy input data to Engine data
     for (deisize i = 0; i < engineInputProperty->m_MemoryPoolsCount; ++i)
     {
-        m_Instance->m_Prop.m_MemoryPools[i].m_Prop.m_Address = engineInputProperty->m_MemoryPoolsData[i].m_Address;
-        m_Instance->m_Prop.m_MemoryPools[i].m_Prop.m_AddressOffset = engineInputProperty->m_MemoryPoolsData[i].m_AddressOffset;
-        m_Instance->m_Prop.m_MemoryPools[i].m_Prop.m_ByteWidth = engineInputProperty->m_MemoryPoolsData[i].m_ByteWidth;
+        m_Instance->GetData()->m_MemoryPools[i].m_Address = engineInputProperty->m_MemoryPoolsData[i].m_Address;
+        m_Instance->GetData()->m_MemoryPools[i].m_AddressOffset = engineInputProperty->m_MemoryPoolsData[i].m_AddressOffset;
+        m_Instance->GetData()->m_MemoryPools[i].m_ByteWidth = engineInputProperty->m_MemoryPoolsData[i].m_ByteWidth;
     }
+
+    Engine::CopyMemory( &m_Instance->m_InputProp, engineInputProperty, sizeof(EngineInputProperty) );
 
     // DvigEngine2::MemoryPoolProperty* memoryPoolsData = engineInputProperty->m_MemoryPoolsData;
     // deisize memoryPoolsCount = engineInputProperty->m_MemoryPoolsCount;
@@ -179,16 +181,16 @@ DvigEngine2::MemoryObject* DvigEngine2::Engine::Allocate(deint32 memoryPoolIndex
 {
     deusize allocByteWidth = sizeof(DvigEngine2::MemoryObject) + byteWidth;
 
-    DvigEngine2::MemoryPoolProperty* memoryPoolProp = (DvigEngine2::MemoryPoolProperty*)m_Instance->GetMemoryPoolByIndex(memoryPoolIndex)->GetData();
-    void* prevPoolOffset = memoryPoolProp->m_AddressOffset;
-    memoryPoolProp->m_AddressOffset = (void*)((deusize)memoryPoolProp->m_AddressOffset + allocByteWidth);
+    DvigEngine2::MemoryPool* memoryPool = (DvigEngine2::MemoryPool*)m_Instance->GetMemoryPoolByIndex(memoryPoolIndex);
+    void* prevPoolOffset = memoryPool->m_AddressOffset;
+    memoryPool->m_AddressOffset = (void*)((deusize)memoryPool->m_AddressOffset + allocByteWidth);
 
     DvigEngine2::MemoryObject* memoryObject = (DvigEngine2::MemoryObject*)prevPoolOffset;
     memoryObject->m_Createe = nullptr;
     memoryObject->m_MemoryObject = nullptr;
-    memoryObject->GetData()->m_Address = (void*)((deusize)prevPoolOffset + sizeof(DvigEngine2::MemoryObject));
-    memoryObject->GetData()->m_ByteWidth = byteWidth;
-    memoryObject->GetData()->m_MemoryPoolIndex = memoryPoolIndex;
+    memoryObject->m_Address = (void*)((deusize)prevPoolOffset + sizeof(DvigEngine2::MemoryObject));
+    memoryObject->m_ByteWidth = byteWidth;
+    memoryObject->m_MemoryPoolIndex = memoryPoolIndex;
 
     return memoryObject;
 }
@@ -202,7 +204,7 @@ void DvigEngine2::Engine::Delete(MemoryObject** ppMemoryObject)
     const deint32 memoryPoolIndex = curMemoryObject->GetMemoryPoolIndex();
     MemoryPool* const memoryPool = &m_Instance->GetData()->m_MemoryPools[memoryPoolIndex];
 
-    const void* maxMemoryPoolAddress = memoryPool->GetData()->m_AddressOffset;
+    const void* maxMemoryPoolAddress = memoryPool->m_AddressOffset;
     const deusize moveByteWidth = (demachword)maxMemoryPoolAddress - (demachword)nextMemoryObject;
     DvigEngine2::Engine::MoveMemory( curMemoryObject, nextMemoryObject, moveByteWidth );
 
