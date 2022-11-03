@@ -21,8 +21,22 @@ int main()
     DvigEngine2::Engine::Init(&engineInputData);
     DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
 
-    DvigEngine2::ICommon* commons[2];
-    engine->Create( (DvigEngine2::INode**)&commons[0], "MyNode_0", nullptr );
+    DvigEngine2::DynamicBuffer* dybuffers[1];
+    engine->Create( &dybuffers[0], "MyDyBuffer_0", nullptr );
+    dybuffers[0]->Init( 4, 4 );
+
+    unsigned data = 255;
+    unsigned anotherData = 127;
+    dybuffers[0]->Insert( 0, &data, sizeof(unsigned) );
+    dybuffers[0]->Insert( 4, &anotherData, sizeof(unsigned) );
+
+    unsigned getData = 0;
+    unsigned getAnotherData = 0;
+    dybuffers[0]->Remove( 0, sizeof(unsigned) );
+    dybuffers[0]->Find( 0, &getData, sizeof(unsigned) );
+    dybuffers[0]->Find( 4, &getAnotherData, sizeof(unsigned) );
+
+    std::cout << getData << " " << getAnotherData << std::endl;
 
     // node[0]->AddComponent(&comp);
 

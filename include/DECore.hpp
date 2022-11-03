@@ -168,6 +168,34 @@ namespace DvigEngine2
             StringProperty m_Data;
     };
 
+    class DynamicBufferProperty : public IProperty
+    {
+        public:
+            MemoryObject* m_DataObject;
+            deusize m_ReservedDataByteWidth;
+            deusize m_AllocatedDataByteWidth;
+            deusize m_DataByteWidth;
+    };
+
+    class DynamicBuffer : public IHelperObject
+    {
+        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+
+        public:
+            DV_FUNCTION_INLINE void* GetDataAddress() { return m_Prop.m_DataObject->Unwrap<void*>(); }
+
+            void Init(const deusize reservedByteWidth, const deusize bufferByteWidth);
+            void Insert(const deisize offset, const void* data, const deusize dataByteWidth);
+            void Find(const deisize offset, void* output, const deusize copyByteWidth);
+            void Remove(const deisize offset, const deusize removeByteWidth);
+
+        private:
+            DV_XMACRO_GETTER_PROPERTY(DynamicBufferProperty)
+
+        private:
+            DynamicBufferProperty m_Prop;
+    };
+
     class FixedSetProperty : public IProperty
     {
         public:
@@ -181,7 +209,7 @@ namespace DvigEngine2
 
     class FixedSet : public IHelperObject
     {
-        DV_MACRO_FRIENDS(DvigEngine2::Engine, DvigEngine2::HashMap)
+        DV_MACRO_FRIENDS(DvigEngine2::Engine)
 
         public:
             deusize GetCapacity() { return m_Prop.m_Capacity; }
