@@ -13,32 +13,44 @@ void DvigEngine2::Engine::Init(DvigEngine2::EngineInputProperty* engineInputProp
         requestedThreadCount = 1;
     }
 
-    DvigEngine2::MemoryPoolProperty sharedMemoryPoolData;
-    sharedMemoryPoolData.m_Address = malloc(engineInputProperty->m_MemoryPoolsData[0].m_ByteWidth);
-    sharedMemoryPoolData.m_AddressOffset = sharedMemoryPoolData.m_Address;
-    sharedMemoryPoolData.m_ByteWidth = engineInputProperty->m_MemoryPoolsData[0].m_ByteWidth;
+    // Count all memory pools byte width
+    deusize mallocByteWidth = 0;
+    for (deisize i = 0; i < engineInputProperty->m_MemoryPoolsCount; ++i) { mallocByteWidth += engineInputProperty->m_MemoryPoolsData[i].m_ByteWidth; }
+
+    // Single-allocated data block
+    const void* mallocAddress = malloc( mallocByteWidth );
+
+    // Assign proper pointers to memory pools
+    void* movingAddress = (void*)mallocAddress;
+    for (deisize i = 0; i < engineInputProperty->m_MemoryPoolsCount; ++i)
+    {
+        engineInputProperty->m_MemoryPoolsData[i].m_Address = movingAddress;
+        engineInputProperty->m_MemoryPoolsData[i].m_AddressOffset = movingAddress;
+        movingAddress = Ptr<void*>::Add( &movingAddress, engineInputProperty->m_MemoryPoolsData[i].m_ByteWidth );
+    }
 
     // Allocate memory for Engine
     const deusize allocEngineByteWidth = sizeof(DvigEngine2::Engine);
-    m_Instance = (DvigEngine2::Engine*)sharedMemoryPoolData.m_AddressOffset;
-    DvigEngine2::Ptr<void*>::Add( &sharedMemoryPoolData.m_AddressOffset, allocEngineByteWidth );
+    m_Instance = (DvigEngine2::Engine*)engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset;
+    engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset = DvigEngine2::Ptr<void*>::Add( &engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset, allocEngineByteWidth );
 
     // Allocate memory for Engine Memory pools
-    const deusize allocMemoryPoolsByteWidth = 1 * sizeof(DvigEngine2::MemoryPool);
-    m_Instance->m_Prop.m_MemoryPools = (DvigEngine2::MemoryPool*)sharedMemoryPoolData.m_AddressOffset;
-    DvigEngine2::Ptr<void*>::Add( &sharedMemoryPoolData.m_AddressOffset, allocMemoryPoolsByteWidth );
+    const deusize allocMemoryPoolsByteWidth = engineInputProperty->m_MemoryPoolsCount * sizeof(DvigEngine2::MemoryPool);
+    m_Instance->m_Prop.m_MemoryPools = (DvigEngine2::MemoryPool*)engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset;
+    engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset = DvigEngine2::Ptr<void*>::Add( &engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset, allocMemoryPoolsByteWidth );
 
     // Allocate memory for Engine Job queues
     const deusize allocJobQueuesByteWidth = requestedThreadCount * sizeof(DvigEngine2::JobQueue);
-    m_Instance->m_Prop.m_JobQueues = (DvigEngine2::JobQueue*)sharedMemoryPoolData.m_AddressOffset;
-    DvigEngine2::Ptr<void*>::Add( &sharedMemoryPoolData.m_AddressOffset, allocJobQueuesByteWidth );
+    m_Instance->m_Prop.m_JobQueues = (DvigEngine2::JobQueue*)engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset;
+    engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset = DvigEngine2::Ptr<void*>::Add( &engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset, allocJobQueuesByteWidth );
 
-    // Assign Engine property
-    m_Instance->m_Prop.m_MaxThreadCount = maxThreadCount;
-    m_Instance->m_Prop.m_RequestedThreadCount = requestedThreadCount;
-    m_Instance->m_Prop.m_MemoryPools[0].m_Prop.m_Address = sharedMemoryPoolData.m_Address;
-    m_Instance->m_Prop.m_MemoryPools[0].m_Prop.m_AddressOffset = sharedMemoryPoolData.m_AddressOffset;
-    m_Instance->m_Prop.m_MemoryPools[0].m_Prop.m_ByteWidth = sharedMemoryPoolData.m_ByteWidth;
+    // Copy input data to Engine data
+    for (deisize i = 0; i < engineInputProperty->m_MemoryPoolsCount; ++i)
+    {
+        m_Instance->m_Prop.m_MemoryPools[i].m_Prop.m_Address = engineInputProperty->m_MemoryPoolsData[i].m_Address;
+        m_Instance->m_Prop.m_MemoryPools[i].m_Prop.m_AddressOffset = engineInputProperty->m_MemoryPoolsData[i].m_AddressOffset;
+        m_Instance->m_Prop.m_MemoryPools[i].m_Prop.m_ByteWidth = engineInputProperty->m_MemoryPoolsData[i].m_ByteWidth;
+    }
 
     // DvigEngine2::MemoryPoolProperty* memoryPoolsData = engineInputProperty->m_MemoryPoolsData;
     // deisize memoryPoolsCount = engineInputProperty->m_MemoryPoolsCount;

@@ -63,17 +63,18 @@ DvigEngine2::deuint32 DvigEngine2::HashMap::HashMurMur(const destring input, con
     return h & bitMask;
 }
 
-void DvigEngine2::HashMap::Init(const deusize reservedCapacity, const deusize entryValueByteWidth, const deusize hashTableSize)
+void DvigEngine2::HashMap::Init(const deint32 memoryPoolIndex, const deusize reservedCapacity, const deusize entryValueByteWidth, const deusize hashTableSize)
 {
     m_Prop.m_Capacity = 0;
     m_Prop.m_EntryValueByteWidth = entryValueByteWidth;
-    m_Prop.m_Entries.Init( reservedCapacity, entryValueByteWidth );
+    m_Prop.m_Entries.Init( memoryPoolIndex, reservedCapacity, entryValueByteWidth );
     m_Prop.m_HashTableSize = hashTableSize;
     m_Prop.m_HashTable = Engine::Allocate( 0, sizeof(demachword) * hashTableSize )->Unwrap<demachword*>();
     for (deisize i = 0; i < (deisize)m_Prop.m_HashTableSize; ++i)
     {
         m_Prop.m_HashTable[ i ] = 0;
     }
+    m_Prop.m_MemoryPoolIndex = memoryPoolIndex;
 }
 
 DvigEngine2::deint32 DvigEngine2::HashMap::Insert(const char* key, void* value)

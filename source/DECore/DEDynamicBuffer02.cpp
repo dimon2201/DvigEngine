@@ -1,10 +1,11 @@
 #include "../../include/DECore.hpp"
 
-void DvigEngine2::DynamicBuffer::Init(const deusize bufferByteWidth)
+void DvigEngine2::DynamicBuffer::Init(const deint32 memoryPoolIndex, const deusize bufferByteWidth)
 {
     m_Prop.m_DataObject = Engine::Allocate( 0, bufferByteWidth );
     m_Prop.m_AllocatedDataByteWidth = bufferByteWidth;
     m_Prop.m_DataByteWidth = 0;
+    m_Prop.m_MemoryPoolIndex = memoryPoolIndex;
 }
 
 void DvigEngine2::DynamicBuffer::Insert(const deisize offset, const void* data, const deusize dataByteWidth)
@@ -45,6 +46,7 @@ void DvigEngine2::DynamicBuffer::Insert(const deisize offset, const void* data, 
     }
     
     Engine::CopyMemory( insertToAddress, data, dataByteWidth );
+    m_Prop.m_Capacity += 1;
     m_Prop.m_DataByteWidth += dataByteWidth;
 }
 
@@ -64,5 +66,6 @@ void DvigEngine2::DynamicBuffer::Remove(const deisize offset, const deusize remo
     const deusize moveByteWidth = (demachword)dataLastAddress - (demachword)moveFromAddress;
     Engine::MoveMemory( removeAddress, moveFromAddress, moveByteWidth );
 
+    m_Prop.m_Capacity -= 1;
     m_Prop.m_DataByteWidth -= removeByteWidth;
 }

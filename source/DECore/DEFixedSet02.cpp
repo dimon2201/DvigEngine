@@ -1,6 +1,6 @@
 #include "../../include/DECore.hpp"
 
-void DvigEngine2::FixedSet::Init(const DvigEngine2::deusize reservedCapacity, const DvigEngine2::deusize entryByteWidth)
+void DvigEngine2::FixedSet::Init(const deint32 memoryPoolIndex, const DvigEngine2::deusize reservedCapacity, const DvigEngine2::deusize entryByteWidth)
 {
     m_Prop.m_Capacity = 0;
     m_Prop.m_EntryByteWidth = entryByteWidth;
@@ -8,6 +8,7 @@ void DvigEngine2::FixedSet::Init(const DvigEngine2::deusize reservedCapacity, co
     m_Prop.m_ReservedDataByteWidth = entryByteWidth * reservedCapacity;
     m_Prop.m_AllocatedDataByteWidth = entryByteWidth + m_Prop.m_ReservedDataByteWidth;
     m_Prop.m_DataByteWidth = 0;
+    m_Prop.m_MemoryPoolIndex = memoryPoolIndex;
 }
 
 DvigEngine2::deint32 DvigEngine2::FixedSet::Insert(void* entry)
