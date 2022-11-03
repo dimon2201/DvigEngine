@@ -23,12 +23,12 @@ int main()
 
     DvigEngine2::DynamicBuffer* dybuffers[1];
     engine->Create( &dybuffers[0], "MyDyBuffer_0", nullptr );
-    dybuffers[0]->Init( 4, 4 );
+    dybuffers[0]->Init( 4 );
 
     unsigned data = 255;
     unsigned anotherData = 127;
-    dybuffers[0]->Insert( 0, &data, sizeof(unsigned) );
-    dybuffers[0]->Insert( 4, &anotherData, sizeof(unsigned) );
+    dybuffers[0]->Insert( DV_NULL, &data, sizeof(unsigned) );
+    dybuffers[0]->Insert( DV_NULL, &anotherData, sizeof(unsigned) );
 
     unsigned getData = 0;
     unsigned getAnotherData = 0;

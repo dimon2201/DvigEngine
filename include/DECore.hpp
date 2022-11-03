@@ -172,7 +172,6 @@ namespace DvigEngine2
     {
         public:
             MemoryObject* m_DataObject;
-            deusize m_ReservedDataByteWidth;
             deusize m_AllocatedDataByteWidth;
             deusize m_DataByteWidth;
     };
@@ -184,7 +183,7 @@ namespace DvigEngine2
         public:
             DV_FUNCTION_INLINE void* GetDataAddress() { return m_Prop.m_DataObject->Unwrap<void*>(); }
 
-            void Init(const deusize reservedByteWidth, const deusize bufferByteWidth);
+            void Init(const deusize bufferByteWidth);
             void Insert(const deisize offset, const void* data, const deusize dataByteWidth);
             void Find(const deisize offset, void* output, const deusize copyByteWidth);
             void Remove(const deisize offset, const deusize removeByteWidth);

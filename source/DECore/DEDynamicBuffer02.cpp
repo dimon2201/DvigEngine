@@ -1,11 +1,10 @@
 #include "../../include/DECore.hpp"
 
-void DvigEngine2::DynamicBuffer::Init(const deusize reservedByteWidth, const deusize bufferByteWidth)
+void DvigEngine2::DynamicBuffer::Init(const deusize bufferByteWidth)
 {
-    m_Prop.m_DataObject = Engine::Allocate( 0, reservedByteWidth + bufferByteWidth );
-    m_Prop.m_ReservedDataByteWidth = reservedByteWidth;
-    m_Prop.m_AllocatedDataByteWidth = reservedByteWidth + bufferByteWidth;
-    m_Prop.m_DataByteWidth = bufferByteWidth;
+    m_Prop.m_DataObject = Engine::Allocate( 0, bufferByteWidth );
+    m_Prop.m_AllocatedDataByteWidth = bufferByteWidth;
+    m_Prop.m_DataByteWidth = 0;
 }
 
 void DvigEngine2::DynamicBuffer::Insert(const deisize offset, const void* data, const deusize dataByteWidth)
@@ -15,23 +14,33 @@ void DvigEngine2::DynamicBuffer::Insert(const deisize offset, const void* data, 
 
     void* dataAddress = m_Prop.m_DataObject->Unwrap<void*>();
     void* insertToAddress = Ptr<void*>::Add( &dataAddress, actualOffset );
+    void* moveToAddress = Ptr<void*>::Add( &insertToAddress, dataByteWidth );
     const void* allocatedLastAddress = Ptr<void*>::Add( &dataAddress, m_Prop.m_AllocatedDataByteWidth );
-    if (insertToAddress >= allocatedLastAddress)
+    if (moveToAddress >= allocatedLastAddress)
     {
         // Overflow
         // Delete previous memory block
         Engine* engine = this->GetEngine();
-        engine->Delete( &m_Prop.m_DataObject );
 
         // Allocate new
-        m_Prop.m_DataObject = Engine::Allocate( 0, m_Prop.m_ReservedDataByteWidth + m_Prop.m_DataByteWidth + dataByteWidth );
-        m_Prop.m_AllocatedDataByteWidth = m_Prop.m_ReservedDataByteWidth + m_Prop.m_DataByteWidth + dataByteWidth;
+        MemoryObject* newDataObject = Engine::Allocate( 0, m_Prop.m_AllocatedDataByteWidth + m_Prop.m_DataByteWidth + dataByteWidth );
+        m_Prop.m_AllocatedDataByteWidth = m_Prop.m_AllocatedDataByteWidth + m_Prop.m_DataByteWidth + dataByteWidth;
+
+        // Copy previous to new
+        // And delete
+        Engine::CopyMemory( newDataObject->Unwrap<void*>(), m_Prop.m_DataObject->Unwrap<void*>(), m_Prop.m_DataByteWidth );
+        engine->Delete( &m_Prop.m_DataObject );
+        m_Prop.m_DataObject = newDataObject;
+
+        // Update pointers
+        dataAddress = m_Prop.m_DataObject->Unwrap<void*>();
+        insertToAddress = Ptr<void*>::Add( &dataAddress, actualOffset );
+        moveToAddress = Ptr<void*>::Add( &insertToAddress, dataByteWidth );
     }
     else
     {
         const void* dataLastAddress = Ptr<void*>::Add( &dataAddress, m_Prop.m_DataByteWidth );
         const deusize moveByteWidth = (demachword)dataLastAddress - (demachword)insertToAddress;
-        void* moveToAddress = Ptr<void*>::Add( &insertToAddress, dataByteWidth );
         Engine::MoveMemory( moveToAddress, insertToAddress, moveByteWidth );
     }
     
