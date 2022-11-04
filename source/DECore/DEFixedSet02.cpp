@@ -11,6 +11,11 @@ void DvigEngine2::FixedSet::Init(const deint32 memoryPoolIndex, const DvigEngine
     m_MemoryPoolIndex = memoryPoolIndex;
 }
 
+void DvigEngine2::FixedSet::Free()
+{
+    this->GetEngine()->Delete( this->GetMemoryObject() );
+}
+
 DvigEngine2::deint32 DvigEngine2::FixedSet::Insert(void* entry)
 {
     if (this->m_DataByteWidth + this->m_EntryByteWidth >= this->m_AllocatedDataByteWidth)

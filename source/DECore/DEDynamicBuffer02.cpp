@@ -8,6 +8,11 @@ void DvigEngine2::DynamicBuffer::Init(const deint32 memoryPoolIndex, const deusi
     this->m_MemoryPoolIndex = memoryPoolIndex;
 }
 
+void DvigEngine2::DynamicBuffer::Free()
+{
+    this->GetEngine()->Delete( this->GetMemoryObject() );
+}
+
 void DvigEngine2::DynamicBuffer::Insert(const deisize offset, const void* data, const deusize dataByteWidth)
 {
     deisize actualOffset = offset;

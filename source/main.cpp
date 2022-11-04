@@ -1,6 +1,5 @@
 #include "../include/DECore.hpp"
 
-
 int main()
 {
     DvigEngine2::MemoryPoolProperty memoryPoolsData[2];
@@ -20,9 +19,11 @@ int main()
 
     DvigEngine2::INode* nodes[1];
     engine->Create<DvigEngine2::INode>( &nodes[0], "MyNode_0", nullptr );
+    nodes[0]->Init();
 
-    struct MyComp : public DvigEngine2::IComponent { unsigned val; };
-    
+    DV_XMACRO_DEF_COMPONENT( MyComp, unsigned, val );
+    engine->RegisterComponent<MyComp>();
+
     MyComp* components[3];
     engine->Create<MyComp>( &components[0], "MyComponent_0", nullptr );
     components[0]->val = 255;
@@ -31,15 +32,9 @@ int main()
     engine->Create<MyComp>( &components[2], "MyComponent_2", nullptr );
     components[2]->val = 111;
 
-    nodes[0]->AddComponent(components[0]);
-    components[0]->val = 224;
-    nodes[0]->AddComponent(components[1]);
-    components[1]->val = 150;
-    nodes[0]->RemoveComponent("MyComponent_0");
-    components[1]->val = 180;
-    nodes[0]->AddComponent(components[2]);
+    engine->AddComponent<MyComp>(&nodes[0], components[0]);
 
-    MyComp* getComp = (MyComp*)nodes[0]->GetComponent("MyComponent_1");
+    MyComp* getComp = (MyComp*)nodes[0]->GetComponent("MyComponent_0");
     std::cout << getComp->val << std::endl;
 
     /*

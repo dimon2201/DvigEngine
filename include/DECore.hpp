@@ -65,6 +65,7 @@ namespace DvigEngine2
         public:
             virtual ~ICommon() {}
             virtual void Init() {}
+            void Free();
 
             DV_FUNCTION_INLINE deuchar* GetUSID() { return &m_USID[0]; }
             DV_FUNCTION_INLINE demachint GetUIID() { return m_UIID; }
@@ -114,8 +115,8 @@ namespace DvigEngine2
             IHelperObject* GetHelperObject(const char* USID);
 
             virtual void Init();
+            void Free();
             void AddChildNode(INode* const node);
-            void AddComponent(IComponent* const component);
             void AddHelperObject(IHelperObject* const helperObject);
             void RemoveChildNode(const char* USID);
             void RemoveComponent(const char* USID);
@@ -126,6 +127,7 @@ namespace DvigEngine2
             DynamicBuffer* m_ChildNodes;
             DynamicBuffer* m_Components;
             DynamicBuffer* m_HelperObjects;
+            dedword m_ComponentBitSet[DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT];
     };
 
     class MemoryObjectProperty : public IProperty
@@ -141,6 +143,9 @@ namespace DvigEngine2
         DV_MACRO_FRIENDS(DvigEngine2::Engine)
 
         public:
+            virtual void Init() {}
+            void Free() {}
+
             DV_FUNCTION_INLINE void* GetAddress() { return m_Address; }
             DV_FUNCTION_INLINE deusize GetByteWidth() { return m_ByteWidth; }
             DV_FUNCTION_INLINE deint32 GetMemoryPoolIndex() { return m_MemoryPoolIndex; }
@@ -175,6 +180,9 @@ namespace DvigEngine2
             static deresult CompareCharacterStrings(const destring op1, const destring op2);
             static MemoryObject* ConcateCharacters(destring op1, destring op2);
 
+            virtual void Init() {}
+            void Free() {}
+
             DV_FUNCTION_INLINE deuchar* GetString() { return &m_Chars[0]; };
             DV_FUNCTION_INLINE deusize GetByteWidth() { return m_ByteWidth; };
             
@@ -207,6 +215,7 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE void* GetDataAddress() { return m_DataObject->Unwrap<void*>(); }
 
             virtual void Init(const deint32 memoryPoolIndex, const deusize bufferByteWidth);
+            void Free();
             void Insert(const deisize offset, const void* data, const deusize dataByteWidth);
             void Find(const deisize offset, void* output, const deusize copyByteWidth);
             void Remove(const deisize offset, const deusize removeByteWidth);
@@ -245,6 +254,7 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE deusize GetSize() { return m_DataByteWidth; }
 
             virtual void Init(const deint32 memoryPoolIndex, const deusize reservedCapacity, const deusize entryByteWidth);
+            void Free();
             deint32 Insert(void* entry);
             void Replace(const deint32 index, void* entry);
             void Remove(const deint32 index);
@@ -302,8 +312,10 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE deusize GetEntryValueByteWidth() { return m_EntryValueByteWidth; }
             DV_FUNCTION_INLINE deusize GetHashTableSize() { return m_HashTableSize; }
             DV_FUNCTION_INLINE demachword* GetHashTable() { return &m_HashTable[0]; }
+            DV_FUNCTION_INLINE MemoryObject* GetHashTableMemoryObject() { return Ptr<MemoryObject*>::Subtract( (MemoryObject**)&m_HashTable, sizeof(DvigEngine2::MemoryObject) ); }
 
             virtual void Init(const deint32 memoryPoolIndex, const deusize reservedCapacity, const deusize entryValueByteWidth, const deusize hashTableSize);
+            void Free();
             deint32 Insert(const char* key, void* value);
             void* Find(const char* key);
             void Remove(const char* key);
@@ -397,7 +409,7 @@ namespace DvigEngine2
     class EngineRegistryProperty : public IProperty
     {
         public:
-            HashMap m_MemoryPoolIndexForType;
+            HashMap* m_RegisteredComponents;
     };
 
     class EngineInputProperty : public IProperty
@@ -428,6 +440,7 @@ namespace DvigEngine2
 
         public:
             DV_FUNCTION_INLINE EngineInputProperty* GetInputData() { return &m_InputProp; }
+            DV_FUNCTION_INLINE EngineRegistryProperty* GetRegistryData() { return &m_RegistryProp; }
             DV_FUNCTION_INLINE MemoryPool* GetMemoryPoolByIndex(const deint32 memoryPoolIndex) { return &(m_Instance->m_Prop.m_MemoryPools[memoryPoolIndex]); }
             static DV_FUNCTION_INLINE demachint GetGlobalUIID() { static demachint globalUIID = 0; return globalUIID++; }
 
@@ -437,6 +450,31 @@ namespace DvigEngine2
             static void MoveMemory(void* destAddress, const void* srcAddress, const deusize byteWidth);
             static void SetMemory(void* destAddress, const demachword value, const deusize byteWidth);
             void Delete(MemoryObject** ppMemoryObject);
+
+            template <typename T>
+            DV_FUNCTION_INLINE void RegisterComponent()
+            {
+                static demachint globalComponentIndex = 0;
+                const char* typeName = typeid(T).name();
+                if (m_RegistryProp.m_RegisteredComponents->Find( typeName ) == nullptr) {
+                    m_RegistryProp.m_RegisteredComponents->Insert( typeName, (void*)++globalComponentIndex );
+                }
+            }
+
+            template <typename T>
+            void AddComponent(INode** const node, IComponent* const component)
+            {
+                const char* typeName = typeid(T).name();
+                const deint32 registryIndex = (const deint32)(demachword)m_RegistryProp.m_RegisteredComponents->Find( typeName );
+                const deint32 bitSetIndex = (const deint32)((dedword)registryIndex >> 5u);
+                const dedword bitSetBit = 1u << ((dedword)registryIndex & 31u);
+                std::cout << registryIndex << std::endl;
+                if (registryIndex == 0 || (((*node)->m_ComponentBitSet[bitSetIndex] >> bitSetBit) & 1u) == 1u) { return; }
+                (*node)->m_ComponentBitSet[bitSetIndex] |= 1u << bitSetBit;
+
+                (*node)->m_Components->Insert( DV_NULL, component, component->m_LayoutByteWidth );
+                *component->GetCreatee() = (*node)->GetComponent( (const char*)component->GetUSID() );
+            }
             
             template <typename T>
             DV_FUNCTION_INLINE T* Create(T** const result, const char* USID, const IProperty* const data)

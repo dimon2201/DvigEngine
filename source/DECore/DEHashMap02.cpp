@@ -77,6 +77,14 @@ void DvigEngine2::HashMap::Init(const deint32 memoryPoolIndex, const deusize res
     m_MemoryPoolIndex = memoryPoolIndex;
 }
 
+void DvigEngine2::HashMap::Free()
+{
+    DvigEngine2::Engine* engine = this->GetEngine();
+    this->m_Entries.Free();
+    DvigEngine2::MemoryObject* tableMemoryObject = this->GetHashTableMemoryObject();
+    engine->Delete( &tableMemoryObject );
+}
+
 DvigEngine2::deint32 DvigEngine2::HashMap::Insert(const char* key, void* value)
 {
     const deuint32 hash = HashMap::Hash( (deuchar*)key, (this->m_HashTableSize - 1) );
@@ -149,7 +157,6 @@ void* DvigEngine2::HashMap::Find(const char* key)
     const deusize keyByteWidth = String::CharactersCount((deuchar*)&key[0]);
     deuchar* compPairKeyAddress = (deuchar*)&foundPair->m_Key[0];
     deuchar* compKeyAddress = (deuchar*)key;
-    std::cout << foundPair->m_Key << " " << (demachword)foundPair->m_Value << std::endl;
     if ( String::CompareCharacters( compPairKeyAddress, compKeyAddress, keyByteWidth ) == DV_FALSE)
     {
         // Possible collision

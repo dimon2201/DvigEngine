@@ -14,19 +14,21 @@ void DvigEngine2::INode::Init()
     this->m_Components->Init( engine->GetInputData()->m_ComponentStorageMemoryPoolIndex, 1024 );
     engine->Create<DvigEngine2::DynamicBuffer>( &this->m_HelperObjects, "_ChildNodesContainer", nullptr );
     this->m_HelperObjects->Init( 0, 1024 );
+    for (deisize i = 0; i < DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT; ++i) {
+        this->m_ComponentBitSet[i] = 0;
+    }
+}
+
+void DvigEngine2::INode::Free()
+{
+    this->m_ChildNodes->Free();
+    this->m_Components->Free();
+    this->m_HelperObjects->Free();
 }
 
 void DvigEngine2::INode::AddChildNode(INode* const node)
 {
     this->m_ChildNodes->Insert( DV_NULL, node, sizeof(INode) );
-}
-
-void DvigEngine2::INode::AddComponent(IComponent* const component)
-{
-    IComponent* const curComponent = this->GetComponent( (const char*)component->GetUSID() );
-    if ( curComponent != nullptr) { return; }
-    this->m_Components->Insert( DV_NULL, component, component->m_LayoutByteWidth );
-    *component->GetCreatee() = this->GetComponent( (const char*)component->GetUSID() );
 }
 
 void DvigEngine2::INode::AddHelperObject(IHelperObject* const helperObject)

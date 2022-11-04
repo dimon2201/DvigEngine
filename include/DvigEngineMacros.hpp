@@ -191,13 +191,8 @@
     **var = text;
 
 #define DV_XMACRO_XDEFINE_COMPONENT_OPEN(T) \
-    struct T : public IComponent \
-    { \
-        T() { \
-            const char* typeName = typeid(T).name(); \
-            Engine::CopyMemory( &m_TypeName[0], &typeName[0], String::CharactersCount( (const deuchar*)typeName ) ); \
-            m_LayoutByteWidth = sizeof(T); \
-        }
+    class T : public IComponent \
+    {
 #define DV_XMACRO_XDEFINE_COMPONENT_CLOSE \
     }
 #define DV_XMACRO_XDEFINE_COMPONENT_LAYOUT_ARGS_1(T, ...) \
@@ -217,6 +212,14 @@
 #define DV_XMACRO_XDEFINE_COMPONENT_BLANK
 #define DV_XMACRO_XDEFINE_COMPONENT(T, ...) DV_MACRO_CONCATE(DV_XMACRO_XDEFINE_COMPONENT_LAYOUT_ARGS_, DV_MACRO_ARGS_CNT(__VA_ARGS__))(T, __VA_ARGS__)
 #define DV_XMACRO_DEFINE_COMPONENT(T, ...) DV_XMACRO_XDEFINE_COMPONENT(T, __VA_ARGS__)
+
+#define DV_XMACRO_XDEF_COMPONENT_LAYOUT_ARGS_2(T, _0T, _0V) \
+    class T : public DvigEngine2::IComponent { \
+        public: \
+            _0T _0V; \
+    }
+#define DV_XMACRO_XDEF_COMPONENT(T, ...) DV_MACRO_CONCATE(DV_XMACRO_XDEF_COMPONENT_LAYOUT_ARGS_, DV_MACRO_ARGS_CNT(__VA_ARGS__))(T, __VA_ARGS__)
+#define DV_XMACRO_DEF_COMPONENT(T, ...) DV_XMACRO_XDEF_COMPONENT(T, __VA_ARGS__)
 
 _DV_EOF
 

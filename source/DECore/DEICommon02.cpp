@@ -1,5 +1,10 @@
 #include "../../include/DECore.hpp"
 
+void DvigEngine2::ICommon::Free()
+{
+    m_Engine->Delete( this->m_MemoryObject );
+}
+
 void DvigEngine2::ICommon::SetUSIDAndUIIDAndCreateeAndMemoryObjectAndEngine(deuchar* USID, const demachint UIID, ICommon** createe, MemoryObject** memoryObject, Engine* engine)
 {
     deisize m_USIDByteWidth = 0;

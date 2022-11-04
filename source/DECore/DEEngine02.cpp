@@ -54,6 +54,10 @@ void DvigEngine2::Engine::Init(DvigEngine2::EngineInputProperty* engineInputProp
 
     Engine::CopyMemory( &m_Instance->m_InputProp, engineInputProperty, sizeof(EngineInputProperty) );
 
+    // Create registry objects
+    m_Instance->Create<DvigEngine2::HashMap>(&m_Instance->m_RegistryProp.m_RegisteredComponents, "_RegistryComponentsHashMap", nullptr);
+    m_Instance->m_RegistryProp.m_RegisteredComponents->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
+
     // DvigEngine2::MemoryPoolProperty* memoryPoolsData = engineInputProperty->m_MemoryPoolsData;
     // deisize memoryPoolsCount = engineInputProperty->m_MemoryPoolsCount;
 
