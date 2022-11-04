@@ -468,12 +468,40 @@ namespace DvigEngine2
                 const deint32 registryIndex = (const deint32)(demachword)m_RegistryProp.m_RegisteredComponents->Find( typeName );
                 const deint32 bitSetIndex = (const deint32)((dedword)registryIndex >> 5u);
                 const dedword bitSetBit = 1u << ((dedword)registryIndex & 31u);
-                std::cout << registryIndex << std::endl;
                 if (registryIndex == 0 || (((*node)->m_ComponentBitSet[bitSetIndex] >> bitSetBit) & 1u) == 1u) { return; }
                 (*node)->m_ComponentBitSet[bitSetIndex] |= 1u << bitSetBit;
 
                 (*node)->m_Components->Insert( DV_NULL, component, component->m_LayoutByteWidth );
                 *component->GetCreatee() = (*node)->GetComponent( (const char*)component->GetUSID() );
+            }
+
+            template <typename T>
+            void RemoveComponent(INode** const node, const char* USID)
+            {
+                const char* typeName = typeid(T).name();
+                const deint32 registryIndex = (const deint32)(demachword)m_RegistryProp.m_RegisteredComponents->Find( typeName );
+                const deint32 bitSetIndex = (const deint32)((dedword)registryIndex >> 5u);
+                const dedword bitSetBit = 1u << ((dedword)registryIndex & 31u);
+                if((((*node)->m_ComponentBitSet[bitSetIndex] >> bitSetBit) & 1u) == 0u) { return; }
+
+                // Set bitset bit to zero
+                (*node)->m_ComponentBitSet[bitSetIndex] ^= 1u << bitSetBit;
+
+                // Remove component from memory
+                IComponent* dataAddress = (IComponent*)(*node)->m_Components->GetDataAddress();
+                IComponent* removedComponent = (*node)->GetComponent( &USID[0] );
+                
+                const deusize offset = (demachword)removedComponent - (demachword)dataAddress;
+                (*node)->m_Components->Remove( offset, removedComponent->m_LayoutByteWidth );
+
+                // Update createe pointers
+                IComponent* const lastAddress = Ptr<IComponent*>::Add( &dataAddress, (*node)->m_Components->GetSize() );
+                while (removedComponent < lastAddress)
+                {
+                    void* curCreateeAddress = *removedComponent->GetCreatee();
+                    *removedComponent->GetCreatee() = (ICommon*)Ptr<void*>::Subtract( &curCreateeAddress, removedComponent->m_LayoutByteWidth );
+                    removedComponent = Ptr<IComponent*>::Add( &removedComponent, removedComponent->m_LayoutByteWidth );
+                }
             }
             
             template <typename T>

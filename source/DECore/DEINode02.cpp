@@ -36,27 +36,10 @@ void DvigEngine2::INode::AddHelperObject(IHelperObject* const helperObject)
     this->m_HelperObjects->Insert( DV_NULL, helperObject, sizeof(helperObject) );
 }
 
-void DvigEngine2::INode::RemoveComponent(const char* USID)
+DvigEngine2::INode* DvigEngine2::INode::GetChildNode(const char* USID)
 {
-    IComponent* dataAddress = (IComponent*)m_Components->GetDataAddress();
-    IComponent* removedComponent = this->GetComponent( &USID[0] );
-    const deusize offset = (demachword)removedComponent - (demachword)dataAddress;
-    m_Components->Remove( offset, removedComponent->m_LayoutByteWidth );
-
-    // Update createe pointers
-    IComponent* const lastAddress = Ptr<IComponent*>::Add( &dataAddress, m_Components->GetSize() );
-    while (removedComponent < lastAddress)
-    {
-        void* curCreateeAddress = *removedComponent->GetCreatee();
-        *removedComponent->GetCreatee() = (ICommon*)Ptr<void*>::Subtract( &curCreateeAddress, removedComponent->m_LayoutByteWidth );
-        removedComponent = Ptr<IComponent*>::Add( &removedComponent, removedComponent->m_LayoutByteWidth );
-    }
+    // return (DvigEngine2::INode*)this->m_ChildNodes->Find( &USID[0] );
 }
-
-// DvigEngine2::INode* DvigEngine2::INode::GetChildNode(const char* USID)
-// {
-//     return (DvigEngine2::INode*)this->m_ChildNodes->Find( &USID[0] );
-// }
 
 DvigEngine2::IComponent* DvigEngine2::INode::GetComponent(const char* USID)
 {
@@ -75,7 +58,7 @@ DvigEngine2::IComponent* DvigEngine2::INode::GetComponent(const char* USID)
     return nullptr;
 }
 
-// DvigEngine2::IHelperObject* DvigEngine2::INode::GetHelperObject(const char* USID)
-// {
-//     return (DvigEngine2::IHelperObject*)this->m_HelperObjects->Find( &USID[0] );
-// }
+DvigEngine2::IHelperObject* DvigEngine2::INode::GetHelperObject(const char* USID)
+{
+    // return (DvigEngine2::IHelperObject*)this->m_HelperObjects->Find( &USID[0] );
+}
