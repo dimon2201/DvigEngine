@@ -87,7 +87,7 @@ namespace DvigEngine2
     class IProperty : public ICommon
     { };
 
-    class IComponent : public IProperty
+    class ILayout : public ICommon
     {
         public:
             virtual void Init() {}
@@ -96,12 +96,12 @@ namespace DvigEngine2
             deusize m_LayoutByteWidth;
     };
 
-    class IHelperObject : public ICommon
+    class IComponent : public ILayout
+    { };
+
+    class IHelperObject : public ILayout
     {
         DV_MACRO_FRIENDS(Engine)
-
-        public:
-            virtual void Init() {}
     };
 
     class INode : public ICommon
@@ -532,10 +532,10 @@ namespace DvigEngine2
                     INode* node = (INode*)typedObject;
                     node->Init();
                 }
-                else if (dynamic_cast<IComponent*>(typedObject) != nullptr)
+                else if (dynamic_cast<ILayout*>(typedObject) != nullptr)
                 {
-                    IComponent* component = (IComponent*)typedObject;
-                    component->m_LayoutByteWidth = sizeof(T);
+                    ILayout* layout = (ILayout*)typedObject;
+                    layout->m_LayoutByteWidth = sizeof(T);
                 }
                 // T typedObjectOnStack;
                 // Engine::CopyMemory( typedObject, &typedObjectOnStack, sizeof(T) );

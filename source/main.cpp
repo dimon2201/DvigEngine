@@ -17,9 +17,11 @@ int main()
     DvigEngine2::Engine::Init(&engineInputData);
     DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
 
-    DvigEngine2::INode* nodes[1];
+    DvigEngine2::INode* nodes[2];
     engine->Create<DvigEngine2::INode>( &nodes[0], "MyNode_0", nullptr );
+    engine->Create<DvigEngine2::INode>( &nodes[1], "MyNode_1", nullptr );
     nodes[0]->Init();
+    nodes[1]->Init();
 
     DV_XMACRO_DEF_COMPONENT( MyComp, unsigned, val );
     engine->RegisterComponent<MyComp>();
@@ -34,7 +36,12 @@ int main()
 
     engine->AddComponent<MyComp>(&nodes[0], components[0]);
 
-    MyComp* getComp = (MyComp*)nodes[0]->GetComponent("MyComponent_0");
+    nodes[1]->AddChildNode( nodes[0] );
+
+    components[0]->val = 122;
+
+    DvigEngine2::INode* getNode = nodes[1]->GetChildNode( "MyNode_0" );
+    MyComp* getComp = (MyComp*)getNode->GetComponent("MyComponent_0");
     std::cout << getComp->val << std::endl;
 
     /*
