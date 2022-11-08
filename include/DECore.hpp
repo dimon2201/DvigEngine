@@ -1,5 +1,5 @@
-#ifndef _DE_CORE_H_
-#define _DE_CORE_H_
+#ifndef _DE_LIB_CORE_H_
+#define _DE_LIB_CORE_H_
 
 #include <cstdint>
 #include <cstdlib>
@@ -120,6 +120,7 @@ namespace DvigEngine2
             void AddHelperObject(IHelperObject* const helperObject);
             void RemoveChildNode(const char* USID);
             void RemoveComponent(const char* USID);
+            void RemoveHelperObject(const char* USID);
 
         private:
             static INode* m_RootNode;
@@ -473,6 +474,15 @@ namespace DvigEngine2
 
                 (*node)->m_Components->Insert( DV_NULL, component, component->m_LayoutByteWidth );
                 *component->GetCreatee() = (*node)->GetComponent( (const char*)component->GetUSID() );
+            }
+            
+            void AddHelperObject(INode** const node, IHelperObject* const helperObject)
+            {
+                IHelperObject* getHelperObject = (*node)->GetHelperObject( (const char*)helperObject->GetUSID() );
+                if (getHelperObject != nullptr) { return; }
+
+                (*node)->m_HelperObjects->Insert( DV_NULL, helperObject, helperObject->m_LayoutByteWidth );
+                *helperObject->GetCreatee() = (*node)->GetHelperObject( (const char*)helperObject->GetUSID() );
             }
 
             template <typename T>

@@ -1,4 +1,5 @@
 #include "../include/DECore.hpp"
+#include "../include/DEGraphics.hpp"
 
 int main()
 {
@@ -17,32 +18,17 @@ int main()
     DvigEngine2::Engine::Init(&engineInputData);
     DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
 
-    DvigEngine2::INode* nodes[2];
-    engine->Create<DvigEngine2::INode>( &nodes[0], "MyNode_0", nullptr );
-    engine->Create<DvigEngine2::INode>( &nodes[1], "MyNode_1", nullptr );
-    nodes[0]->Init();
-    nodes[1]->Init();
+    // Vertices
+    DvigEngine2::deusize vertexCount = 9;
+    float vertices[9] = {
+        -1.0f, -1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f
+    };
 
-    DV_XMACRO_DEF_COMPONENT( MyComp, unsigned, val );
-    engine->RegisterComponent<MyComp>();
-
-    MyComp* components[3];
-    engine->Create<MyComp>( &components[0], "MyComponent_0", nullptr );
-    components[0]->val = 255;
-    engine->Create<MyComp>( &components[1], "MyComponent_1", nullptr );
-    components[1]->val = 127;
-    engine->Create<MyComp>( &components[2], "MyComponent_2", nullptr );
-    components[2]->val = 111;
-
-    engine->AddComponent<MyComp>(&nodes[0], components[0]);
-
-    nodes[1]->AddChildNode( nodes[0] );
-
-    components[0]->val = 122;
-
-    DvigEngine2::INode* getNode = nodes[1]->GetChildNode( "MyNode_0" );
-    MyComp* getComp = (MyComp*)getNode->GetComponent("MyComponent_0");
-    std::cout << getComp->val << std::endl;
+    DvigEngine2::GeometryComponent* geometryComp[1];
+    engine->Create <DvigEngine2::GeometryComponent> ( &geometryComp[0], "MyGeometryComponent_0", nullptr );
+    geometryComp[0]->Initx( nullptr, (void*)&vertices[0], 4 * vertexCount );
 
     /*
         DvigEngine Info

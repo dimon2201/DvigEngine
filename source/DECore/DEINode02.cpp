@@ -36,15 +36,57 @@ void DvigEngine2::INode::AddHelperObject(IHelperObject* const helperObject)
     this->m_HelperObjects->Insert( DV_NULL, helperObject, sizeof(helperObject) );
 }
 
-DvigEngine2::INode* DvigEngine2::INode::GetChildNode(const char* USID)
+void DvigEngine2::INode::RemoveChildNode(const char* USID)
 {
     const deusize capacity = this->m_ChildNodes->GetCapacity();
     INode* dataAddress = (INode*)this->m_ChildNodes->GetDataAddress();
     for (deisize i = 0; i < (deisize)capacity; ++i)
     {
+        if (dataAddress->m_ChildNodes->GetCapacity() > 0) {
+            dataAddress->RemoveChildNode( &USID[0] );
+        }
+        else
+        {
+            if (String::CompareCharacters( (const deuchar*)&USID[0], dataAddress->GetUSID(), String::CharactersCount((const deuchar*)&USID[0]) ) == DV_TRUE) {
+                const deisize offset = (demachword)dataAddress - (demachword)this->m_ChildNodes->GetDataAddress();
+                this->m_ChildNodes->Remove( offset, sizeof(INode) );
+                return;
+            }
+        }
+
+        dataAddress = Ptr<INode*>::Add( &dataAddress, sizeof(INode) );
+    }
+}
+
+void DvigEngine2::INode::RemoveHelperObject(const char* USID)
+{
+    const deusize capacity = this->m_HelperObjects->GetCapacity();
+    IHelperObject* dataAddress = (IHelperObject*)this->m_HelperObjects->GetDataAddress();
+    for (deisize i = 0; i < (deisize)capacity; ++i)
+    {
         if (String::CompareCharacters( (const deuchar*)&USID[0], dataAddress->GetUSID(), String::CharactersCount((const deuchar*)&USID[0]) ) == DV_TRUE)
         {
+            const deisize offset = (demachword)dataAddress - (demachword)this->m_HelperObjects->GetDataAddress();
+            this->m_HelperObjects->Remove( offset, dataAddress->m_LayoutByteWidth );
+            return;
+        }
+
+        dataAddress = Ptr<IHelperObject*>::Add( &dataAddress, dataAddress->m_LayoutByteWidth );
+    }
+}
+
+DvigEngine2::INode* DvigEngine2::INode::GetChildNode(const char* USID)
+{
+    const deusize capacity = this->m_ChildNodes->GetCapacity();
+    INode* dataAddress = (INode*)this->m_ChildNodes->GetDataAddress();
+    for (deisize i = 0; i < (deisize)capacity; ++i)
+    {   
+        if (String::CompareCharacters( (const deuchar*)&USID[0], dataAddress->GetUSID(), String::CharactersCount((const deuchar*)&USID[0]) ) == DV_TRUE) {
             return dataAddress;
+        }
+
+        if (dataAddress->m_ChildNodes->GetCapacity() > 0) {
+            return dataAddress->GetChildNode( &USID[0] );
         }
 
         dataAddress = Ptr<INode*>::Add( &dataAddress, sizeof(INode) );
@@ -59,8 +101,7 @@ DvigEngine2::IComponent* DvigEngine2::INode::GetComponent(const char* USID)
     IComponent* dataAddress = (IComponent*)m_Components->GetDataAddress();
     for (deisize i = 0; i < (deisize)capacity; ++i)
     {
-        if (String::CompareCharacters( (const deuchar*)&USID[0], dataAddress->GetUSID(), String::CharactersCount((const deuchar*)&USID[0]) ) == DV_TRUE)
-        {
+        if (String::CompareCharacters( (const deuchar*)&USID[0], dataAddress->GetUSID(), String::CharactersCount((const deuchar*)&USID[0]) ) == DV_TRUE) {
             return dataAddress;
         }
 
