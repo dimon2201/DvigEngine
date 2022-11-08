@@ -3,7 +3,7 @@
 
 #include <fstream>
 
-void DvigEngine2::GeometryComponent::Initx(const char* optGeometryPathOnDrive, void* optGeometryData, deusize optGeometryDataByteWidth)
+void DvigEngine2::GeometryComponent::Init(const char* optGeometryPathOnDrive, void* optGeometryData, deusize optGeometryDataByteWidth)
 {
     // Init internal data
     DvigEngine2::Engine* engine = this->GetEngine();

@@ -51,12 +51,22 @@ void DvigEngine2::Engine::Init(DvigEngine2::EngineInputProperty* engineInputProp
         m_Instance->GetData()->m_MemoryPools[i].m_AddressOffset = engineInputProperty->m_MemoryPoolsData[i].m_AddressOffset;
         m_Instance->GetData()->m_MemoryPools[i].m_ByteWidth = engineInputProperty->m_MemoryPoolsData[i].m_ByteWidth;
     }
-
-    Engine::CopyMemory( &m_Instance->m_InputProp, engineInputProperty, sizeof(EngineInputProperty) );
+    m_Instance->GetData()->m_Version = engineInputProperty->m_Version;
+    m_Instance->GetData()->m_MemoryPoolsCount = engineInputProperty->m_MemoryPoolsCount;
+    m_Instance->GetData()->m_SystemMemoryPoolIndex = engineInputProperty->m_SystemMemoryPoolIndex;
+    m_Instance->GetData()->m_ComponentStorageMemoryPoolIndex = engineInputProperty->m_ComponentStorageMemoryPoolIndex;
+    m_Instance->GetData()->m_MaxThreadCount = maxThreadCount;
+    m_Instance->GetData()->m_RequestedThreadCount = requestedThreadCount;
+    m_Instance->GetData()->m_CurrentJobQueueCursor = 0u;
+    m_Instance->GetData()->m_UserData = nullptr;
 
     // Create registry objects
     m_Instance->Create<DvigEngine2::HashMap>(&m_Instance->m_RegistryProp.m_RegisteredComponents, "_RegistryComponentsHashMap", nullptr);
     m_Instance->m_RegistryProp.m_RegisteredComponents->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
+
+    // INode global root node
+    m_Instance->Create<DvigEngine2::INode>( &DvigEngine2::INode::m_RootNode, "_RootNode", nullptr );
+    DvigEngine2::INode::m_RootNode->Init();
 
     // DvigEngine2::MemoryPoolProperty* memoryPoolsData = engineInputProperty->m_MemoryPoolsData;
     // deisize memoryPoolsCount = engineInputProperty->m_MemoryPoolsCount;

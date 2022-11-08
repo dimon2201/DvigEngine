@@ -427,11 +427,16 @@ namespace DvigEngine2
     class EngineProperty : public IProperty
     {
         public:
+            dedword m_Version;
+            deuint32 m_MemoryPoolsCount;
+            MemoryPoolProperty* m_MemoryPoolsData;
+            deint32 m_SystemMemoryPoolIndex;
+            deint32 m_ComponentStorageMemoryPoolIndex;
+            deusize m_MaxThreadCount;
+            deusize m_RequestedThreadCount;
             MemoryPool* m_MemoryPools;
             demachword m_CurrentJobQueueCursor;
             JobQueue* m_JobQueues;
-            deusize m_MaxThreadCount;
-            deusize m_RequestedThreadCount;
             void* m_UserData;
     };
 
@@ -440,9 +445,9 @@ namespace DvigEngine2
         DV_MACRO_DECLARE_SINGLETON(Engine, public)
 
         public:
-            DV_FUNCTION_INLINE EngineInputProperty* GetInputData() { return &m_InputProp; }
             DV_FUNCTION_INLINE EngineRegistryProperty* GetRegistryData() { return &m_RegistryProp; }
             DV_FUNCTION_INLINE MemoryPool* GetMemoryPoolByIndex(const deint32 memoryPoolIndex) { return &(m_Instance->m_Prop.m_MemoryPools[memoryPoolIndex]); }
+            DV_FUNCTION_INLINE void* GetUserData() { return m_Prop.m_UserData; }
             static DV_FUNCTION_INLINE demachint GetGlobalUIID() { static demachint globalUIID = 0; return globalUIID++; }
 
             static void Init(EngineInputProperty* engineInputProperty);
@@ -522,9 +527,10 @@ namespace DvigEngine2
                 return CallCreate<T>(&argumentMemory[0], 0);
             }
 
-        private:
+        public:
             DV_XMACRO_GETTER_PROPERTY(EngineProperty)
 
+        private:
             template <typename T>
             T* CallCreate(demachword* argumentMemory, deint32 jobIndex)
             {
@@ -566,7 +572,7 @@ namespace DvigEngine2
 
         private:
             EngineRegistryProperty m_RegistryProp;
-            EngineInputProperty m_InputProp;
+            // EngineInputProperty m_InputProp;
             EngineProperty m_Prop;
     };
 }

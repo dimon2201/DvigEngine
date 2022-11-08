@@ -8,7 +8,7 @@ namespace DvigEngine2
     class GeometryComponent : public IComponent
     {
         public:
-            void Initx(const char* optGeometryPathOnDrive, void* optGeometryData, deusize optGeometryDataByteWidth);
+            virtual void Init(const char* optGeometryPathOnDrive, void* optGeometryData, deusize optGeometryDataByteWidth);
 
         public:
             DynamicBuffer* m_VertexBuffer;

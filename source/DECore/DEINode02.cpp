@@ -1,5 +1,7 @@
 #include "../../include/DECore.hpp"
 
+DvigEngine2::INode* DvigEngine2::INode::m_RootNode;
+
 void DvigEngine2::INode::Init()
 {
     DvigEngine2::Engine* engine = this->GetEngine();
@@ -11,7 +13,7 @@ void DvigEngine2::INode::Init()
     engine->Create<DvigEngine2::DynamicBuffer>( &this->m_ChildNodes, "_ChildNodesContainer", nullptr );
     this->m_ChildNodes->Init( 0, 1024 );
     engine->Create<DvigEngine2::DynamicBuffer>( &this->m_Components, "_ChildNodesContainer", nullptr );
-    this->m_Components->Init( engine->GetInputData()->m_ComponentStorageMemoryPoolIndex, 1024 );
+    this->m_Components->Init( engine->GetData()->m_ComponentStorageMemoryPoolIndex, 1024 );
     engine->Create<DvigEngine2::DynamicBuffer>( &this->m_HelperObjects, "_ChildNodesContainer", nullptr );
     this->m_HelperObjects->Init( 0, 1024 );
     for (deisize i = 0; i < DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT; ++i) {

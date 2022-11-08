@@ -28,7 +28,7 @@ int main()
 
     DvigEngine2::GeometryComponent* geometryComp[1];
     engine->Create <DvigEngine2::GeometryComponent> ( &geometryComp[0], "MyGeometryComponent_0", nullptr );
-    geometryComp[0]->Initx( nullptr, (void*)&vertices[0], 4 * vertexCount );
+    geometryComp[0]->Init( nullptr, (void*)&vertices[0], 4 * vertexCount );
 
     /*
         DvigEngine Info
