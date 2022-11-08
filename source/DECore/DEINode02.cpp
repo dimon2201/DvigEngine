@@ -1,6 +1,6 @@
 #include "../../include/DECore.hpp"
 
-DvigEngine2::INode* DvigEngine2::INode::m_RootNode;
+DvigEngine2::INode* DvigEngine2::INode::m_RootNode = nullptr;
 
 void DvigEngine2::INode::Init()
 {

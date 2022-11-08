@@ -64,8 +64,7 @@ namespace DvigEngine2
 
         public:
             virtual ~ICommon() {}
-            virtual void Init() {}
-            void Free();
+            virtual void Free() = 0;
 
             DV_FUNCTION_INLINE deuchar* GetUSID() { return &m_USID[0]; }
             DV_FUNCTION_INLINE demachint GetUIID() { return m_UIID; }
@@ -84,20 +83,20 @@ namespace DvigEngine2
             Engine* m_Engine;
     };
 
-    class IProperty : public ICommon
+    class IProperty
     { };
 
     class ILayout : public ICommon
     {
         public:
-            virtual void Init() {}
-
-        public:
             deusize m_LayoutByteWidth;
     };
 
     class IComponent : public ILayout
-    { };
+    {
+        public:
+            void Free() override final {}
+    };
 
     class IHelperObject : public ILayout
     {
@@ -114,8 +113,8 @@ namespace DvigEngine2
             IComponent* GetComponent(const char* USID);
             IHelperObject* GetHelperObject(const char* USID);
 
-            virtual void Init();
-            void Free();
+            void Init();
+            void Free() override final;
             void AddChildNode(INode* const node);
             void AddHelperObject(IHelperObject* const helperObject);
             void RemoveChildNode(const char* USID);
@@ -144,8 +143,8 @@ namespace DvigEngine2
         DV_MACRO_FRIENDS(DvigEngine2::Engine)
 
         public:
-            virtual void Init() {}
-            void Free() {}
+            void Init() {}
+            void Free() override final {}
 
             DV_FUNCTION_INLINE void* GetAddress() { return m_Address; }
             DV_FUNCTION_INLINE deusize GetByteWidth() { return m_ByteWidth; }
@@ -181,8 +180,8 @@ namespace DvigEngine2
             static deresult CompareCharacterStrings(const destring op1, const destring op2);
             static MemoryObject* ConcateCharacters(destring op1, destring op2);
 
-            virtual void Init() {}
-            void Free() {}
+            void Init() {}
+            void Free() override final {}
 
             DV_FUNCTION_INLINE deuchar* GetString() { return &m_Chars[0]; };
             DV_FUNCTION_INLINE deusize GetByteWidth() { return m_ByteWidth; };
@@ -215,8 +214,8 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE deusize GetSize() { return m_DataByteWidth; }
             DV_FUNCTION_INLINE void* GetDataAddress() { return m_DataObject->Unwrap<void*>(); }
 
-            virtual void Init(const deint32 memoryPoolIndex, const deusize bufferByteWidth);
-            void Free();
+            void Init(const deint32 memoryPoolIndex, const deusize bufferByteWidth);
+            void Free() override final;
             void Insert(const deisize offset, const void* data, const deusize dataByteWidth);
             void Find(const deisize offset, void* output, const deusize copyByteWidth);
             void Remove(const deisize offset, const deusize removeByteWidth);
@@ -254,8 +253,8 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE deusize GetEntryByteWidth() { return m_EntryByteWidth; }
             DV_FUNCTION_INLINE deusize GetSize() { return m_DataByteWidth; }
 
-            virtual void Init(const deint32 memoryPoolIndex, const deusize reservedCapacity, const deusize entryByteWidth);
-            void Free();
+            void Init(const deint32 memoryPoolIndex, const deusize reservedCapacity, const deusize entryByteWidth);
+            void Free() override final;
             deint32 Insert(void* entry);
             void Replace(const deint32 index, void* entry);
             void Remove(const deint32 index);
@@ -315,8 +314,8 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE demachword* GetHashTable() { return &m_HashTable[0]; }
             DV_FUNCTION_INLINE MemoryObject* GetHashTableMemoryObject() { return Ptr<MemoryObject*>::Subtract( (MemoryObject**)&m_HashTable, sizeof(DvigEngine2::MemoryObject) ); }
 
-            virtual void Init(const deint32 memoryPoolIndex, const deusize reservedCapacity, const deusize entryValueByteWidth, const deusize hashTableSize);
-            void Free();
+            void Init(const deint32 memoryPoolIndex, const deusize reservedCapacity, const deusize entryValueByteWidth, const deusize hashTableSize);
+            void Free() override final;
             deint32 Insert(const char* key, void* value);
             void* Find(const char* key);
             void Remove(const char* key);
@@ -553,20 +552,7 @@ namespace DvigEngine2
                     ILayout* layout = (ILayout*)typedObject;
                     layout->m_LayoutByteWidth = sizeof(T);
                 }
-                // T typedObjectOnStack;
-                // Engine::CopyMemory( typedObject, &typedObjectOnStack, sizeof(T) );
-                // typedObject->SetUSID( &objectID[0] );
-                // typedObject->SetCreateeAndMemoryObject( (INode**)result, memoryObject );
-                // typedObject->m_Engine = (void*)m_Instance;
                 *result = typedObject;
-                // if (objectData == nullptr)
-                // {
-                //     typedObject->m_Data.Init( m_Instance, typedObject );
-                //     return;
-                // }
-                // IData* actualObjectData = typedObject->GetData();
-                // Engine::CopyMemory(actualObjectData, objectData, sizeof(typedObject->m_Data));
-                // m_RegistryData.m_Objects.Insert( objectID, typedObject );
                 return typedObject;
             }
 
