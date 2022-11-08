@@ -93,10 +93,7 @@ namespace DvigEngine2
     };
 
     class IComponent : public ILayout
-    {
-        public:
-            void Free() override final {}
-    };
+    { };
 
     class IHelperObject : public ILayout
     {
@@ -176,7 +173,7 @@ namespace DvigEngine2
 
         public:
             static deusize CharactersCount(const destring op1);
-            static deresult CompareCharacters(const destring op1, const destring op2, const deusize opByteWidth);
+            static deresult CompareCharacters(const char* op1, const char* op2, const deusize opByteWidth);
             static deresult CompareCharacterStrings(const destring op1, const destring op2);
             static MemoryObject* ConcateCharacters(destring op1, destring op2);
 
@@ -410,6 +407,8 @@ namespace DvigEngine2
     {
         public:
             HashMap* m_RegisteredComponents;
+            HashMap* m_Createes;
+            HashMap* m_AllocPoolIndexMap;
     };
 
     class EngineInputProperty : public IProperty
@@ -479,6 +478,24 @@ namespace DvigEngine2
                 (*node)->m_Components->Insert( DV_NULL, component, component->m_LayoutByteWidth );
                 *component->GetCreatee() = (*node)->GetComponent( (const char*)component->GetUSID() );
             }
+
+            template <typename T>
+            void AddExistingComponent(INode** const node, const char* USID)
+            {
+                IComponent* component = (IComponent*)m_RegistryProp.m_Createes->Find( &USID[0] );
+                if (component == nullptr) { return; }
+
+                const char* typeName = typeid(T).name();
+                const deint32 registryIndex = (const deint32)(demachword)m_RegistryProp.m_RegisteredComponents->Find( &typeName[0] );
+                const deint32 bitSetIndex = (const deint32)((dedword)registryIndex >> 5u);
+                const dedword bitSetBit = 1u << ((dedword)registryIndex & 31u);
+                if (registryIndex == 0 || (((*node)->m_ComponentBitSet[bitSetIndex] >> bitSetBit) & 1u) == 1u) { return; }
+                (*node)->m_ComponentBitSet[bitSetIndex] |= 1u << bitSetBit;
+
+                // (*node)->m_Components->Insert( DV_NULL, component, component->m_LayoutByteWidth );
+                // *component->GetCreatee() = (*node)->GetComponent( (const char*)component->GetUSID() );
+                (*node)->m_Components->Insert( DV_NULL, &component, sizeof(void*) );
+            }
             
             void AddHelperObject(INode** const node, IHelperObject* const helperObject)
             {
@@ -536,8 +553,10 @@ namespace DvigEngine2
                 T** result = (T**)argumentMemory[ 0 ];
                 deuchar* objectUSID = (deuchar*)argumentMemory[ 1 ];
                 // IProperty* const objectData = (IProperty* const)argumentMemory[ 2 ];
-                // const deusize allocationPoolID = (const deusize)m_RegistryData.m_TypeAllocationPoolID.Find( (deuchar*)typeid(T).name() );
-                MemoryObject* memoryObject = Engine::Allocate(0, sizeof(T));
+                void* pAllocationPoolIndex = m_RegistryProp.m_AllocPoolIndexMap->Find( typeid(T).name() );
+                deuint32 allocationPoolIndex = (deuint32)(demachword)pAllocationPoolIndex;
+                if (pAllocationPoolIndex == nullptr) { allocationPoolIndex = 0; }
+                MemoryObject* memoryObject = Engine::Allocate(allocationPoolIndex, sizeof(T));
                 T typedObjectOnStack;
                 T* typedObject = memoryObject->Unwrap<T*>();
                 Engine::CopyMemory( typedObject, &typedObjectOnStack, sizeof(demachword) ); // copy vpointer
@@ -553,6 +572,7 @@ namespace DvigEngine2
                     layout->m_LayoutByteWidth = sizeof(T);
                 }
                 *result = typedObject;
+                m_Instance->m_RegistryProp.m_Createes->Insert( (const char*)&objectUSID[0], (void*)typedObject );
                 return typedObject;
             }
 

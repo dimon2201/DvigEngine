@@ -35,3 +35,8 @@ void DvigEngine2::GeometryComponent::Init(const char* optGeometryPathOnDrive, vo
     // Copy to vertex buffer
     this->m_VertexBuffer->Insert( DV_NULL, geometryData, geometryDataByteWidth );
 }
+
+void DvigEngine2::GeometryComponent::Free()
+{
+    this->m_VertexBuffer->Free();
+}

@@ -4,7 +4,7 @@
 int main()
 {
     DvigEngine2::MemoryPoolProperty memoryPoolsData[2];
-    memoryPoolsData[0].m_ByteWidth = DV_MEMORY_MiB;
+    memoryPoolsData[0].m_ByteWidth = 4 * DV_MEMORY_MiB;
     memoryPoolsData[1].m_ByteWidth = 24 * DV_MEMORY_KiB;
 
     DvigEngine2::EngineInputProperty engineInputData;
@@ -17,6 +17,7 @@ int main()
 
     DvigEngine2::Engine::Init(&engineInputData);
     DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
+    engine->RegisterComponent <DvigEngine2::GeometryComponent> ();
 
     // Vertices
     DvigEngine2::deusize vertexCount = 9;
@@ -29,6 +30,25 @@ int main()
     DvigEngine2::GeometryComponent* geometryComp[1];
     engine->Create <DvigEngine2::GeometryComponent> ( &geometryComp[0], "MyGeometryComponent_0", nullptr );
     geometryComp[0]->Init( nullptr, (void*)&vertices[0], 4 * vertexCount );
+    geometryComp[0]->val = 255;
+
+    DvigEngine2::INode* nodes[1];
+    engine->Create <DvigEngine2::INode> ( &nodes[0], "MyNode_0", nullptr );
+    nodes[0]->Init();
+    engine->AddExistingComponent <DvigEngine2::GeometryComponent> ( &nodes[0], "MyGeometryComponent_0" );
+    DvigEngine2::GeometryComponent* getComponent = (DvigEngine2::GeometryComponent*)nodes[0]->GetComponent( "MyGeometryComponent_0" );
+    std::cout << getComponent->val << std::endl;
+
+    /*
+        Node
+          GeometryComponent
+        Node
+          GeometryComponent
+
+        Draw()
+          Bind vertex buffer
+          Bind uniform buffer
+    */
 
     /*
         DvigEngine Info

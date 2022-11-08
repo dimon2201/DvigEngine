@@ -76,8 +76,8 @@ DvigEngine2::deint32 DvigEngine2::FixedSet::FindValue(void* entry)
         void* dataAddress = this->m_DataObject->Unwrap<void*>();
         void* entryAddress = DvigEngine2::Ptr<void*>::Add( &dataAddress, i * this->m_EntryByteWidth );
 
-        deuchar* compSetAddress = (deuchar*)entryAddress;
-        deuchar* compEntryAddress = (deuchar*)entry;
+        const char* compSetAddress = (const char*)entryAddress;
+        const char* compEntryAddress = (const char*)entry;
         if (String::CompareCharacters( compSetAddress, compEntryAddress, this->m_EntryByteWidth ) == DV_TRUE)
         {
             return i;

@@ -65,16 +65,16 @@ DvigEngine2::deuint32 DvigEngine2::HashMap::HashMurMur(const destring input, con
 
 void DvigEngine2::HashMap::Init(const deint32 memoryPoolIndex, const deusize reservedCapacity, const deusize entryValueByteWidth, const deusize hashTableSize)
 {
-    m_Capacity = 0;
-    m_EntryValueByteWidth = entryValueByteWidth;
-    m_Entries.Init( memoryPoolIndex, reservedCapacity, entryValueByteWidth );
-    m_HashTableSize = hashTableSize;
-    m_HashTable = Engine::Allocate( memoryPoolIndex, sizeof(demachword) * hashTableSize )->Unwrap<demachword*>();
+    this->m_Capacity = 0;
+    this->m_EntryValueByteWidth = entryValueByteWidth;
+    this->m_Entries.Init( memoryPoolIndex, reservedCapacity, sizeof(HashMapKeyValuePair) );
+    this->m_HashTableSize = hashTableSize;
+    this->m_HashTable = Engine::Allocate( memoryPoolIndex, sizeof(demachword) * hashTableSize )->Unwrap<demachword*>();
     for (deisize i = 0; i < (deisize)m_HashTableSize; ++i)
     {
-        m_HashTable[ i ] = 0;
+        this->m_HashTable[ i ] = 0;
     }
-    m_MemoryPoolIndex = memoryPoolIndex;
+    this->m_MemoryPoolIndex = memoryPoolIndex;
 }
 
 void DvigEngine2::HashMap::Free()
@@ -89,7 +89,7 @@ DvigEngine2::deint32 DvigEngine2::HashMap::Insert(const char* key, void* value)
 {
     const deuint32 hash = HashMap::Hash( (deuchar*)key, (this->m_HashTableSize - 1) );
     deint32 entryIndex = (deint32)this->m_HashTable[ hash ];
-    
+
     const deusize keyByteWidth = String::CharactersCount((deuchar*)&key[0]);
     HashMapKeyValuePair insertedPair;
     Engine::SetMemory( &insertedPair.m_Key[0], 0, DV_MEMORY_COMMON_STRING_BYTE_WIDTH );
@@ -110,8 +110,8 @@ DvigEngine2::deint32 DvigEngine2::HashMap::Insert(const char* key, void* value)
         return entryIndex;
     }
 
-    deuchar* compPairKeyAddress = (deuchar*)&foundPair->m_Key[0];
-    deuchar* compKeyAddress = (deuchar*)key;
+    const char* compPairKeyAddress = (const char*)&foundPair->m_Key[0];
+    const char* compKeyAddress = (const char*)key;
     if ( String::CompareCharacters( compPairKeyAddress, compKeyAddress, keyByteWidth ) == DV_FALSE)
     {
         // Possible collision
@@ -155,9 +155,9 @@ void* DvigEngine2::HashMap::Find(const char* key)
     if (foundPair == nullptr) { return nullptr; }
 
     const deusize keyByteWidth = String::CharactersCount((deuchar*)&key[0]);
-    deuchar* compPairKeyAddress = (deuchar*)&foundPair->m_Key[0];
-    deuchar* compKeyAddress = (deuchar*)key;
-    if ( String::CompareCharacters( compPairKeyAddress, compKeyAddress, keyByteWidth ) == DV_FALSE)
+    const char* compPairKeyAddress = (const char*)&foundPair->m_Key[0];
+    const char* compKeyAddress = (const char*)key;
+    if ( String::CompareCharacters( &compPairKeyAddress[0], &compKeyAddress[0], keyByteWidth ) == DV_FALSE)
     {
         // Possible collision
         // Check if set contains our value
@@ -166,7 +166,7 @@ void* DvigEngine2::HashMap::Find(const char* key)
         {
             HashMapKeyValuePair* newPair = this->m_Entries.Find<HashMapKeyValuePair*>( i );
             const deusize newPairKeyByteWidth = String::CharactersCount( &newPair->m_Key[0] );
-            if (newPairKeyByteWidth == keyByteWidth && (String::CompareCharacters( compKeyAddress, &newPair->m_Key[0], keyByteWidth ) == DV_TRUE))
+            if (newPairKeyByteWidth == keyByteWidth && (String::CompareCharacters( compKeyAddress, (const char*)&newPair->m_Key[0], keyByteWidth ) == DV_TRUE))
             {
                 return newPair->m_Value;
             }
@@ -187,8 +187,8 @@ void DvigEngine2::HashMap::Remove(const char* key)
     if (foundPair == nullptr) { return; }
 
     const deusize keyByteWidth = String::CharactersCount((deuchar*)&key[0]);
-    deuchar* compPairKeyAddress = (deuchar*)&foundPair->m_Key[0];
-    deuchar* compKeyAddress = (deuchar*)key;
+    const char* compPairKeyAddress = (const char*)&foundPair->m_Key[0];
+    const char* compKeyAddress = (const char*)key;
     if ( String::CompareCharacters( compPairKeyAddress, compKeyAddress, keyByteWidth ) == DV_FALSE)
     {
         // Possible collision
@@ -198,7 +198,7 @@ void DvigEngine2::HashMap::Remove(const char* key)
         {
             HashMapKeyValuePair* newPair = this->m_Entries.Find<HashMapKeyValuePair*>( i );
             const deusize newPairKeyByteWidth = String::CharactersCount( &newPair->m_Key[0] );
-            if (newPairKeyByteWidth == keyByteWidth && (String::CompareCharacters( compKeyAddress, &newPair->m_Key[0], keyByteWidth ) == DV_TRUE))
+            if (newPairKeyByteWidth == keyByteWidth && (String::CompareCharacters( compKeyAddress, (const char*)&newPair->m_Key[0], keyByteWidth ) == DV_TRUE))
             {
                 this->m_Entries.Remove( i );
                 return;

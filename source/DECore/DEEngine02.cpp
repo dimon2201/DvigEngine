@@ -61,12 +61,37 @@ void DvigEngine2::Engine::Init(DvigEngine2::EngineInputProperty* engineInputProp
     m_Instance->GetData()->m_UserData = nullptr;
 
     // Create registry objects
-    m_Instance->Create<DvigEngine2::HashMap>(&m_Instance->m_RegistryProp.m_RegisteredComponents, "_RegistryComponentsHashMap", nullptr);
+    // Create registered components hash map
+    MemoryObject* registeredComponentsHashMapMemoryObject = Engine::Allocate(0, sizeof(HashMap));
+    HashMap registeredComponentsHashMapObjectOnStack;
+    HashMap* registeredComponentsHashMapObject = registeredComponentsHashMapMemoryObject->Unwrap<HashMap*>();
+    Engine::CopyMemory( registeredComponentsHashMapObject, &registeredComponentsHashMapObjectOnStack, sizeof(demachword) ); // copy vpointer
+    registeredComponentsHashMapObject->SetUSIDAndUIIDAndCreateeAndMemoryObjectAndEngine( (deuchar*)"_RegistryComponentsHashMap", Engine::GetGlobalUIID(), (ICommon**)&registeredComponentsHashMapObject, &registeredComponentsHashMapMemoryObject, m_Instance );
+    m_Instance->m_RegistryProp.m_RegisteredComponents = registeredComponentsHashMapObject;
     m_Instance->m_RegistryProp.m_RegisteredComponents->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
+    // Create createes hash map
+    MemoryObject* createesHashMapMemoryObject = Engine::Allocate(0, sizeof(HashMap));
+    HashMap createesHashMapObjectOnStack;
+    HashMap* createesHashMapObject = createesHashMapMemoryObject->Unwrap<HashMap*>();
+    Engine::CopyMemory( createesHashMapObject, &createesHashMapObjectOnStack, sizeof(demachword) ); // copy vpointer
+    createesHashMapMemoryObject->SetUSIDAndUIIDAndCreateeAndMemoryObjectAndEngine( (deuchar*)"_RegistryCreateesHashMap", Engine::GetGlobalUIID(), (ICommon**)&createesHashMapObject, &createesHashMapMemoryObject, m_Instance );
+    m_Instance->m_RegistryProp.m_Createes = createesHashMapObject;
+    m_Instance->m_RegistryProp.m_Createes->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
+    // Create allocation memory pool index hash map
+    MemoryObject* allocPoolIndexHashMapMemoryObject = Engine::Allocate(0, sizeof(HashMap));
+    HashMap allocPoolIndexObjectOnStack;
+    HashMap* allocPoolIndexMapObject = allocPoolIndexHashMapMemoryObject->Unwrap<HashMap*>();
+    Engine::CopyMemory( allocPoolIndexMapObject, &allocPoolIndexObjectOnStack, sizeof(demachword) ); // copy vpointer
+    allocPoolIndexHashMapMemoryObject->SetUSIDAndUIIDAndCreateeAndMemoryObjectAndEngine( (deuchar*)"_RegistryAllocPoolIndexHashMap", Engine::GetGlobalUIID(), (ICommon**)&allocPoolIndexMapObject, &allocPoolIndexHashMapMemoryObject, m_Instance );
+    m_Instance->m_RegistryProp.m_AllocPoolIndexMap = allocPoolIndexMapObject;
+    m_Instance->m_RegistryProp.m_AllocPoolIndexMap->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
 
     // INode global root node
     m_Instance->Create<DvigEngine2::INode>( &DvigEngine2::INode::m_RootNode, "_RootNode", nullptr );
     DvigEngine2::INode::m_RootNode->Init();
+
+    // Memory pool index for built-in types
+    m_Instance->m_RegistryProp.m_AllocPoolIndexMap->Insert( typeid(IComponent).name(), (void*)(demachword)engineInputProperty->m_ComponentStorageMemoryPoolIndex );
 
     // DvigEngine2::MemoryPoolProperty* memoryPoolsData = engineInputProperty->m_MemoryPoolsData;
     // deisize memoryPoolsCount = engineInputProperty->m_MemoryPoolsCount;

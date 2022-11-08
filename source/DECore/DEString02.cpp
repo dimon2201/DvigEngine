@@ -10,11 +10,21 @@ DvigEngine2::deusize DvigEngine2::String::CharactersCount(const destring op1)
     return op1ByteWidth;
 }
 
-DvigEngine2::deresult DvigEngine2::String::CompareCharacters(const destring op1, const destring op2, const deusize opByteWidth)
+DvigEngine2::deresult DvigEngine2::String::CompareCharacters(const char* op1, const char* op2, const deusize opByteWidth)
 {
-    deusize cycle = 0;
-    while (op1[cycle] == op2[cycle] && ++cycle < opByteWidth);
-    if (cycle == opByteWidth) {
+    // deint32 cycle = 0;
+    // while (op1[cycle] == op2[cycle] && ++cycle < opByteWidth);
+    // std::cout << cycle << " " << opByteWidth << std::endl;
+    // if (cycle == opByteWidth) {
+    //     return DV_TRUE;
+    // } else {
+    //     return DV_FALSE;
+    // }
+
+    deint32 cycle = 0;
+    for (cycle = 0; op1[cycle] == op2[cycle] && op1[cycle] == '\0'; cycle++);
+      
+    if (op1[cycle] == op2[cycle]) {
         return DV_TRUE;
     } else {
         return DV_FALSE;
@@ -28,9 +38,9 @@ DvigEngine2::deresult DvigEngine2::String::CompareCharacterStrings(const destrin
 
     deusize cycle = 0;
     if (op1ByteWidth != op2ByteWidth) { return DV_FALSE; }
-    while (op1[cycle] == op2[cycle] && cycle++ < op1ByteWidth);
+    while (op1[cycle] == op2[cycle] && ++cycle < op1ByteWidth);
 
-    if (cycle - 1 == op1ByteWidth) {
+    if (cycle == op1ByteWidth) {
         return DV_TRUE;
     } else {
         return DV_FALSE;
