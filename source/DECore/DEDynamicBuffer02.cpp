@@ -13,7 +13,7 @@ void DvigEngine2::DynamicBuffer::Free()
     this->GetEngine()->Delete( this->GetMemoryObject() );
 }
 
-void DvigEngine2::DynamicBuffer::Insert(const deisize offset, const void* data, const deusize dataByteWidth)
+DvigEngine2::deint32 DvigEngine2::DynamicBuffer::Insert(const deisize offset, const void* data, const deusize dataByteWidth)
 {
     deisize actualOffset = offset;
     if (actualOffset == DV_NULL) { actualOffset = this->m_DataByteWidth; } // insert to end of buffer
@@ -53,6 +53,8 @@ void DvigEngine2::DynamicBuffer::Insert(const deisize offset, const void* data, 
     Engine::CopyMemory( insertToAddress, data, dataByteWidth );
     this->m_Capacity += 1;
     this->m_DataByteWidth += dataByteWidth;
+
+    return actualOffset;
 }
 
 void DvigEngine2::DynamicBuffer::Find(const deisize offset, void* output, const deusize copyByteWidth)

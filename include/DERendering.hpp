@@ -1,5 +1,5 @@
-#ifndef _DE_LIB_GFX_H_
-#define _DE_LIB_GFX_H_
+#ifndef _DE_LIB_RENDERING_H_
+#define _DE_LIB_RENDERING_H_
 
 #include "DECore.hpp"
 
@@ -13,7 +13,17 @@ namespace DvigEngine2
 
         public:
             int val;
-            DynamicBuffer* m_VertexBuffer;
+            deint32 m_GlobalGeometryBufferOffset;
+    };
+
+    class GeometryBatch : public IHelperObject
+    {
+        public:
+            void Init();
+            void Free() override final;
+
+        public:
+            static DynamicBuffer* m_GlobalGeometryBuffer;
     };
 }
 

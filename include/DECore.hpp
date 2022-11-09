@@ -68,17 +68,15 @@ namespace DvigEngine2
 
             DV_FUNCTION_INLINE deuchar* GetUSID() { return &m_USID[0]; }
             DV_FUNCTION_INLINE demachint GetUIID() { return m_UIID; }
-            DV_FUNCTION_INLINE ICommon** GetCreatee() { return m_Createe; }
             DV_FUNCTION_INLINE MemoryObject** GetMemoryObject() { return m_MemoryObject; }
             DV_FUNCTION_INLINE Engine* GetEngine() { return m_Engine; }
 
         private:
-            void SetUSIDAndUIIDAndCreateeAndMemoryObjectAndEngine(deuchar* USID, const demachint UIID, ICommon** createe, MemoryObject** memoryObject, Engine* engine);
+            void SetUSIDAndUIIDAndAccessPointerAndMemoryObjectAndEngine(deuchar* USID, const demachint UIID, ICommon** createe, MemoryObject** memoryObject, Engine* engine);
 
         private:
             destring m_USID;
             demachint m_UIID;
-            ICommon** m_Createe;
             MemoryObject** m_MemoryObject;
             Engine* m_Engine;
     };
@@ -137,7 +135,7 @@ namespace DvigEngine2
     
     class MemoryObject : public IHelperObject
     {
-        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+        DV_MACRO_FRIENDS(Engine)
 
         public:
             void Init() {}
@@ -157,6 +155,7 @@ namespace DvigEngine2
             // MemoryObjectProperty m_Prop;
             void* m_Address;
             deusize m_ByteWidth;
+            demachword m_FreeFlag;
             deint32 m_MemoryPoolIndex;
     };
 
@@ -213,7 +212,7 @@ namespace DvigEngine2
 
             void Init(const deint32 memoryPoolIndex, const deusize bufferByteWidth);
             void Free() override final;
-            void Insert(const deisize offset, const void* data, const deusize dataByteWidth);
+            deint32 Insert(const deisize offset, const void* data, const deusize dataByteWidth);
             void Find(const deisize offset, void* output, const deusize copyByteWidth);
             void Remove(const deisize offset, const deusize removeByteWidth);
 
@@ -360,6 +359,7 @@ namespace DvigEngine2
             void* m_Address;
             void* m_AddressOffset;
             deusize m_ByteWidth;
+            deusize m_OccupiedByteWidth;
     };
 
     class JobQueueProperty : public IProperty
@@ -446,6 +446,7 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE EngineRegistryProperty* GetRegistryData() { return &m_RegistryProp; }
             DV_FUNCTION_INLINE MemoryPool* GetMemoryPoolByIndex(const deint32 memoryPoolIndex) { return &(m_Instance->m_Prop.m_MemoryPools[memoryPoolIndex]); }
             DV_FUNCTION_INLINE void* GetUserData() { return m_Prop.m_UserData; }
+            DV_FUNCTION_INLINE ICommon* GetExistingInstance(const char* USID) { ICommon** instance = (ICommon**)m_RegistryProp.m_Createes->Find( &USID[0] ); return *instance; }
             static DV_FUNCTION_INLINE demachint GetGlobalUIID() { static demachint globalUIID = 0; return globalUIID++; }
 
             static void Init(EngineInputProperty* engineInputProperty);
@@ -469,23 +470,6 @@ namespace DvigEngine2
             void AddComponent(INode** const node, IComponent* const component)
             {
                 const char* typeName = typeid(T).name();
-                const deint32 registryIndex = (const deint32)(demachword)m_RegistryProp.m_RegisteredComponents->Find( typeName );
-                const deint32 bitSetIndex = (const deint32)((dedword)registryIndex >> 5u);
-                const dedword bitSetBit = 1u << ((dedword)registryIndex & 31u);
-                if (registryIndex == 0 || (((*node)->m_ComponentBitSet[bitSetIndex] >> bitSetBit) & 1u) == 1u) { return; }
-                (*node)->m_ComponentBitSet[bitSetIndex] |= 1u << bitSetBit;
-
-                (*node)->m_Components->Insert( DV_NULL, component, component->m_LayoutByteWidth );
-                *component->GetCreatee() = (*node)->GetComponent( (const char*)component->GetUSID() );
-            }
-
-            template <typename T>
-            void AddExistingComponent(INode** const node, const char* USID)
-            {
-                IComponent* component = (IComponent*)m_RegistryProp.m_Createes->Find( &USID[0] );
-                if (component == nullptr) { return; }
-
-                const char* typeName = typeid(T).name();
                 const deint32 registryIndex = (const deint32)(demachword)m_RegistryProp.m_RegisteredComponents->Find( &typeName[0] );
                 const deint32 bitSetIndex = (const deint32)((dedword)registryIndex >> 5u);
                 const dedword bitSetBit = 1u << ((dedword)registryIndex & 31u);
@@ -496,14 +480,14 @@ namespace DvigEngine2
                 // *component->GetCreatee() = (*node)->GetComponent( (const char*)component->GetUSID() );
                 (*node)->m_Components->Insert( DV_NULL, &component, sizeof(void*) );
             }
-            
+
             void AddHelperObject(INode** const node, IHelperObject* const helperObject)
             {
                 IHelperObject* getHelperObject = (*node)->GetHelperObject( (const char*)helperObject->GetUSID() );
                 if (getHelperObject != nullptr) { return; }
 
-                (*node)->m_HelperObjects->Insert( DV_NULL, helperObject, helperObject->m_LayoutByteWidth );
-                *helperObject->GetCreatee() = (*node)->GetHelperObject( (const char*)helperObject->GetUSID() );
+                // (*node)->m_HelperObjects->Insert( DV_NULL, helperObject, helperObject->m_LayoutByteWidth );
+                // *helperObject->GetCreatee() = (*node)->GetHelperObject( (const char*)helperObject->GetUSID() );
             }
 
             template <typename T>
@@ -524,22 +508,13 @@ namespace DvigEngine2
                 
                 const deusize offset = (demachword)removedComponent - (demachword)dataAddress;
                 (*node)->m_Components->Remove( offset, removedComponent->m_LayoutByteWidth );
-
-                // Update createe pointers
-                IComponent* const lastAddress = Ptr<IComponent*>::Add( &dataAddress, (*node)->m_Components->GetSize() );
-                while (removedComponent < lastAddress)
-                {
-                    void* curCreateeAddress = *removedComponent->GetCreatee();
-                    *removedComponent->GetCreatee() = (ICommon*)Ptr<void*>::Subtract( &curCreateeAddress, removedComponent->m_LayoutByteWidth );
-                    removedComponent = Ptr<IComponent*>::Add( &removedComponent, removedComponent->m_LayoutByteWidth );
-                }
             }
             
             template <typename T>
-            DV_FUNCTION_INLINE T* Create(T** const result, const char* USID, const IProperty* const data)
+            DV_FUNCTION_INLINE T* Create(T** const result, const char* USID)
             {
                 // DV_XMACRO_PUSH_JOB(CallCreate<T>, m_Instance, result, stringID, data)
-                demachword argumentMemory[3] = { (demachword)result, (demachword)&USID[0], (demachword)data };
+                demachword argumentMemory[3] = { (demachword)result, (demachword)&USID[0], 0 };
                 return CallCreate<T>(&argumentMemory[0], 0);
             }
 
@@ -560,7 +535,7 @@ namespace DvigEngine2
                 T typedObjectOnStack;
                 T* typedObject = memoryObject->Unwrap<T*>();
                 Engine::CopyMemory( typedObject, &typedObjectOnStack, sizeof(demachword) ); // copy vpointer
-                typedObject->SetUSIDAndUIIDAndCreateeAndMemoryObjectAndEngine( objectUSID, Engine::GetGlobalUIID(), (ICommon**)result, &memoryObject, m_Instance );
+                typedObject->SetUSIDAndUIIDAndAccessPointerAndMemoryObjectAndEngine( objectUSID, Engine::GetGlobalUIID(), (ICommon**)result, &memoryObject, m_Instance );
                 if (dynamic_cast<INode*>(typedObject) != nullptr)
                 {
                     INode* node = (INode*)typedObject;
@@ -572,7 +547,7 @@ namespace DvigEngine2
                     layout->m_LayoutByteWidth = sizeof(T);
                 }
                 *result = typedObject;
-                m_Instance->m_RegistryProp.m_Createes->Insert( (const char*)&objectUSID[0], (void*)typedObject );
+                m_Instance->m_RegistryProp.m_Createes->Insert( (const char*)&objectUSID[0], (void*)result );
                 return typedObject;
             }
 

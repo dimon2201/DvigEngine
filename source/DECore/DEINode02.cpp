@@ -10,11 +10,11 @@ void DvigEngine2::INode::Init()
     this->m_ChildNodes = nullptr;
     this->m_Components = nullptr;
     this->m_HelperObjects = nullptr;
-    engine->Create<DvigEngine2::DynamicBuffer>( &this->m_ChildNodes, "_ChildNodesContainer", nullptr );
+    engine->Create<DvigEngine2::DynamicBuffer>( &this->m_ChildNodes, "_ChildNodesContainer" );
     this->m_ChildNodes->Init( 0, 1024 );
-    engine->Create<DvigEngine2::DynamicBuffer>( &this->m_Components, "_ChildNodesContainer", nullptr );
+    engine->Create<DvigEngine2::DynamicBuffer>( &this->m_Components, "_ChildNodesContainer" );
     this->m_Components->Init( engine->GetData()->m_ComponentStorageMemoryPoolIndex, 1024 );
-    engine->Create<DvigEngine2::DynamicBuffer>( &this->m_HelperObjects, "_ChildNodesContainer", nullptr );
+    engine->Create<DvigEngine2::DynamicBuffer>( &this->m_HelperObjects, "_ChildNodesContainer" );
     this->m_HelperObjects->Init( 0, 1024 );
     for (deisize i = 0; i < DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT; ++i) {
         this->m_ComponentBitSet[i] = 0;
@@ -106,7 +106,7 @@ DvigEngine2::IComponent* DvigEngine2::INode::GetComponent(const char* USID)
     for (deisize i = 0; i < (deisize)capacity; ++i)
     {
         IComponent* component = *dataAddress;
-
+        std::cout << component->GetUSID() << std::endl;
         if (String::CompareCharacters( &USID[0], (const char*)component->GetUSID(), String::CharactersCount((const deuchar*)&USID[0]) ) == DV_TRUE) {
             return component;
         }

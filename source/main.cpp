@@ -1,5 +1,5 @@
 #include "../include/DECore.hpp"
-#include "../include/DEGraphics.hpp"
+#include "../include/DERendering.hpp"
 
 int main()
 {
@@ -27,27 +27,39 @@ int main()
         1.0f, -1.0f, 0.0f
     };
 
-    DvigEngine2::GeometryComponent* geometryComp[1];
-    engine->Create <DvigEngine2::GeometryComponent> ( &geometryComp[0], "MyGeometryComponent_0", nullptr );
-    geometryComp[0]->Init( nullptr, (void*)&vertices[0], 4 * vertexCount );
-    geometryComp[0]->val = 255;
+    DvigEngine2::GeometryComponent* geometryComp;
+    DvigEngine2::GeometryComponent* geometryComp2;
+    engine->Create <DvigEngine2::GeometryComponent> ( &geometryComp2, "MyGeometryComponent_2" );
+    engine->Create <DvigEngine2::GeometryComponent> ( &geometryComp, "MyGeometryComponent_0" );
+    geometryComp2->Init( nullptr, (void*)&vertices[0], 4 * vertexCount );
+    geometryComp->Init( nullptr, (void*)&vertices[0], 4 * vertexCount );
+    geometryComp->val = 255;
 
-    DvigEngine2::INode* nodes[1];
-    engine->Create <DvigEngine2::INode> ( &nodes[0], "MyNode_0", nullptr );
-    nodes[0]->Init();
-    engine->AddExistingComponent <DvigEngine2::GeometryComponent> ( &nodes[0], "MyGeometryComponent_0" );
-    DvigEngine2::GeometryComponent* getComponent = (DvigEngine2::GeometryComponent*)nodes[0]->GetComponent( "MyGeometryComponent_0" );
+    geometryComp2->Free();
+    std::cout << "a";
+
+    // DvigEngine2::IComponent* exComponent = (DvigEngine2::IComponent*)engine->GetExistingInstance( "MyGeometryComponent_0" );
+
+    DvigEngine2::INode* nodes;
+    engine->Create <DvigEngine2::INode> ( &nodes, "MyNode_0" );
+    nodes->Init();
+    engine->AddComponent <DvigEngine2::GeometryComponent> ( &nodes, geometryComp );
+
+    DvigEngine2::GeometryComponent* getComponent = (DvigEngine2::GeometryComponent*)nodes->GetComponent( "MyGeometryComponent_0" );
     std::cout << getComponent->val << std::endl;
 
     /*
-        Node
+        Node "House"
           GeometryComponent
-        Node
+        Node "House"
           GeometryComponent
 
         Draw()
           Bind vertex buffer
           Bind uniform buffer
+
+        batch = Create <Batch> ()
+
     */
 
     /*

@@ -1,17 +1,23 @@
 #include "../../include/DECore.hpp"
-#include "../../include/DEGraphics.hpp"
+#include "../../include/DERendering.hpp"
 
 #include <fstream>
 
+DvigEngine2::DynamicBuffer* DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer = nullptr;
+
 void DvigEngine2::GeometryComponent::Init(const char* optGeometryPathOnDrive, void* optGeometryData, deusize optGeometryDataByteWidth)
 {
-    // Init internal data
     DvigEngine2::Engine* engine = this->GetEngine();
-    engine->Create<DvigEngine2::DynamicBuffer>( &this->m_VertexBuffer, "_VertexBuffer", nullptr );
-    this->m_VertexBuffer->Init( 0, 1024 );
+
+    // Create global geometry buffer
+    // If needed
+    if (DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer == nullptr)
+    {
+        engine->Create<DvigEngine2::DynamicBuffer>( &GeometryBatch::m_GlobalGeometryBuffer, "_GlobalGeometryBuffer" );
+        GeometryBatch::m_GlobalGeometryBuffer->Init( 0, 1024 );
+    }
 
     // Geometry data address
-    DvigEngine2::MemoryObject* tempMemoryObject;
     void* geometryData = optGeometryData;
     deusize geometryDataByteWidth = optGeometryDataByteWidth;
     if (geometryData == nullptr)
@@ -24,19 +30,22 @@ void DvigEngine2::GeometryComponent::Init(const char* optGeometryPathOnDrive, vo
         fileStream.seekg(0, std::ios::beg);
 
         // Temporary memory
-        tempMemoryObject = DvigEngine2::Engine::Allocate( 0, byteWidth );
+        DvigEngine2::MemoryObject* tempMemoryObject = DvigEngine2::Engine::Allocate( 0, byteWidth );
         geometryData = tempMemoryObject->Unwrap<deuchar*>();
         geometryDataByteWidth = byteWidth;
 
         // Read
         fileStream.read((char*)geometryData, geometryDataByteWidth);
+
+        // Delete temporary memory
+        engine->Delete( &tempMemoryObject );
     }
 
-    // Copy to vertex buffer
-    this->m_VertexBuffer->Insert( DV_NULL, geometryData, geometryDataByteWidth );
+    // Copy to global geometry buffer
+    DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer->Insert( DV_NULL, geometryData, geometryDataByteWidth );
 }
 
 void DvigEngine2::GeometryComponent::Free()
 {
-    this->m_VertexBuffer->Free();
+    this->GetEngine()->Delete( this->GetMemoryObject() );
 }
