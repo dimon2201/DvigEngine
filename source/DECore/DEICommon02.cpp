@@ -5,7 +5,7 @@ void DvigEngine2::ICommon::Free()
     m_Engine->Delete( this->m_MemoryObject );
 }
 
-void DvigEngine2::ICommon::SetUSIDAndUIIDAndAccessPointerAndMemoryObjectAndEngine(deuchar* USID, const demachint UIID, ICommon** accessPointer, MemoryObject** memoryObject, Engine* engine)
+void DvigEngine2::ICommon::SetUSIDAndUIIDAndMemoryObjectAndEngine(deuchar* USID, const demachint UIID, MemoryObject* memoryObject, Engine* engine)
 {
     deisize m_USIDByteWidth = 0;
     while (USID[m_USIDByteWidth] != 0) { this->m_USID[m_USIDByteWidth] = USID[m_USIDByteWidth]; ++m_USIDByteWidth; }

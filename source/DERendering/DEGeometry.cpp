@@ -13,7 +13,7 @@ void DvigEngine2::GeometryComponent::Init(const char* optGeometryPathOnDrive, vo
     // If needed
     if (DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer == nullptr)
     {
-        engine->Create<DvigEngine2::DynamicBuffer>( &GeometryBatch::m_GlobalGeometryBuffer, "_GlobalGeometryBuffer" );
+        GeometryBatch::m_GlobalGeometryBuffer = engine->Create<DvigEngine2::DynamicBuffer>( "_GlobalGeometryBuffer" );
         GeometryBatch::m_GlobalGeometryBuffer->Init( 0, 1024 );
     }
 
@@ -38,14 +38,23 @@ void DvigEngine2::GeometryComponent::Init(const char* optGeometryPathOnDrive, vo
         fileStream.read((char*)geometryData, geometryDataByteWidth);
 
         // Delete temporary memory
-        engine->Delete( &tempMemoryObject );
+        engine->Delete( tempMemoryObject );
     }
 
     // Copy to global geometry buffer
-    DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer->Insert( DV_NULL, geometryData, geometryDataByteWidth );
+    this->m_BufferByteWidth = geometryDataByteWidth;
+    this->m_BufferOffset = DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer->Insert( DV_NULL, geometryData, geometryDataByteWidth );
 }
 
 void DvigEngine2::GeometryComponent::Free()
 {
     this->GetEngine()->Delete( this->GetMemoryObject() );
+}
+
+void DvigEngine2::GeometryBatch::ClearGeometryBuffer()
+{
+    DV_ASSERT_PTR(DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer)
+
+    DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer->Free();
+    DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer = nullptr;
 }

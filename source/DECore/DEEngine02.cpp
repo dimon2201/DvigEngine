@@ -75,7 +75,7 @@ void DvigEngine2::Engine::Init(DvigEngine2::EngineInputProperty* engineInputProp
     HashMap registeredComponentsHashMapObjectOnStack;
     HashMap* registeredComponentsHashMapObject = registeredComponentsHashMapMemoryObject->Unwrap<HashMap*>();
     Engine::CopyMemory( registeredComponentsHashMapObject, &registeredComponentsHashMapObjectOnStack, sizeof(demachword) ); // copy vpointer
-    registeredComponentsHashMapObject->SetUSIDAndUIIDAndAccessPointerAndMemoryObjectAndEngine( (deuchar*)"_RegistryComponentsHashMap", Engine::GetGlobalUIID(), (ICommon**)&registeredComponentsHashMapObject, &registeredComponentsHashMapMemoryObject, m_Instance );
+    registeredComponentsHashMapObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryComponentsHashMap", Engine::GetGlobalUIID(), registeredComponentsHashMapMemoryObject, m_Instance );
     m_Instance->m_RegistryProp.m_RegisteredComponents = registeredComponentsHashMapObject;
     m_Instance->m_RegistryProp.m_RegisteredComponents->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
     // Create createes hash map
@@ -83,20 +83,20 @@ void DvigEngine2::Engine::Init(DvigEngine2::EngineInputProperty* engineInputProp
     HashMap createesHashMapObjectOnStack;
     HashMap* createesHashMapObject = createesHashMapMemoryObject->Unwrap<HashMap*>();
     Engine::CopyMemory( createesHashMapObject, &createesHashMapObjectOnStack, sizeof(demachword) ); // copy vpointer
-    createesHashMapMemoryObject->SetUSIDAndUIIDAndAccessPointerAndMemoryObjectAndEngine( (deuchar*)"_RegistryCreateesHashMap", Engine::GetGlobalUIID(), (ICommon**)&createesHashMapObject, &createesHashMapMemoryObject, m_Instance );
-    m_Instance->m_RegistryProp.m_Createes = createesHashMapObject;
-    m_Instance->m_RegistryProp.m_Createes->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
+    createesHashMapMemoryObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryCreateesHashMap", Engine::GetGlobalUIID(), createesHashMapMemoryObject, m_Instance );
+    m_Instance->m_RegistryProp.m_Instances = createesHashMapObject;
+    m_Instance->m_RegistryProp.m_Instances->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
     // Create allocation memory pool index hash map
     MemoryObject* allocPoolIndexHashMapMemoryObject = Engine::Allocate(0, sizeof(HashMap));
     HashMap allocPoolIndexObjectOnStack;
     HashMap* allocPoolIndexMapObject = allocPoolIndexHashMapMemoryObject->Unwrap<HashMap*>();
     Engine::CopyMemory( allocPoolIndexMapObject, &allocPoolIndexObjectOnStack, sizeof(demachword) ); // copy vpointer
-    allocPoolIndexHashMapMemoryObject->SetUSIDAndUIIDAndAccessPointerAndMemoryObjectAndEngine( (deuchar*)"_RegistryAllocPoolIndexHashMap", Engine::GetGlobalUIID(), (ICommon**)&allocPoolIndexMapObject, &allocPoolIndexHashMapMemoryObject, m_Instance );
+    allocPoolIndexHashMapMemoryObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryAllocPoolIndexHashMap", Engine::GetGlobalUIID(), allocPoolIndexHashMapMemoryObject, m_Instance );
     m_Instance->m_RegistryProp.m_AllocPoolIndexMap = allocPoolIndexMapObject;
     m_Instance->m_RegistryProp.m_AllocPoolIndexMap->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
 
     // INode global root node
-    m_Instance->Create<DvigEngine2::INode>( &DvigEngine2::INode::m_RootNode, "_RootNode" );
+    DvigEngine2::INode::m_RootNode = m_Instance->Create<DvigEngine2::INode>( "_RootNode" );
     DvigEngine2::INode::m_RootNode->Init();
 
     // Memory pool index for built-in types
@@ -273,7 +273,7 @@ DvigEngine2::MemoryObject* DvigEngine2::Engine::Allocate(deint32 memoryPoolIndex
     return memoryObject;
 }
 
-void DvigEngine2::Engine::Delete(MemoryObject** ppMemoryObject)
+void DvigEngine2::Engine::Delete(MemoryObject* memoryObject)
 {
     /* Old fragmention-protected model */
     // MemoryObject* curMemoryObject = *ppMemoryObject;
@@ -306,8 +306,7 @@ void DvigEngine2::Engine::Delete(MemoryObject** ppMemoryObject)
     //     curMemoryObject = DvigEngine2::Ptr<MemoryObject*>::Add( &curMemoryObject, sizeof(MemoryObject) + curMemoryObject->GetByteWidth() );
     // }
 
-    MemoryObject* curMemoryObject = *ppMemoryObject;
-    curMemoryObject->m_FreeFlag = DV_TRUE;
+    memoryObject->m_FreeFlag = DV_TRUE;
 }
 
 void DvigEngine2::Engine::CopyMemory(void* dstAddress, const void* srcAddress, const deusize byteWidth)

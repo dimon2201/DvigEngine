@@ -68,16 +68,16 @@ namespace DvigEngine2
 
             DV_FUNCTION_INLINE deuchar* GetUSID() { return &m_USID[0]; }
             DV_FUNCTION_INLINE demachint GetUIID() { return m_UIID; }
-            DV_FUNCTION_INLINE MemoryObject** GetMemoryObject() { return m_MemoryObject; }
+            DV_FUNCTION_INLINE MemoryObject* GetMemoryObject() { return m_MemoryObject; }
             DV_FUNCTION_INLINE Engine* GetEngine() { return m_Engine; }
 
         private:
-            void SetUSIDAndUIIDAndAccessPointerAndMemoryObjectAndEngine(deuchar* USID, const demachint UIID, ICommon** createe, MemoryObject** memoryObject, Engine* engine);
+            void SetUSIDAndUIIDAndMemoryObjectAndEngine(deuchar* USID, const demachint UIID, MemoryObject* memoryObject, Engine* engine);
 
         private:
             destring m_USID;
             demachint m_UIID;
-            MemoryObject** m_MemoryObject;
+            MemoryObject* m_MemoryObject;
             Engine* m_Engine;
     };
 
@@ -91,6 +91,9 @@ namespace DvigEngine2
     };
 
     class IComponent : public ILayout
+    { };
+
+    class ISystem : public ICommon
     { };
 
     class IHelperObject : public ILayout
@@ -407,7 +410,7 @@ namespace DvigEngine2
     {
         public:
             HashMap* m_RegisteredComponents;
-            HashMap* m_Createes;
+            HashMap* m_Instances;
             HashMap* m_AllocPoolIndexMap;
     };
 
@@ -446,7 +449,7 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE EngineRegistryProperty* GetRegistryData() { return &m_RegistryProp; }
             DV_FUNCTION_INLINE MemoryPool* GetMemoryPoolByIndex(const deint32 memoryPoolIndex) { return &(m_Instance->m_Prop.m_MemoryPools[memoryPoolIndex]); }
             DV_FUNCTION_INLINE void* GetUserData() { return m_Prop.m_UserData; }
-            DV_FUNCTION_INLINE ICommon* GetExistingInstance(const char* USID) { ICommon** instance = (ICommon**)m_RegistryProp.m_Createes->Find( &USID[0] ); return *instance; }
+            DV_FUNCTION_INLINE ICommon* GetExistingInstance(const char* USID) { ICommon* instance = (ICommon*)m_RegistryProp.m_Instances->Find( &USID[0] ); return instance; }
             static DV_FUNCTION_INLINE demachint GetGlobalUIID() { static demachint globalUIID = 0; return globalUIID++; }
 
             static void Init(EngineInputProperty* engineInputProperty);
@@ -454,7 +457,7 @@ namespace DvigEngine2
             static void CopyMemory(void* destAddress, const void* srcAddress, const deusize byteWidth);
             static void MoveMemory(void* destAddress, const void* srcAddress, const deusize byteWidth);
             static void SetMemory(void* destAddress, const demachword value, const deusize byteWidth);
-            void Delete(MemoryObject** ppMemoryObject);
+            void Delete(MemoryObject* memoryObject);
 
             template <typename T>
             DV_FUNCTION_INLINE void RegisterComponent()
@@ -511,10 +514,12 @@ namespace DvigEngine2
             }
             
             template <typename T>
-            DV_FUNCTION_INLINE T* Create(T** const result, const char* USID)
+            DV_FUNCTION_INLINE T* Create(const char* USID)
             {
                 // DV_XMACRO_PUSH_JOB(CallCreate<T>, m_Instance, result, stringID, data)
-                demachword argumentMemory[3] = { (demachword)result, (demachword)&USID[0], 0 };
+                
+                demachword argumentMemory[3] = { 0, (demachword)&USID[0], 0 };
+
                 return CallCreate<T>(&argumentMemory[0], 0);
             }
 
@@ -525,7 +530,7 @@ namespace DvigEngine2
             template <typename T>
             T* CallCreate(demachword* argumentMemory, deint32 jobIndex)
             {
-                T** result = (T**)argumentMemory[ 0 ];
+                // T** result = (T**)argumentMemory[ 0 ];
                 deuchar* objectUSID = (deuchar*)argumentMemory[ 1 ];
                 // IProperty* const objectData = (IProperty* const)argumentMemory[ 2 ];
                 void* pAllocationPoolIndex = m_RegistryProp.m_AllocPoolIndexMap->Find( typeid(T).name() );
@@ -535,7 +540,7 @@ namespace DvigEngine2
                 T typedObjectOnStack;
                 T* typedObject = memoryObject->Unwrap<T*>();
                 Engine::CopyMemory( typedObject, &typedObjectOnStack, sizeof(demachword) ); // copy vpointer
-                typedObject->SetUSIDAndUIIDAndAccessPointerAndMemoryObjectAndEngine( objectUSID, Engine::GetGlobalUIID(), (ICommon**)result, &memoryObject, m_Instance );
+                typedObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( objectUSID, Engine::GetGlobalUIID(), memoryObject, m_Instance );
                 if (dynamic_cast<INode*>(typedObject) != nullptr)
                 {
                     INode* node = (INode*)typedObject;
@@ -546,8 +551,7 @@ namespace DvigEngine2
                     ILayout* layout = (ILayout*)typedObject;
                     layout->m_LayoutByteWidth = sizeof(T);
                 }
-                *result = typedObject;
-                m_Instance->m_RegistryProp.m_Createes->Insert( (const char*)&objectUSID[0], (void*)result );
+                m_Instance->m_RegistryProp.m_Instances->Insert( (const char*)&objectUSID[0], (void*)typedObject );
                 return typedObject;
             }
 

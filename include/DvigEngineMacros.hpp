@@ -64,7 +64,6 @@
 #define DV_MEMORY_POOL_BYTE_WIDTH                       32 * DV_MEMORY_MiB
 #define DV_MEMORY_POOL_COMPONENT_STORAGE_BYTE_WIDTH     DV_MEMORY_POOL_BYTE_WIDTH / 2
 
-#define DV_MAX_ACCESS_POINTERS                          10
 #define DV_MAX_FIXED_SET_RESERVED_DATA_BYTE_WIDTH       9
 #define DV_MAX_HASH_MAP_MEMORY_BLOCK_BYTE_WIDTH         1024
 #define DV_MAX_HASH_MAP_LIST_ENTRY_COUNT                100
@@ -85,6 +84,10 @@
     { \
         exit(0); \
     }
+
+#define DV_XMACRO_DECLARE_STATIC_CLASS(T) \
+    private: \
+        T() {}
 
 #define DV_XMACRO_DECLARE_COMMON_CLASS(T) \
     public: \

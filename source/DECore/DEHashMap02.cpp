@@ -82,7 +82,7 @@ void DvigEngine2::HashMap::Free()
     DvigEngine2::Engine* engine = this->GetEngine();
     this->m_Entries.Free();
     DvigEngine2::MemoryObject* tableMemoryObject = this->GetHashTableMemoryObject();
-    engine->Delete( &tableMemoryObject );
+    engine->Delete( tableMemoryObject );
 }
 
 DvigEngine2::deint32 DvigEngine2::HashMap::Insert(const char* key, void* value)

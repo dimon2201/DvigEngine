@@ -1,4 +1,5 @@
 #include "../include/DECore.hpp"
+#include "../include/DEGUI.hpp"
 #include "../include/DERendering.hpp"
 
 int main()
@@ -17,36 +18,39 @@ int main()
 
     DvigEngine2::Engine::Init(&engineInputData);
     DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
-    engine->RegisterComponent <DvigEngine2::GeometryComponent> ();
 
-    // Vertices
-    DvigEngine2::deusize vertexCount = 9;
-    float vertices[9] = {
-        -1.0f, -1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f
-    };
+    // Create window
+    DvigEngine2::IWindow* window = engine->Create <DvigEngine2::IWindow> ( "MyTestWindow_0" );
+    window->Init();
 
-    DvigEngine2::GeometryComponent* geometryComp;
-    DvigEngine2::GeometryComponent* geometryComp2;
-    engine->Create <DvigEngine2::GeometryComponent> ( &geometryComp2, "MyGeometryComponent_2" );
-    engine->Create <DvigEngine2::GeometryComponent> ( &geometryComp, "MyGeometryComponent_0" );
-    geometryComp2->Init( nullptr, (void*)&vertices[0], 4 * vertexCount );
-    geometryComp->Init( nullptr, (void*)&vertices[0], 4 * vertexCount );
-    geometryComp->val = 255;
+    // engine->RegisterComponent <DvigEngine2::GeometryComponent> ();
 
-    geometryComp2->Free();
-    std::cout << "a";
+    // // Vertices
+    // DvigEngine2::deusize vertexCount = 9;
+    // float vertices[9] = {
+    //     -1.0f, -1.0f, 0.0f,
+    //     0.0f, 1.0f, 0.0f,
+    //     1.0f, -1.0f, 0.0f
+    // };
+
+    // DvigEngine2::GeometryComponent* geometryComp = engine->Create <DvigEngine2::GeometryComponent> ( "MyGeometryComponent_0" );
+    // DvigEngine2::GeometryComponent* geometryComp2 = engine->Create <DvigEngine2::GeometryComponent> ( "MyGeometryComponent_2" );
+    // geometryComp2->Init( nullptr, (void*)&vertices[0], 4 * vertexCount );
+    // geometryComp->Init( nullptr, (void*)&vertices[0], 4 * vertexCount );
+    // geometryComp->val = 255;
+
+    // geometryComp2->Free();
 
     // DvigEngine2::IComponent* exComponent = (DvigEngine2::IComponent*)engine->GetExistingInstance( "MyGeometryComponent_0" );
 
-    DvigEngine2::INode* nodes;
-    engine->Create <DvigEngine2::INode> ( &nodes, "MyNode_0" );
-    nodes->Init();
-    engine->AddComponent <DvigEngine2::GeometryComponent> ( &nodes, geometryComp );
+    // DvigEngine2::INode* nodes = engine->Create <DvigEngine2::INode> ( "MyNode_0" );
+    // nodes->Init();
+    // engine->AddComponent <DvigEngine2::GeometryComponent> ( &nodes, geometryComp );
 
-    DvigEngine2::GeometryComponent* getComponent = (DvigEngine2::GeometryComponent*)nodes->GetComponent( "MyGeometryComponent_0" );
-    std::cout << getComponent->val << std::endl;
+    // DvigEngine2::GeometryComponent* getComponent = (DvigEngine2::GeometryComponent*)nodes->GetComponent( "MyGeometryComponent_0" );
+    // std::cout << getComponent->val << std::endl;
+
+    // DvigEngine2::GeometryBatch::ClearGeometryBuffer();
 
     /*
         Node "House"
@@ -58,8 +62,10 @@ int main()
           Bind vertex buffer
           Bind uniform buffer
 
-        batch = Create <Batch> ()
-
+        renderSys = RenderingSystem::Instance
+        renderSys -> BeginBatch()
+          renderSys -> Draw()
+        renderSys -> EndBatch()
     */
 
     /*

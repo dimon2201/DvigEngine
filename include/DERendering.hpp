@@ -13,7 +13,8 @@ namespace DvigEngine2
 
         public:
             int val;
-            deint32 m_GlobalGeometryBufferOffset;
+            deusize m_BufferByteWidth;
+            deint32 m_BufferOffset;
     };
 
     class GeometryBatch : public IHelperObject
@@ -21,9 +22,25 @@ namespace DvigEngine2
         public:
             void Init();
             void Free() override final;
+            static void ClearGeometryBuffer();
 
         public:
             static DynamicBuffer* m_GlobalGeometryBuffer;
+    };
+
+    class RenderingSystem : public ISystem
+    {
+        DV_MACRO_DECLARE_SINGLETON(RenderingSystem, private)
+
+        public:
+            void Init();
+            void BeginRender();
+            void BeginBatch();
+            void EndRender();
+            void EndBatch();
+
+        private:
+            FixedSet* m_Batches;
     };
 }
 

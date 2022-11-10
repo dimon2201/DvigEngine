@@ -10,6 +10,7 @@ void DvigEngine2::DynamicBuffer::Init(const deint32 memoryPoolIndex, const deusi
 
 void DvigEngine2::DynamicBuffer::Free()
 {
+    this->GetEngine()->Delete( this->m_DataObject );
     this->GetEngine()->Delete( this->GetMemoryObject() );
 }
 
@@ -35,7 +36,7 @@ DvigEngine2::deint32 DvigEngine2::DynamicBuffer::Insert(const deisize offset, co
         // Copy previous to new
         // And delete
         Engine::CopyMemory( newDataObject->Unwrap<void*>(), this->m_DataObject->Unwrap<void*>(), this->m_DataByteWidth );
-        engine->Delete( &this->m_DataObject );
+        engine->Delete( this->m_DataObject );
         this->m_DataObject = newDataObject;
 
         // Update pointers

@@ -28,7 +28,7 @@ DvigEngine2::deint32 DvigEngine2::FixedSet::Insert(void* entry)
         MemoryObject* newMemoryObject = DvigEngine2::Engine::Allocate( this->m_MemoryPoolIndex, allocByteWidth );
 
         Engine::CopyMemory( newMemoryObject->Unwrap<void*>(), this->m_DataObject->Unwrap<void*>(), this->m_DataByteWidth );
-        engine->Delete( &this->m_DataObject );
+        engine->Delete( this->m_DataObject );
 
         this->m_DataObject = newMemoryObject;
         this->m_AllocatedDataByteWidth = allocByteWidth;
