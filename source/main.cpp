@@ -20,8 +20,15 @@ int main()
     DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
 
     // Create window
-    DvigEngine2::IWindow* window = engine->Create <DvigEngine2::IWindow> ( "MyTestWindow_0" );
+    class AppWindow : public DvigEngine2::IWindow {
+        public:
+            void Update() override final {
+
+            }
+    };
+    AppWindow* window = engine->Create <AppWindow> ( "MyTestWindow_0" );
     window->Init();
+    window->Start();
 
     // engine->RegisterComponent <DvigEngine2::GeometryComponent> ();
 

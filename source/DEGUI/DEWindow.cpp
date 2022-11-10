@@ -5,10 +5,11 @@
 void DvigEngine2::IWindow::Init()
 {
     // Create GLFW window
+    glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     GLFWwindow* window = glfwCreateWindow(640, 480, "DvigEngine Test", NULL, NULL);
-    
+
     DV_ASSERT_PTR(window);
 
     // Assign to member variables
@@ -24,4 +25,18 @@ void DvigEngine2::IWindow::Free()
     }
 
     engine->Delete( this->GetMemoryObject() );
+}
+
+void DvigEngine2::IWindow::Start()
+{
+    DV_ASSERT_PTR(this->m_GLFWWindow)
+
+    GLFWwindow* glfwWindow = (GLFWwindow*)this->m_GLFWWindow;
+    while (!glfwWindowShouldClose(glfwWindow))
+    {
+        this->Update();
+
+        glfwSwapBuffers(glfwWindow);
+        glfwPollEvents();
+    }
 }

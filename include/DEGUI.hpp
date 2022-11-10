@@ -12,6 +12,8 @@ namespace DvigEngine2
         public:
             void Init();
             void Free() override final;
+            void Start();
+            virtual void Update() = 0;
 
         private:
             void* m_GLFWWindow;
