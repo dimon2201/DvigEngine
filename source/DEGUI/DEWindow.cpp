@@ -1,17 +1,17 @@
 #include "../../include/DEGUI.hpp"
-
-#include "../../thirdparty/glfw_win64/include/GLFW/glfw3.h"
+#include "../../include/DEThirdPartyMath.hpp"
+#include "../../include/DEThirdPartyWindow.hpp"
 
 void* DvigEngine2::WindowStack::m_GLFWWindows[] = {};
 DvigEngine2::IWindow* DvigEngine2::WindowStack::m_WindowInstances[] = {};
 
-void DvigEngine2::IWindow::Init()
+void DvigEngine2::IWindow::Init(const char* caption, glm::uvec2& size)
 {
     // Create GLFW window
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    GLFWwindow* window = glfwCreateWindow(640, 480, "DvigEngine Test", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(size.x, size.y, &caption[0], NULL, NULL);
 
     DV_ASSERT_PTR(window);
 

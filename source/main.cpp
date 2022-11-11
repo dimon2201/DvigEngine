@@ -2,6 +2,7 @@
 #include "../include/DECore.hpp"
 #include "../include/DEGUI.hpp"
 #include "../include/DERendering.hpp"
+#include "../include/DEThirdPartyMath.hpp"
 
 int main()
 {
@@ -28,8 +29,12 @@ int main()
             }
     };
 
+    const char* windowCaption = "DvigEngine Test";
+    glm::uvec2 windowSize(640, 480);
+
     DvigEngine2::Application* appSys = engine->Create <DvigEngine2::Application> ( "MyApplication_0" );
-    appSys->AddWindow <AppWindow> ( "MyTestWindow_0" );
+    // appSys->Init();
+    appSys->AddWindow <AppWindow> ( "MyTestWindow_0", &windowCaption[0], windowSize );
     appSys->Start();
 
     // DvigEngine2::RenderingSystem* renderSys = DvigEngine2::RenderingSystem::GetClassInstance();

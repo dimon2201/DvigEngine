@@ -2,6 +2,7 @@
 #define _DE_LIB_GUI_H_
 
 #include "DECore.hpp"
+#include "DEThirdPartyMath.hpp"
 
 namespace DvigEngine2
 {
@@ -12,7 +13,7 @@ namespace DvigEngine2
         DV_MACRO_FRIENDS(DvigEngine2::Engine, DvigEngine2::Application)
 
         public:
-            void Init();
+            void Init(const char* caption, glm::uvec2& size);
             void Free() override final;
             static void Start();
             virtual void Update() = 0;
