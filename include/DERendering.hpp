@@ -30,7 +30,7 @@ namespace DvigEngine2
 
     class RenderingSystem : public ISystem
     {
-        DV_MACRO_DECLARE_SINGLETON(RenderingSystem, private)
+        DV_MACRO_DECLARE_SINGLETON(RenderingSystem, public)
 
         public:
             void Init();

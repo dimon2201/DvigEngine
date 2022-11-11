@@ -24,6 +24,8 @@ void DvigEngine2::IWindow::Init()
     DV_ASSERT( cycle < DV_MAX_GUI_WINDOW_COUNT );
     IWindow::m_GLFWWindows[cycle] = this->m_GLFWWindow;
     IWindow::m_WindowInstances[cycle] = this;
+
+    this->m_WindowIndex = cycle;
 }
 
 void DvigEngine2::IWindow::Free()

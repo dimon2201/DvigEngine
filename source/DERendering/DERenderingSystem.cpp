@@ -15,7 +15,7 @@ void DvigEngine2::RenderingSystem::Init()
 
 void DvigEngine2::RenderingSystem::BeginRender()
 {
-    
+    // Map uniform buffer here
 }
 
 void DvigEngine2::RenderingSystem::BeginBatch()
@@ -30,5 +30,5 @@ void DvigEngine2::RenderingSystem::EndBatch()
 
 void DvigEngine2::RenderingSystem::EndRender()
 {
-
+    // Unmap uniform buffer here
 }

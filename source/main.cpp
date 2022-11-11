@@ -19,17 +19,25 @@ int main()
     DvigEngine2::Engine::Init(&engineInputData);
     DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
 
+    DvigEngine2::RenderingSystem* renderSys = DvigEngine2::RenderingSystem::GetClassInstance();
+
     // Create window
-    class AppWindow : public DvigEngine2::IWindow {
-        public:
-            void Update() override final {
+    // class AppWindow : public DvigEngine2::IWindow {
+    //     public:
+    //         void Update() override final
+    //         {
+    //             renderSys->BeginRender();
+
+    //             renderSys->BeginBatch();
+    //             renderSys->EndBatch();
                 
-            }
-    };
-    AppWindow* window = engine->Create <AppWindow> ( "MyTestWindow_0" );
-    window->Init();
-    AppWindow* window2 = engine->Create <AppWindow> ( "MyTestWindow_1" );
-    window2->Init();
+    //             renderSys->EndRender();
+    //         }
+    // };
+
+    // AppWindow* window = engine->Create <AppWindow> ( "MyTestWindow_0" );
+    // window->Init();
+
     DvigEngine2::IWindow::Start();
 
     // engine->RegisterComponent <DvigEngine2::GeometryComponent> ();

@@ -44,6 +44,8 @@ void DvigEngine2::GeometryComponent::Init(const char* optGeometryPathOnDrive, vo
     // Copy to global geometry buffer
     this->m_BufferByteWidth = geometryDataByteWidth;
     this->m_BufferOffset = DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer->Insert( DV_NULL, geometryData, geometryDataByteWidth );
+
+    // Bind vertex buffer here
 }
 
 void DvigEngine2::GeometryComponent::Free()
