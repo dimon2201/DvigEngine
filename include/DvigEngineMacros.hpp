@@ -122,11 +122,19 @@
         T& operator=(T&&) = delete; \
         void operator=(const T&) = delete; \
         void* operator new(deuint64) = delete; \
+        static MemoryObject* m_MemoryObject; \
         static T* m_Instance;
 
 #define DV_MACRO_DEFINE_SINGLETON(T) \
+    DvigEngine2::MemoryObject* T::m_MemoryObject = nullptr; \
     T* T::m_Instance = nullptr; \
-    T* T::GetClassInstance() { DV_ASSERT_PTR(m_Instance); return m_Instance; }
+    T* T::GetClassInstance() { \
+        if (T::m_Instance == nullptr) { \
+            T::m_MemoryObject = Engine::Allocate( 0, sizeof(T) ); \
+            T::m_Instance = T::m_MemoryObject->Unwrap<T*>(); \
+        } \
+        return m_Instance; \
+    }
 
 #define DV_MACRO_GETTER(T) \
     return T;

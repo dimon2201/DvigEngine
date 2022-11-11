@@ -18,8 +18,10 @@ int main()
     engineInputData.m_ComponentStorageMemoryPoolIndex = 1;
     engineInputData.m_RequestedThreadCount = 1;
 
-    DvigEngine2::Engine::Init(&engineInputData);
-    DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
+    // DvigEngine2::Engine::Init(&engineInputData);
+    // DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
+    DvigEngine2::Engine engine(&engineInputData);
+    DvigEngine2::Engine* pEngine = &engine;
 
     // Create window
     class AppWindow : public DvigEngine2::IWindow {
@@ -32,8 +34,8 @@ int main()
     const char* windowCaption = "DvigEngine Test";
     glm::uvec2 windowSize(640, 480);
 
-    DvigEngine2::Application* appSys = engine->Create <DvigEngine2::Application> ( "MyApplication_0" );
-    // appSys->Init();
+    DvigEngine2::Application* appSys = pEngine->Create <DvigEngine2::Application> ( "MyApplication_0" );
+    appSys->Init();
     appSys->AddWindow <AppWindow> ( "MyTestWindow_0", &windowCaption[0], windowSize );
     appSys->Start();
 

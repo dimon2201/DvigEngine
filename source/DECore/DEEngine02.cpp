@@ -1,8 +1,8 @@
 #include "../../include/DECore.hpp"
 
-DV_MACRO_DEFINE_SINGLETON(DvigEngine2::Engine)
+DvigEngine2::Engine* DvigEngine2::Engine::m_EngineInstance = nullptr;
 
-void DvigEngine2::Engine::Init(DvigEngine2::EngineInputProperty* engineInputProperty)
+DvigEngine2::Engine::Engine(DvigEngine2::EngineInputProperty* engineInputProperty)
 {
     // Get thread info
     deusize requestedThreadCount = engineInputProperty->m_RequestedThreadCount;
@@ -30,44 +30,46 @@ void DvigEngine2::Engine::Init(DvigEngine2::EngineInputProperty* engineInputProp
     }
 
     // Allocate memory for Engine
-    const deusize allocEngineByteWidth = sizeof(DvigEngine2::Engine);
-    m_Instance = (DvigEngine2::Engine*)engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset;
-    engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset = DvigEngine2::Ptr<void*>::Add( &engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset, allocEngineByteWidth );
+    // const deusize allocEngineByteWidth = sizeof(DvigEngine2::Engine);
+    // m_Instance = (DvigEngine2::Engine*)engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset;
+    // engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset = DvigEngine2::Ptr<void*>::Add( &engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset, allocEngineByteWidth );
+
+    m_EngineInstance = this;
 
     // Allocate memory for Engine Memory pools
     const deusize allocMemoryPoolsByteWidth = engineInputProperty->m_MemoryPoolsCount * sizeof(DvigEngine2::MemoryPool);
-    m_Instance->m_Prop.m_MemoryPools = (DvigEngine2::MemoryPool*)engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset;
+    this->m_Prop.m_MemoryPools = (DvigEngine2::MemoryPool*)engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset;
     engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset = DvigEngine2::Ptr<void*>::Add( &engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset, allocMemoryPoolsByteWidth );
 
     // Allocate memory for Engine Job queues
     const deusize allocJobQueuesByteWidth = requestedThreadCount * sizeof(DvigEngine2::JobQueue);
-    m_Instance->m_Prop.m_JobQueues = (DvigEngine2::JobQueue*)engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset;
+    this->m_Prop.m_JobQueues = (DvigEngine2::JobQueue*)engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset;
     engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset = DvigEngine2::Ptr<void*>::Add( &engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset, allocJobQueuesByteWidth );
 
     // Copy input data to Engine data
     for (deisize i = 0; i < engineInputProperty->m_MemoryPoolsCount; ++i)
     {
-        m_Instance->GetData()->m_MemoryPools[i].m_Address = engineInputProperty->m_MemoryPoolsData[i].m_Address;
-        m_Instance->GetData()->m_MemoryPools[i].m_AddressOffset = engineInputProperty->m_MemoryPoolsData[i].m_AddressOffset;
-        m_Instance->GetData()->m_MemoryPools[i].m_ByteWidth = engineInputProperty->m_MemoryPoolsData[i].m_ByteWidth;
-        m_Instance->GetData()->m_MemoryPools[i].m_OccupiedByteWidth = 0;
+        this->GetData()->m_MemoryPools[i].m_Address = engineInputProperty->m_MemoryPoolsData[i].m_Address;
+        this->GetData()->m_MemoryPools[i].m_AddressOffset = engineInputProperty->m_MemoryPoolsData[i].m_AddressOffset;
+        this->GetData()->m_MemoryPools[i].m_ByteWidth = engineInputProperty->m_MemoryPoolsData[i].m_ByteWidth;
+        this->GetData()->m_MemoryPools[i].m_OccupiedByteWidth = 0;
 
         // Put memory object
-        MemoryObject* memoryObject = (MemoryObject*)m_Instance->GetData()->m_MemoryPools[i].m_AddressOffset;
+        MemoryObject* memoryObject = (MemoryObject*)this->GetData()->m_MemoryPools[i].m_AddressOffset;
         memoryObject->m_Address = nullptr;
-        memoryObject->m_ByteWidth =    (demachword)m_Instance->GetData()->m_MemoryPools[i].m_ByteWidth -
-                                        (demachword)m_Instance->GetData()->m_MemoryPools[i].m_OccupiedByteWidth;
+        memoryObject->m_ByteWidth =    (demachword)this->GetData()->m_MemoryPools[i].m_ByteWidth -
+                                        (demachword)this->GetData()->m_MemoryPools[i].m_OccupiedByteWidth;
         memoryObject->m_FreeFlag = DV_TRUE;
         memoryObject->m_MemoryPoolIndex = i;
     }
-    m_Instance->GetData()->m_Version = engineInputProperty->m_Version;
-    m_Instance->GetData()->m_MemoryPoolsCount = engineInputProperty->m_MemoryPoolsCount;
-    m_Instance->GetData()->m_SystemMemoryPoolIndex = engineInputProperty->m_SystemMemoryPoolIndex;
-    m_Instance->GetData()->m_ComponentStorageMemoryPoolIndex = engineInputProperty->m_ComponentStorageMemoryPoolIndex;
-    m_Instance->GetData()->m_MaxThreadCount = maxThreadCount;
-    m_Instance->GetData()->m_RequestedThreadCount = requestedThreadCount;
-    m_Instance->GetData()->m_CurrentJobQueueCursor = 0u;
-    m_Instance->GetData()->m_UserData = nullptr;
+    this->GetData()->m_Version = engineInputProperty->m_Version;
+    this->GetData()->m_MemoryPoolsCount = engineInputProperty->m_MemoryPoolsCount;
+    this->GetData()->m_SystemMemoryPoolIndex = engineInputProperty->m_SystemMemoryPoolIndex;
+    this->GetData()->m_ComponentStorageMemoryPoolIndex = engineInputProperty->m_ComponentStorageMemoryPoolIndex;
+    this->GetData()->m_MaxThreadCount = maxThreadCount;
+    this->GetData()->m_RequestedThreadCount = requestedThreadCount;
+    this->GetData()->m_CurrentJobQueueCursor = 0u;
+    this->GetData()->m_UserData = nullptr;
 
     // Hardcoded creation of registry objects
     // Create registered components hash map
@@ -75,32 +77,32 @@ void DvigEngine2::Engine::Init(DvigEngine2::EngineInputProperty* engineInputProp
     HashMap registeredComponentsHashMapObjectOnStack;
     HashMap* registeredComponentsHashMapObject = registeredComponentsHashMapMemoryObject->Unwrap<HashMap*>();
     Engine::CopyMemory( registeredComponentsHashMapObject, &registeredComponentsHashMapObjectOnStack, sizeof(demachword) ); // copy vpointer
-    registeredComponentsHashMapObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryComponentsHashMap", Engine::GetGlobalUIID(), registeredComponentsHashMapMemoryObject, m_Instance );
-    m_Instance->m_RegistryProp.m_RegisteredComponents = registeredComponentsHashMapObject;
-    m_Instance->m_RegistryProp.m_RegisteredComponents->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
+    registeredComponentsHashMapObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryComponentsHashMap", Engine::GetGlobalUIID(), registeredComponentsHashMapMemoryObject, this );
+    this->m_RegistryProp.m_RegisteredComponents = registeredComponentsHashMapObject;
+    this->m_RegistryProp.m_RegisteredComponents->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
     // Create createes hash map
     MemoryObject* createesHashMapMemoryObject = Engine::Allocate(0, sizeof(HashMap));
     HashMap createesHashMapObjectOnStack;
     HashMap* createesHashMapObject = createesHashMapMemoryObject->Unwrap<HashMap*>();
     Engine::CopyMemory( createesHashMapObject, &createesHashMapObjectOnStack, sizeof(demachword) ); // copy vpointer
-    createesHashMapMemoryObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryCreateesHashMap", Engine::GetGlobalUIID(), createesHashMapMemoryObject, m_Instance );
-    m_Instance->m_RegistryProp.m_Instances = createesHashMapObject;
-    m_Instance->m_RegistryProp.m_Instances->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
+    createesHashMapMemoryObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryCreateesHashMap", Engine::GetGlobalUIID(), createesHashMapMemoryObject, this );
+    this->m_RegistryProp.m_Instances = createesHashMapObject;
+    this->m_RegistryProp.m_Instances->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
     // Create allocation memory pool index hash map
     MemoryObject* allocPoolIndexHashMapMemoryObject = Engine::Allocate(0, sizeof(HashMap));
     HashMap allocPoolIndexObjectOnStack;
     HashMap* allocPoolIndexMapObject = allocPoolIndexHashMapMemoryObject->Unwrap<HashMap*>();
     Engine::CopyMemory( allocPoolIndexMapObject, &allocPoolIndexObjectOnStack, sizeof(demachword) ); // copy vpointer
-    allocPoolIndexHashMapMemoryObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryAllocPoolIndexHashMap", Engine::GetGlobalUIID(), allocPoolIndexHashMapMemoryObject, m_Instance );
-    m_Instance->m_RegistryProp.m_AllocPoolIndexMap = allocPoolIndexMapObject;
-    m_Instance->m_RegistryProp.m_AllocPoolIndexMap->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
+    allocPoolIndexHashMapMemoryObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryAllocPoolIndexHashMap", Engine::GetGlobalUIID(), allocPoolIndexHashMapMemoryObject, this );
+    this->m_RegistryProp.m_AllocPoolIndexMap = allocPoolIndexMapObject;
+    this->m_RegistryProp.m_AllocPoolIndexMap->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
 
     // INode global root node
-    DvigEngine2::INode::m_RootNode = m_Instance->Create<DvigEngine2::INode>( "_RootNode" );
+    DvigEngine2::INode::m_RootNode = this->Create<DvigEngine2::INode>( "_RootNode" );
     DvigEngine2::INode::m_RootNode->Init();
 
     // Memory pool index for built-in types
-    m_Instance->m_RegistryProp.m_AllocPoolIndexMap->Insert( typeid(IComponent).name(), (void*)(demachword)engineInputProperty->m_ComponentStorageMemoryPoolIndex );
+    this->m_RegistryProp.m_AllocPoolIndexMap->Insert( typeid(IComponent).name(), (void*)(demachword)engineInputProperty->m_ComponentStorageMemoryPoolIndex );
 
     // DvigEngine2::MemoryPoolProperty* memoryPoolsData = engineInputProperty->m_MemoryPoolsData;
     // deisize memoryPoolsCount = engineInputProperty->m_MemoryPoolsCount;
@@ -241,7 +243,7 @@ DvigEngine2::MemoryObject* DvigEngine2::Engine::Allocate(deint32 memoryPoolIndex
 
     const deusize allocByteWidth = sizeof(DvigEngine2::MemoryObject) + byteWidth;
 
-    DvigEngine2::MemoryPool* memoryPool = (DvigEngine2::MemoryPool*)m_Instance->GetMemoryPoolByIndex(memoryPoolIndex);
+    DvigEngine2::MemoryPool* memoryPool = (DvigEngine2::MemoryPool*)m_EngineInstance->GetMemoryPoolByIndex(memoryPoolIndex);
     void* prevPoolOffset = memoryPool->m_AddressOffset;
 
     // Run through memory objects to find one
@@ -260,13 +262,13 @@ DvigEngine2::MemoryObject* DvigEngine2::Engine::Allocate(deint32 memoryPoolIndex
     memoryObject->m_FreeFlag = DV_FALSE;
     memoryObject->m_MemoryPoolIndex = memoryPoolIndex;
     
-    m_Instance->GetData()->m_MemoryPools[memoryPoolIndex].m_OccupiedByteWidth += allocByteWidth;
+    m_EngineInstance->GetData()->m_MemoryPools[memoryPoolIndex].m_OccupiedByteWidth += allocByteWidth;
 
     // Create another after allocated one
     DvigEngine2::MemoryObject* stubMemoryObject = Ptr<DvigEngine2::MemoryObject*>::Add( &memoryObject, allocByteWidth );
     stubMemoryObject->m_Address = nullptr;
-    stubMemoryObject->m_ByteWidth =     (demachword)m_Instance->GetData()->m_MemoryPools[memoryPoolIndex].m_ByteWidth -
-                                        (demachword)m_Instance->GetData()->m_MemoryPools[memoryPoolIndex].m_OccupiedByteWidth;
+    stubMemoryObject->m_ByteWidth =     (demachword)m_EngineInstance->GetData()->m_MemoryPools[memoryPoolIndex].m_ByteWidth -
+                                        (demachword)m_EngineInstance->GetData()->m_MemoryPools[memoryPoolIndex].m_OccupiedByteWidth;
     stubMemoryObject->m_FreeFlag = DV_TRUE;
     stubMemoryObject->m_MemoryPoolIndex = memoryPoolIndex;
 

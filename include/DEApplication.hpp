@@ -25,6 +25,6 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE RenderingSystem* GetRenderingSystem() { if (m_RenderingSystem != nullptr) { return m_RenderingSystem; } return nullptr; }
 
         private:
-            RenderingSystem* m_RenderingSystem = {};
+            RenderingSystem* m_RenderingSystem;
     };
 }

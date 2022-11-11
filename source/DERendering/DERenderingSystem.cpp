@@ -15,12 +15,23 @@ void DvigEngine2::RenderingSystem::Init()
 
 void DvigEngine2::RenderingSystem::BeginRender()
 {
+    DV_ASSERT_PTR(m_Instance)
+
+    // Delete temp uniform buffer
+    // If needed
+    if (m_Instance->m_UniformBuffer != nullptr) {
+        m_Instance->m_UniformBuffer->Free();
+    }
+
+    // Create new uniform buffer
+    
+
     // Map uniform buffer here
 }
 
 void DvigEngine2::RenderingSystem::BeginBatch()
 {
-    
+
 }
 
 void DvigEngine2::RenderingSystem::EndBatch()

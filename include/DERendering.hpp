@@ -41,6 +41,7 @@ namespace DvigEngine2
 
         private:
             FixedSet* m_Batches;
+            DynamicBuffer* m_UniformBuffer = {};
     };
 }
 
