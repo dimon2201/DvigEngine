@@ -68,6 +68,7 @@
 #define DV_MAX_HASH_MAP_MEMORY_BLOCK_BYTE_WIDTH         1024
 #define DV_MAX_HASH_MAP_LIST_ENTRY_COUNT                100
 #define DV_MAX_REGISTERED_COMPONENT_COUNT               512
+#define DV_MAX_JOB_QUEUE_THREAD_COUNT                   8
 #define DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT      4
 #define DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT               12
 #define DV_MAX_GUI_WINDOW_COUNT                         4
@@ -132,6 +133,7 @@
         if (T::m_Instance == nullptr) { \
             T::m_MemoryObject = Engine::Allocate( 0, sizeof(T) ); \
             T::m_Instance = T::m_MemoryObject->Unwrap<T*>(); \
+            T::m_Instance->Init(); \
         } \
         return m_Instance; \
     }

@@ -5,7 +5,7 @@
 void* DvigEngine2::WindowStack::m_GLFWWindows[] = {};
 DvigEngine2::IWindow* DvigEngine2::WindowStack::m_WindowInstances[] = {};
 
-void DvigEngine2::IWindow::Init(const char* caption, glm::uvec2& size)
+void DvigEngine2::IWindow::Init(Application* app, const char* caption, glm::uvec2& size)
 {
     // Create GLFW window
     glfwInit();
@@ -16,6 +16,7 @@ void DvigEngine2::IWindow::Init(const char* caption, glm::uvec2& size)
     DV_ASSERT_PTR(window);
 
     // Assign to member variables
+    this->m_App = app;
     this->m_GLFWWindow = (void*)window;
 
     // Add to global stack

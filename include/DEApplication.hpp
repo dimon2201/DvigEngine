@@ -16,7 +16,7 @@ namespace DvigEngine2
             {
                 Engine* engine = this->GetEngine();
                 T* window = engine->Create <T> ( &USID[0] );
-                window->Init( &caption[0], size );
+                window->Init( this, &caption[0], size );
                 return window;
             }
             void RemoveWindow(deint32 index);

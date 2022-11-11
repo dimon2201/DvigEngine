@@ -40,6 +40,7 @@ namespace DvigEngine2
             void EndBatch();
 
         private:
+            debool m_IsBatchRecording;
             FixedSet* m_Batches;
             DynamicBuffer* m_UniformBuffer = {};
     };

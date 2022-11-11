@@ -4,6 +4,11 @@
 #include "../include/DERendering.hpp"
 #include "../include/DEThirdPartyMath.hpp"
 
+void Func(DvigEngine2::demachword* arguments, DvigEngine2::deint32 jobIndex)
+{
+    std::cout << "Hello!" << std::endl;
+}
+
 int main()
 {
     DvigEngine2::MemoryPoolProperty memoryPoolsData[2];
@@ -27,7 +32,15 @@ int main()
     class AppWindow : public DvigEngine2::IWindow {
         public:
             void Update() override final {
+                DvigEngine2::Application* app = this->GetApplication();
+                DvigEngine2::RenderingSystem* renderSys = app->GetRenderingSystem();
 
+                renderSys->BeginRender();
+
+                renderSys->BeginBatch();
+                renderSys->EndBatch();
+
+                renderSys->EndRender();
             }
     };
 
@@ -37,6 +50,14 @@ int main()
     DvigEngine2::Application* appSys = pEngine->Create <DvigEngine2::Application> ( "MyApplication_0" );
     appSys->Init();
     appSys->AddWindow <AppWindow> ( "MyTestWindow_0", &windowCaption[0], windowSize );
+
+    class MyQueue : public DvigEngine2::IQueue { public: void Free() override final { } };
+    DvigEngine2::demachword arguments[1];
+    MyQueue* queue = pEngine->Create <MyQueue> ( "MyQueue_0" );
+    queue->Init();
+    queue->AddJob( &Func, &arguments[0], 0 );
+    queue->DoJobs();
+
     appSys->Start();
 
     // DvigEngine2::RenderingSystem* renderSys = DvigEngine2::RenderingSystem::GetClassInstance();

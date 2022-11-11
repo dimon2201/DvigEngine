@@ -48,7 +48,7 @@ namespace DvigEngine2
     typedef deuint64            deqword;
     typedef demachword          deresult;
     typedef deuchar             destring[DV_MEMORY_COMMON_STRING_BYTE_WIDTH];
-    typedef void                (*decallback)(demachword*, deusize);
+    typedef void                (*decallback)(demachword*, deint32);
 
     template <typename T>
     class Ptr
@@ -93,7 +93,7 @@ namespace DvigEngine2
     class IComponent : public ILayout
     { };
 
-    class ISystem : public ICommon
+    class ISystem
     { };
 
     class IHelperObject : public ILayout
@@ -218,6 +218,7 @@ namespace DvigEngine2
             deint32 Insert(const deisize offset, const void* data, const deusize dataByteWidth);
             void Find(const deisize offset, void* output, const deusize copyByteWidth);
             void Remove(const deisize offset, const deusize removeByteWidth);
+            void Clear();
 
         // private:
         //     DV_XMACRO_GETTER_PROPERTY(DynamicBufferProperty)
@@ -406,6 +407,24 @@ namespace DvigEngine2
             decallback m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
     };
 
+    class IQueue : public IHelperObject
+    {
+        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+
+        public:
+            void Init();
+            void AddJob(decallback callback, void* arguments, const deusize argumentCount);
+            void DoJobs();
+
+        public:
+            static std::thread m_Threads[DV_MAX_JOB_QUEUE_THREAD_COUNT];
+
+        private:
+            deusize m_JobCount;
+            demachword m_JobArguments[DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT * DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
+            decallback m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
+    };
+
     class EngineRegistryProperty : public IProperty
     {
         public:
@@ -450,6 +469,7 @@ namespace DvigEngine2
             static void CopyMemory(void* destAddress, const void* srcAddress, const deusize byteWidth);
             static void MoveMemory(void* destAddress, const void* srcAddress, const deusize byteWidth);
             static void SetMemory(void* destAddress, const demachword value, const deusize byteWidth);
+            static Engine* GetClassInstance() { return m_EngineInstance; }
             void Delete(MemoryObject* memoryObject);
 
             DV_FUNCTION_INLINE EngineRegistryProperty* GetRegistryData() { return &m_RegistryProp; }
@@ -517,7 +537,7 @@ namespace DvigEngine2
             {
                 // DV_XMACRO_PUSH_JOB(CallCreate<T>, m_Instance, result, stringID, data)
                 
-                demachword argumentMemory[3] = { 0, (demachword)&USID[0], 0 };
+                demachword argumentMemory[1] = { (demachword)&USID[0] };
 
                 return CallCreate<T>(&argumentMemory[0], 0);
             }
@@ -529,9 +549,7 @@ namespace DvigEngine2
             template <typename T>
             T* CallCreate(demachword* argumentMemory, deint32 jobIndex)
             {
-                // T** result = (T**)argumentMemory[ 0 ];
-                deuchar* objectUSID = (deuchar*)argumentMemory[ 1 ];
-                // IProperty* const objectData = (IProperty* const)argumentMemory[ 2 ];
+                deuchar* objectUSID = (deuchar*)argumentMemory[ 0 ];
                 void* pAllocationPoolIndex = m_RegistryProp.m_AllocPoolIndexMap->Find( typeid(T).name() );
                 deuint32 allocationPoolIndex = (deuint32)(demachword)pAllocationPoolIndex;
                 if (pAllocationPoolIndex == nullptr) { allocationPoolIndex = 0; }

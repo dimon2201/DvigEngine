@@ -13,14 +13,17 @@ namespace DvigEngine2
         DV_MACRO_FRIENDS(DvigEngine2::Engine, DvigEngine2::Application)
 
         public:
-            void Init(const char* caption, glm::uvec2& size);
+            void Init(Application* app, const char* caption, glm::uvec2& size);
             void Free() override final;
             static void Start();
             virtual void Update() = 0;
 
+            DV_FUNCTION_INLINE Application* GetApplication() { return m_App; }
+
             DV_FUNCTION_INLINE deint32 GetWindowIndex() { return m_WindowIndex; }
 
         private:
+            Application* m_App;
             deint32 m_WindowIndex;
             void* m_GLFWWindow;
             MemoryObject* m_UserData = nullptr;
