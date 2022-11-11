@@ -2,8 +2,8 @@
 
 #include "../../thirdparty/glfw_win64/include/GLFW/glfw3.h"
 
-void* DvigEngine2::IWindow::m_GLFWWindows[] = {};
-DvigEngine2::IWindow* DvigEngine2::IWindow::m_WindowInstances[] = {};
+void* DvigEngine2::WindowStack::m_GLFWWindows[] = {};
+DvigEngine2::IWindow* DvigEngine2::WindowStack::m_WindowInstances[] = {};
 
 void DvigEngine2::IWindow::Init()
 {
@@ -20,10 +20,12 @@ void DvigEngine2::IWindow::Init()
 
     // Add to global stack
     deint32 cycle = 0;
-    while (this->m_GLFWWindows[cycle] != nullptr && ++cycle < DV_MAX_GUI_WINDOW_COUNT);
+    while (DvigEngine2::WindowStack::m_GLFWWindows[cycle] != nullptr && ++cycle < DV_MAX_GUI_WINDOW_COUNT);
+
     DV_ASSERT( cycle < DV_MAX_GUI_WINDOW_COUNT );
-    IWindow::m_GLFWWindows[cycle] = this->m_GLFWWindow;
-    IWindow::m_WindowInstances[cycle] = this;
+
+    DvigEngine2::WindowStack::m_GLFWWindows[cycle] = this->m_GLFWWindow;
+    DvigEngine2::WindowStack::m_WindowInstances[cycle] = this;
 
     this->m_WindowIndex = cycle;
 }
@@ -33,8 +35,12 @@ void DvigEngine2::IWindow::Free()
     DvigEngine2::Engine* engine = this->GetEngine();
 
     if (this->m_UserData != nullptr) {
-        engine->Delete( this->m_UserData );    
+        engine->Delete( this->m_UserData );
     }
+
+    glfwDestroyWindow( (GLFWwindow*)this->m_GLFWWindow );
+    this->m_GLFWWindow = nullptr;
+    this->m_WindowIndex = DV_NULL;
 
     engine->Delete( this->GetMemoryObject() );
 }
@@ -48,15 +54,15 @@ void DvigEngine2::IWindow::Start()
         // Count non-zero windows
         presentWindowCount = 0;
         for (deint32 i = 0; i < DV_MAX_GUI_WINDOW_COUNT; ++i) {
-            if (IWindow::m_GLFWWindows[i] != nullptr) { presentWindowCount += 1; }
+            if (DvigEngine2::WindowStack::m_GLFWWindows[i] != nullptr) { presentWindowCount += 1; }
         }
 
         // Wrap cycle value
         if (cycle >= DV_MAX_GUI_WINDOW_COUNT) { cycle = 0; }
 
         // Get windows
-        GLFWwindow** pGLFWWindow = (GLFWwindow**)&IWindow::m_GLFWWindows[cycle];
-        IWindow* windowInstance = IWindow::m_WindowInstances[cycle];
+        GLFWwindow** pGLFWWindow = (GLFWwindow**)&DvigEngine2::WindowStack::m_GLFWWindows[cycle];
+        IWindow* windowInstance = DvigEngine2::WindowStack::m_WindowInstances[cycle];
         cycle += 1;
 
         // Get next window
@@ -73,8 +79,6 @@ void DvigEngine2::IWindow::Start()
         else
         {
             // Destroy window
-            glfwDestroyWindow( *pGLFWWindow );
-            *pGLFWWindow = nullptr;
             windowInstance->Free();
 
             presentWindowCount -= 1;

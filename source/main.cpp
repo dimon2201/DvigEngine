@@ -1,3 +1,4 @@
+#include "../include/DEApplication.hpp"
 #include "../include/DECore.hpp"
 #include "../include/DEGUI.hpp"
 #include "../include/DERendering.hpp"
@@ -19,26 +20,24 @@ int main()
     DvigEngine2::Engine::Init(&engineInputData);
     DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
 
-    DvigEngine2::RenderingSystem* renderSys = DvigEngine2::RenderingSystem::GetClassInstance();
-
     // Create window
-    // class AppWindow : public DvigEngine2::IWindow {
-    //     public:
-    //         void Update() override final
-    //         {
-    //             renderSys->BeginRender();
+    class AppWindow : public DvigEngine2::IWindow {
+        public:
+            void Update() override final {
 
-    //             renderSys->BeginBatch();
-    //             renderSys->EndBatch();
-                
-    //             renderSys->EndRender();
-    //         }
-    // };
+            }
+    };
+
+    DvigEngine2::Application* appSys = engine->Create <DvigEngine2::Application> ( "MyApplication_0" );
+    appSys->AddWindow <AppWindow> ( "MyTestWindow_0" );
+    appSys->Start();
+
+    // DvigEngine2::RenderingSystem* renderSys = DvigEngine2::RenderingSystem::GetClassInstance();
 
     // AppWindow* window = engine->Create <AppWindow> ( "MyTestWindow_0" );
     // window->Init();
 
-    DvigEngine2::IWindow::Start();
+    // DvigEngine2::IWindow::Start();
 
     // engine->RegisterComponent <DvigEngine2::GeometryComponent> ();
 

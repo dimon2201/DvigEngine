@@ -5,20 +5,20 @@ namespace DvigEngine2
     class IWindow;
     class RenderingSystem;
 
-    class ApplicationSystem : public ISystem
+    class Application : public IHelperObject
     {
-        DV_MACRO_DECLARE_SINGLETON(ApplicationSystem, public)
-
         public:
             void Init();
             void Free() override final;
             template <typename T>
             IWindow* AddWindow(const char* USID)
             {
+                Engine* engine = this->GetEngine();
                 T* window = engine->Create <T> ( &USID[0] );
                 window->Init();
                 return window;
             }
+            void RemoveWindow(deint32 index);
             void Start();
 
             DV_FUNCTION_INLINE RenderingSystem* GetRenderingSystem() { if (m_RenderingSystem != nullptr) { return m_RenderingSystem; } return nullptr; }
