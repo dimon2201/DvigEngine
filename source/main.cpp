@@ -23,12 +23,14 @@ int main()
     class AppWindow : public DvigEngine2::IWindow {
         public:
             void Update() override final {
-
+                
             }
     };
     AppWindow* window = engine->Create <AppWindow> ( "MyTestWindow_0" );
     window->Init();
-    window->Start();
+    AppWindow* window2 = engine->Create <AppWindow> ( "MyTestWindow_1" );
+    window2->Init();
+    DvigEngine2::IWindow::Start();
 
     // engine->RegisterComponent <DvigEngine2::GeometryComponent> ();
 

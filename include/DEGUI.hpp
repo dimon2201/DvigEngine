@@ -12,8 +12,12 @@ namespace DvigEngine2
         public:
             void Init();
             void Free() override final;
-            void Start();
+            static void Start();
             virtual void Update() = 0;
+
+        public:
+            static void* m_GLFWWindows[DV_MAX_GUI_WINDOW_COUNT];
+            static IWindow* m_WindowInstances[DV_MAX_GUI_WINDOW_COUNT];
 
         private:
             void* m_GLFWWindow;
