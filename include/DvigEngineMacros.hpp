@@ -89,7 +89,12 @@
 
 #define DV_XMACRO_DECLARE_STATIC_CLASS(T) \
     private: \
-        T() {}
+        T(); \
+        T(const T&) = delete; \
+        T(T&&) = delete; \
+        T& operator=(T&&) = delete; \
+        void operator=(const T&) = delete; \
+        void* operator new(deuint64) = delete; \
 
 #define DV_XMACRO_DECLARE_COMMON_CLASS(T) \
     public: \

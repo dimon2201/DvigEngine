@@ -6,7 +6,7 @@
 
 void Func(DvigEngine2::demachword* arguments, DvigEngine2::deint32 jobIndex)
 {
-    std::cout << "Hello!" << std::endl;
+    std::cout << "Hello from " << jobIndex << " thread!" << std::endl;
 }
 
 int main()
@@ -21,81 +21,43 @@ int main()
     engineInputData.m_MemoryPoolsData = memoryPoolsData;
     engineInputData.m_SystemMemoryPoolIndex = 0;
     engineInputData.m_ComponentStorageMemoryPoolIndex = 1;
-    engineInputData.m_RequestedThreadCount = 1;
+    engineInputData.m_RequestedThreadCount = 2;
 
     // DvigEngine2::Engine::Init(&engineInputData);
     // DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
     DvigEngine2::Engine engine(&engineInputData);
     DvigEngine2::Engine* pEngine = &engine;
 
+    DvigEngine2::ThreadPoolSystem::Init();
+    DvigEngine2::ThreadPoolSystem::AddJob( 0, &Func, nullptr, 0 );
+    DvigEngine2::ThreadPoolSystem::AddJob( 1, &Func, nullptr, 0 );
+    DvigEngine2::ThreadPoolSystem::WaitForJobs();
+
     // Create window
-    class AppWindow : public DvigEngine2::IWindow {
-        public:
-            void Update() override final {
-                DvigEngine2::Application* app = this->GetApplication();
-                DvigEngine2::RenderingSystem* renderSys = app->GetRenderingSystem();
+    // class AppWindow : public DvigEngine2::IWindow {
+    //     public:
+    //         void Update() override final {
+    //             DvigEngine2::Application* app = this->GetApplication();
+    //             DvigEngine2::RenderingSystem* renderSys = app->GetRenderingSystem();
 
-                renderSys->BeginRender();
+    //             renderSys->BeginRender();
 
-                renderSys->BeginBatch();
-                renderSys->EndBatch();
+    //             renderSys->BeginBatch();
+    //             renderSys->EndBatch();
 
-                renderSys->EndRender();
-            }
-    };
-
-    const char* windowCaption = "DvigEngine Test";
-    glm::uvec2 windowSize(640, 480);
-
-    DvigEngine2::Application* appSys = pEngine->Create <DvigEngine2::Application> ( "MyApplication_0" );
-    appSys->Init();
-    appSys->AddWindow <AppWindow> ( "MyTestWindow_0", &windowCaption[0], windowSize );
-
-    class MyQueue : public DvigEngine2::IQueue { public: void Free() override final { } };
-    DvigEngine2::demachword arguments[1];
-    MyQueue* queue = pEngine->Create <MyQueue> ( "MyQueue_0" );
-    queue->Init();
-    queue->AddJob( &Func, &arguments[0], 0 );
-    queue->DoJobs();
-
-    appSys->Start();
-
-    // DvigEngine2::RenderingSystem* renderSys = DvigEngine2::RenderingSystem::GetClassInstance();
-
-    // AppWindow* window = engine->Create <AppWindow> ( "MyTestWindow_0" );
-    // window->Init();
-
-    // DvigEngine2::IWindow::Start();
-
-    // engine->RegisterComponent <DvigEngine2::GeometryComponent> ();
-
-    // // Vertices
-    // DvigEngine2::deusize vertexCount = 9;
-    // float vertices[9] = {
-    //     -1.0f, -1.0f, 0.0f,
-    //     0.0f, 1.0f, 0.0f,
-    //     1.0f, -1.0f, 0.0f
+    //             renderSys->EndRender();
+    //         }
     // };
 
-    // DvigEngine2::GeometryComponent* geometryComp = engine->Create <DvigEngine2::GeometryComponent> ( "MyGeometryComponent_0" );
-    // DvigEngine2::GeometryComponent* geometryComp2 = engine->Create <DvigEngine2::GeometryComponent> ( "MyGeometryComponent_2" );
-    // geometryComp2->Init( nullptr, (void*)&vertices[0], 4 * vertexCount );
-    // geometryComp->Init( nullptr, (void*)&vertices[0], 4 * vertexCount );
-    // geometryComp->val = 255;
+    // const char* windowCaption = "DvigEngine Test";
+    // glm::uvec2 windowSize(640, 480);
 
-    // geometryComp2->Free();
+    // DvigEngine2::Application* appSys = pEngine->Create <DvigEngine2::Application> ( "MyApplication_0" );
+    // appSys->Init();
+    // appSys->AddWindow <AppWindow> ( "MyTestWindow_0", &windowCaption[0], windowSize );
 
-    // DvigEngine2::IComponent* exComponent = (DvigEngine2::IComponent*)engine->GetExistingInstance( "MyGeometryComponent_0" );
-
-    // DvigEngine2::INode* nodes = engine->Create <DvigEngine2::INode> ( "MyNode_0" );
-    // nodes->Init();
-    // engine->AddComponent <DvigEngine2::GeometryComponent> ( &nodes, geometryComp );
-
-    // DvigEngine2::GeometryComponent* getComponent = (DvigEngine2::GeometryComponent*)nodes->GetComponent( "MyGeometryComponent_0" );
-    // std::cout << getComponent->val << std::endl;
-
-    // DvigEngine2::GeometryBatch::ClearGeometryBuffer();
-
+    // appSys->Start();
+    
     /*
         Node "House"
           GeometryComponent

@@ -48,7 +48,7 @@ namespace DvigEngine2
     typedef deuint64            deqword;
     typedef demachword          deresult;
     typedef deuchar             destring[DV_MEMORY_COMMON_STRING_BYTE_WIDTH];
-    typedef void                (*decallback)(demachword*, deint32);
+    typedef void                (*depjob)(demachword*, deint32);
 
     template <typename T>
     class Ptr
@@ -374,7 +374,7 @@ namespace DvigEngine2
             std::thread m_Thread;
             dedword m_JobCount;
             demachword m_JobArguments[DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT * DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
-            decallback m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
+            depjob m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
     };
     
     class JobQueue : public IHelperObject
@@ -387,10 +387,10 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE std::thread& GetThread() { return m_Thread; }
             DV_FUNCTION_INLINE deusize GetJobCount() { return m_JobCount; }
             DV_FUNCTION_INLINE demachword GetJobArgument(deint32 arrayOffset) { return m_JobArguments[arrayOffset]; }
-            DV_FUNCTION_INLINE decallback& GetJob(deint32 arrayOffset) { return m_Jobs[arrayOffset]; }
+            DV_FUNCTION_INLINE depjob& GetJob(deint32 arrayOffset) { return m_Jobs[arrayOffset]; }
             
             virtual void Delete();
-            void Push(decallback callback, void* argumentMemory, const deusize argumentCount);
+            void Push(depjob callback, void* argumentMemory, const deusize argumentCount);
             void Start();
             void Stop();
 
@@ -404,25 +404,39 @@ namespace DvigEngine2
             std::thread m_Thread;
             dedword m_JobCount;
             demachword m_JobArguments[DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT * DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
-            decallback m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
+            depjob m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
     };
 
-    class IQueue : public IHelperObject
+    class ThreadPoolJobData
+    {
+        public:
+            demachword m_Arguments[ DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT ];
+            depjob m_pJob;
+    };
+
+    class ThreadPoolThreadData
+    {
+        public:
+            std::thread m_Thread;
+            deusize m_JobCount;
+            ThreadPoolJobData m_Jobs[ DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT ];
+    };
+
+    class ThreadPoolSystem : public ISystem
     {
         DV_MACRO_FRIENDS(DvigEngine2::Engine)
+        DV_XMACRO_DECLARE_STATIC_CLASS(ThreadPoolSystem)
 
         public:
-            void Init();
-            void AddJob(decallback callback, void* arguments, const deusize argumentCount);
-            void DoJobs();
-
-        public:
-            static std::thread m_Threads[DV_MAX_JOB_QUEUE_THREAD_COUNT];
+            static void Init();
+            static void AddJob(deint32 threadIndex, depjob callback, void* arguments, const deusize argumentCount);
+            static void DoJobs(demachword* arguments, deint32 threadIndex);
+            static void WaitForJobs();
 
         private:
-            deusize m_JobCount;
-            demachword m_JobArguments[DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT * DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
-            decallback m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
+            static debool m_IsRunning;
+            static deint32 m_ThreadCursor;
+            static ThreadPoolThreadData m_ThreadQueueData[ DV_MAX_JOB_QUEUE_THREAD_COUNT ];
     };
 
     class EngineRegistryProperty : public IProperty
