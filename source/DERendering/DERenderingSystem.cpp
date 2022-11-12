@@ -1,51 +1,65 @@
 #include "../../include/DERendering.hpp"
 
-DV_MACRO_DEFINE_SINGLETON(DvigEngine2::RenderingSystem)
+DvigEngine2::FixedSet* DvigEngine2::RenderingSystem::m_Batches = nullptr;
+DvigEngine2::debool DvigEngine2::RenderingSystem::m_IsBatchRecording = DV_FALSE;
+DvigEngine2::deint32 DvigEngine2::RenderingSystem::m_NextBatchUniformBufferOffset = 0;
+DvigEngine2::DynamicBuffer* DvigEngine2::RenderingSystem::m_UniformBuffer = nullptr;
 
 void DvigEngine2::RenderingSystem::Init()
 {
-    m_Instance = DvigEngine2::RenderingSystem::GetClassInstance();
-
     // Create batch set if needed
-    if (m_Instance != nullptr && m_Instance->m_Batches == nullptr)
+    if (m_Batches == nullptr)
     {
         DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
-        engine->Create<DvigEngine2::FixedSet>( &m_Instance->m_Batches, "_RenderingSystemBatchSet" );
-        m_Instance->m_Batches->Init( 0, 1024, sizeof(GeometryBatch*) );
+        engine->Create<DvigEngine2::FixedSet>( &m_Batches, "_RenderingSystemBatchSet" );
+        m_Batches->Init( 0, 1024, sizeof(BatchData) );
     }
-
-    m_Instance->m_IsBatchRecording = DV_FALSE;
 }
 
 void DvigEngine2::RenderingSystem::BeginRender()
 {
-    DV_ASSERT_PTR(m_Instance)
-
     // Create uniform buffer instance if needed
-    if (m_Instance->m_UniformBuffer == nullptr)
+    if (m_UniformBuffer == nullptr)
     {
         DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
-        engine->Create <DvigEngine2::DynamicBuffer> ( &m_Instance->m_UniformBuffer, "_RenderingSystemUniformBuffer" );
-        m_Instance->m_UniformBuffer->Init( 0, 1024 );
+        engine->Create <DvigEngine2::DynamicBuffer> ( &m_UniformBuffer, "_RenderingSystemUniformBuffer" );
+        m_UniformBuffer->Init( 0, 1024 );
     }
 
     // Clear uniform buffer
-    m_Instance->m_UniformBuffer->Clear();
+    m_NextBatchUniformBufferOffset = 0;
+    m_UniformBuffer->Clear();
+
+    // Clear batch set
+    m_Batches->Clear();
 
     // Map uniform buffer here
 }
 
 void DvigEngine2::RenderingSystem::BeginBatch()
 {
-    
+    // Start command recording
+    m_IsBatchRecording = DV_TRUE;
 }
 
 void DvigEngine2::RenderingSystem::EndBatch()
 {
-    
+    // Finish command recording
+    m_IsBatchRecording = DV_FALSE;
 }
 
 void DvigEngine2::RenderingSystem::EndRender()
 {
     // Unmap uniform buffer here
+}
+
+void DvigEngine2::RenderingSystem::Draw(INode* node)
+{
+    DvigEngine2::GeometryComponent* nodeGeometry = (DvigEngine2::GeometryComponent*)node->GetComponent<DvigEngine2::GeometryComponent>(nullptr);
+
+    // Create new batch if needed
+    if (m_IsBatchRecording == DV_TRUE)
+    {
+        DvigEngine2::BatchData batch;
+    }
 }

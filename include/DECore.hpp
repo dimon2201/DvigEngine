@@ -101,33 +101,6 @@ namespace DvigEngine2
         DV_MACRO_FRIENDS(Engine)
     };
 
-    class INode : public ICommon
-    {
-        DV_MACRO_FRIENDS(Engine)
-
-        public:
-            DV_FUNCTION_INLINE static INode* GetRootNode() { return m_RootNode; }
-            INode* GetChildNode(const char* USID);
-            IComponent* GetComponent(const char* USID);
-            IHelperObject* GetHelperObject(const char* USID);
-
-            void Init();
-            void Free() override final;
-            void AddChildNode(INode* const node);
-            void AddHelperObject(IHelperObject* const helperObject);
-            void RemoveChildNode(const char* USID);
-            void RemoveComponent(const char* USID);
-            void RemoveHelperObject(const char* USID);
-
-        private:
-            static INode* m_RootNode;
-            INode* m_ParentNode;
-            DynamicBuffer* m_ChildNodes;
-            DynamicBuffer* m_Components;
-            DynamicBuffer* m_HelperObjects;
-            dedword m_ComponentBitSet[DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT];
-    };
-
     class MemoryObjectProperty : public IProperty
     {
         public:
@@ -267,6 +240,7 @@ namespace DvigEngine2
                 return (T)entryAddress;
             }
             deint32 FindValue(void* entry);
+            void Clear();
 
         // private:
         //     DV_XMACRO_GETTER_PROPERTY(FixedSetProperty)
@@ -441,6 +415,56 @@ namespace DvigEngine2
             static ThreadPoolThreadData m_ThreadQueueData[ DV_MAX_JOB_QUEUE_THREAD_COUNT ];
     };
 
+    class INode : public ICommon
+    {
+        DV_MACRO_FRIENDS(Engine)
+
+        public:
+            DV_FUNCTION_INLINE static INode* GetRootNode() { return m_RootNode; }
+            INode* GetChildNode(const char* USID);
+            template <typename T>
+            IComponent* GetComponent(const char* USID)
+            {
+                const char* requestedTypeName = typeid(T).name();
+                const char* componentUSID = &USID[0];
+                if (componentUSID == nullptr) { componentUSID = "";  }
+                IComponent** dataAddress = (IComponent**)m_Components->GetDataAddress();
+                const IComponent* lastAddress = DvigEngine2::Ptr<IComponent*>::Add(dataAddress, m_Components->GetSize());
+                IComponent* component = *dataAddress;
+                while (component < lastAddress)
+                {
+                    component = *dataAddress;
+                    const char* curTypeName = typeid(component).name();
+                    std::cout << requestedTypeName << " " << curTypeName << std::endl;
+                    if ((DvigEngine2::String::CompareCharacters( &requestedTypeName[0], &curTypeName[0], DvigEngine2::String::CharactersCount((const deuchar*)&requestedTypeName[0]) ) == DV_TRUE) ||
+                    (DvigEngine2::String::CompareCharacters( &componentUSID[0], (const char*)component->GetUSID(), DvigEngine2::String::CharactersCount((const deuchar*)&componentUSID[0]) ) == DV_TRUE)) {
+                        return component;
+                    }
+
+                    dataAddress = Ptr<IComponent**>::Add( &dataAddress, sizeof(IComponent**) );
+                }
+
+                return nullptr;
+            }
+            IHelperObject* GetHelperObject(const char* USID);
+
+            void Init();
+            void Free() override final;
+            void AddChildNode(INode* const node);
+            void AddHelperObject(IHelperObject* const helperObject);
+            void RemoveChildNode(const char* USID);
+            void RemoveComponent(const char* USID);
+            void RemoveHelperObject(const char* USID);
+
+        private:
+            static INode* m_RootNode;
+            INode* m_ParentNode;
+            DynamicBuffer* m_ChildNodes;
+            DynamicBuffer* m_Components;
+            DynamicBuffer* m_HelperObjects;
+            dedword m_ComponentBitSet[DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT];
+    };
+
     class EngineRegistryProperty : public IProperty
     {
         public:
@@ -542,7 +566,7 @@ namespace DvigEngine2
 
                 // Remove component from memory
                 IComponent* dataAddress = (IComponent*)(*node)->m_Components->GetDataAddress();
-                IComponent* removedComponent = (*node)->GetComponent( &USID[0] );
+                IComponent* removedComponent = (*node)->GetComponent<T>( &USID[0] );
                 
                 const deusize offset = (demachword)removedComponent - (demachword)dataAddress;
                 (*node)->m_Components->Remove( offset, removedComponent->m_LayoutByteWidth );
@@ -551,61 +575,16 @@ namespace DvigEngine2
             template <typename T>
             DV_FUNCTION_INLINE void Create(T** result, const char* USID)
             {
-                demachword arguments[3] = { (demachword)result, (demachword)&USID[0], (demachword)this };
-                auto lambdaCall = [](demachword* arguments, deint32 jobIndex)
-                {
-                    T** result = (T**)arguments[ 0 ];
-                    deuchar* objectUSID = (deuchar*)arguments[ 1 ];
-                    DvigEngine2::Engine* engineInstance = (DvigEngine2::Engine*)arguments[ 2 ];
-                    void* pAllocationPoolIndex = engineInstance->m_RegistryProp.m_AllocPoolIndexMap->Find( typeid(T).name() );
-                    deuint32 allocationPoolIndex = (deuint32)(demachword)pAllocationPoolIndex;
-                    if (pAllocationPoolIndex == nullptr) { allocationPoolIndex = 0; }
-                    MemoryObject* memoryObject = Engine::Allocate(allocationPoolIndex, sizeof(T));
-                    T typedObjectOnStack;
-                    T* typedObject = memoryObject->Unwrap<T*>();
-                    Engine::CopyMemory( typedObject, &typedObjectOnStack, sizeof(demachword) ); // copy vpointer
-                    typedObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( objectUSID, Engine::GetGlobalUIID(), memoryObject, engineInstance );
-                    if (dynamic_cast<INode*>(typedObject) != nullptr)
-                    {
-                        INode* node = (INode*)typedObject;
-                        node->Init();
-                    }
-                    else if (dynamic_cast<ILayout*>(typedObject) != nullptr)
-                    {
-                        ILayout* layout = (ILayout*)typedObject;
-                        layout->m_LayoutByteWidth = sizeof(T);
-                    }
-                    engineInstance->m_RegistryProp.m_Instances->Insert( (const char*)&objectUSID[0], (void*)typedObject );
-                    *result = typedObject;
-                };
-
-                lambdaCall( &arguments[0], 0 );
-
-                // DvigEngine2::ThreadPoolSystem::AddJob(
-                //     0,
-                //     lambdaCall,
-                //     &arguments[0],
-                //     3
-                // );
-            }
-
-        public:
-            DV_XMACRO_GETTER_PROPERTY(EngineProperty)
-
-        private:
-            template <typename T>
-            void _CallCreate(demachword* arguments, deint32 jobIndex)
-            {
-                T** result = (T**)arguments[ 0 ];
-                deuchar* objectUSID = (deuchar*)arguments[ 1 ];
-                void* pAllocationPoolIndex = m_RegistryProp.m_AllocPoolIndexMap->Find( typeid(T).name() );
+                deuchar* objectUSID = (deuchar*)&USID[0];
+                DvigEngine2::Engine* engineInstance = m_EngineInstance;
+                void* pAllocationPoolIndex = engineInstance->m_RegistryProp.m_AllocPoolIndexMap->Find( typeid(T).name() );
                 deuint32 allocationPoolIndex = (deuint32)(demachword)pAllocationPoolIndex;
                 if (pAllocationPoolIndex == nullptr) { allocationPoolIndex = 0; }
                 MemoryObject* memoryObject = Engine::Allocate(allocationPoolIndex, sizeof(T));
                 T typedObjectOnStack;
                 T* typedObject = memoryObject->Unwrap<T*>();
                 Engine::CopyMemory( typedObject, &typedObjectOnStack, sizeof(demachword) ); // copy vpointer
-                typedObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( objectUSID, Engine::GetGlobalUIID(), memoryObject, this );
+                typedObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( objectUSID, Engine::GetGlobalUIID(), memoryObject, engineInstance );
                 if (dynamic_cast<INode*>(typedObject) != nullptr)
                 {
                     INode* node = (INode*)typedObject;
@@ -616,15 +595,15 @@ namespace DvigEngine2
                     ILayout* layout = (ILayout*)typedObject;
                     layout->m_LayoutByteWidth = sizeof(T);
                 }
-                this->m_RegistryProp.m_Instances->Insert( (const char*)&objectUSID[0], (void*)typedObject );
+                engineInstance->m_RegistryProp.m_Instances->Insert( (const char*)&objectUSID[0], (void*)typedObject );
                 *result = typedObject;
-                // return typedObject;
             }
 
         public:
-            static Engine* m_EngineInstance;
+            DV_XMACRO_GETTER_PROPERTY(EngineProperty)
 
         private:
+            static Engine* m_EngineInstance;
             EngineRegistryProperty m_RegistryProp;
             // EngineInputProperty m_InputProp;
             EngineProperty m_Prop;

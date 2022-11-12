@@ -29,6 +29,9 @@ void DvigEngine2::IWindow::Init(Application* app, const char* caption, glm::uvec
     DvigEngine2::WindowStack::m_WindowInstances[cycle] = this;
 
     this->m_WindowIndex = cycle;
+    
+    // Run start function
+    this->Start();
 }
 
 void DvigEngine2::IWindow::Free()

@@ -28,21 +28,31 @@ namespace DvigEngine2
             static DynamicBuffer* m_GlobalGeometryBuffer;
     };
 
+    class BatchData
+    {
+        public:
+            GeometryComponent* m_GeometryComponent;
+            deint32 m_UniformBufferOffset;
+    };
+
     class RenderingSystem : public ISystem
     {
-        DV_MACRO_DECLARE_SINGLETON(RenderingSystem, public)
+        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+        DV_XMACRO_DECLARE_STATIC_CLASS(RenderingSystem)
 
         public:
-            void Init();
-            void BeginRender();
-            void BeginBatch();
-            void EndRender();
-            void EndBatch();
+            static void Init();
+            static void BeginRender();
+            static void BeginBatch();
+            static void EndRender();
+            static void EndBatch();
+            static void Draw(INode* node);
 
         private:
-            debool m_IsBatchRecording;
-            FixedSet* m_Batches;
-            DynamicBuffer* m_UniformBuffer = {};
+            static FixedSet* m_Batches;
+            static debool m_IsBatchRecording;
+            static deint32 m_NextBatchUniformBufferOffset;
+            static DynamicBuffer* m_UniformBuffer;
     };
 }
 

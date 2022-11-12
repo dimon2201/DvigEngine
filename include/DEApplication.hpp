@@ -23,9 +23,6 @@ namespace DvigEngine2
             void RemoveWindow(deint32 index);
             void WaitForWindows();
 
-            DV_FUNCTION_INLINE RenderingSystem* GetRenderingSystem() { if (m_RenderingSystem != nullptr) { return m_RenderingSystem; } return nullptr; }
-
         private:
-            RenderingSystem* m_RenderingSystem;
     };
 }

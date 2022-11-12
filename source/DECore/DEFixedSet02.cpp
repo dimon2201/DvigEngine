@@ -55,7 +55,7 @@ void DvigEngine2::FixedSet::Replace(const deint32 index, void* entry)
 
 void DvigEngine2::FixedSet::Remove(const deint32 index)
 {
-    if (index != (deint32)this->m_Capacity)
+    if (index != (deint32)this->m_Capacity - 1)
     {
         // Not last index
         void* dataAddress = this->m_DataObject->Unwrap<void*>();
@@ -71,13 +71,13 @@ void DvigEngine2::FixedSet::Remove(const deint32 index)
 
 DvigEngine2::deint32 DvigEngine2::FixedSet::FindValue(void* entry)
 {
+    void* dataAddress = this->m_DataObject->Unwrap<void*>();
     for (deisize i = 0; i < (deisize)this->m_Capacity; ++i)
     {
-        void* dataAddress = this->m_DataObject->Unwrap<void*>();
         void* entryAddress = DvigEngine2::Ptr<void*>::Add( &dataAddress, i * this->m_EntryByteWidth );
-
         const char* compSetAddress = (const char*)entryAddress;
         const char* compEntryAddress = (const char*)entry;
+
         if (String::CompareCharacters( compSetAddress, compEntryAddress, this->m_EntryByteWidth ) == DV_TRUE)
         {
             return i;
@@ -85,4 +85,10 @@ DvigEngine2::deint32 DvigEngine2::FixedSet::FindValue(void* entry)
     }
 
     return DV_NULL;
+}
+
+void DvigEngine2::FixedSet::Clear()
+{
+    this->m_Capacity = 0;
+    this->m_DataByteWidth = 0;
 }

@@ -33,19 +33,25 @@ int main()
     // Create window
     class AppWindow : public DvigEngine2::IWindow {
         public:
+            void Start() override final {
+                DvigEngine2::INode* node;
+                DvigEngine2::Engine::GetClassInstance()->Create<DvigEngine2::INode>(&node, "MyNode_0");
+                DvigEngine2::GeometryComponent* geomComponent;
+                DvigEngine2::Engine::GetClassInstance()->Create<DvigEngine2::GeometryComponent>(&geomComponent, "MyGeometryComponent_0");
+                DvigEngine2::Engine::GetClassInstance()->AddComponent<DvigEngine2::GeometryComponent>(&node, geomComponent);
+                DvigEngine2::GeometryComponent* pGeomComponent = (DvigEngine2::GeometryComponent*)node->GetComponent<DvigEngine2::GeometryComponent>(nullptr);
+                std::cout << pGeomComponent << std::endl;
+                std::cout << "Hello!" << std::endl;
+            }
             void Update() override final {
                 DvigEngine2::Application* app = this->GetApplication();
-                DvigEngine2::RenderingSystem* renderSys = app->GetRenderingSystem();
 
-                renderSys->BeginRender();
+                DvigEngine2::RenderingSystem::BeginRender();
 
-                renderSys->BeginBatch();
-                renderSys->EndBatch();
+                DvigEngine2::RenderingSystem::BeginBatch();
+                DvigEngine2::RenderingSystem::EndBatch();
 
-                renderSys->EndRender();
-
-                // Multithreading
-                DvigEngine2::ThreadPoolSystem::AddJob( 1, &Func, nullptr, 0 );
+                DvigEngine2::RenderingSystem::EndRender();
             }
     };
 

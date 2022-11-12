@@ -99,24 +99,6 @@ DvigEngine2::INode* DvigEngine2::INode::GetChildNode(const char* USID)
     return nullptr;
 }
 
-DvigEngine2::IComponent* DvigEngine2::INode::GetComponent(const char* USID)
-{
-    const deusize capacity = m_Components->GetCapacity();
-    IComponent** dataAddress = (IComponent**)m_Components->GetDataAddress();
-    for (deisize i = 0; i < (deisize)capacity; ++i)
-    {
-        IComponent* component = *dataAddress;
-        std::cout << component->GetUSID() << std::endl;
-        if (String::CompareCharacters( &USID[0], (const char*)component->GetUSID(), String::CharactersCount((const deuchar*)&USID[0]) ) == DV_TRUE) {
-            return component;
-        }
-
-        dataAddress = Ptr<IComponent**>::Add( &dataAddress, sizeof(IComponent**) );
-    }
-
-    return nullptr;
-}
-
 DvigEngine2::IHelperObject* DvigEngine2::INode::GetHelperObject(const char* USID)
 {
     const deusize capacity = this->m_HelperObjects->GetCapacity();
