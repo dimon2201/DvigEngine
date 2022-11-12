@@ -46,7 +46,7 @@ void DvigEngine2::IWindow::Free()
     engine->Delete( this->GetMemoryObject() );
 }
 
-void DvigEngine2::IWindow::Start()
+void DvigEngine2::IWindow::Wait()
 {
     deint32 cycle = 0;
     deusize presentWindowCount = 0;

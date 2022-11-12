@@ -15,12 +15,13 @@ namespace DvigEngine2
             IWindow* AddWindow(const char* USID, const char* caption, glm::uvec2& size)
             {
                 Engine* engine = this->GetEngine();
-                T* window = engine->Create <T> ( &USID[0] );
+                T* window;
+                engine->Create <T> ( &window, &USID[0] );
                 window->Init( this, &caption[0], size );
                 return window;
             }
             void RemoveWindow(deint32 index);
-            void Start();
+            void WaitForWindows();
 
             DV_FUNCTION_INLINE RenderingSystem* GetRenderingSystem() { if (m_RenderingSystem != nullptr) { return m_RenderingSystem; } return nullptr; }
 

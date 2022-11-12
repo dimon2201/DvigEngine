@@ -17,7 +17,7 @@ void DvigEngine2::Application::RemoveWindow(deint32 index)
     if (DvigEngine2::WindowStack::m_WindowInstances[index] != nullptr) { DvigEngine2::WindowStack::m_WindowInstances[index]->Free(); }
 }
 
-void DvigEngine2::Application::Start()
+void DvigEngine2::Application::WaitForWindows()
 {
-    DvigEngine2::IWindow::Start();
+    DvigEngine2::IWindow::Wait();
 }

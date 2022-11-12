@@ -15,7 +15,7 @@ namespace DvigEngine2
         public:
             void Init(Application* app, const char* caption, glm::uvec2& size);
             void Free() override final;
-            static void Start();
+            static void Wait();
             virtual void Update() = 0;
 
             DV_FUNCTION_INLINE Application* GetApplication() { return m_App; }

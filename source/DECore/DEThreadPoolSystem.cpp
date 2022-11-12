@@ -32,9 +32,9 @@ void DvigEngine2::ThreadPoolSystem::AddJob(deint32 threadIndex, depjob job, void
     // Assign thread index
     deint32 curThreadIndex = threadIndex;
     if (curThreadIndex == DV_NULL || curThreadIndex < 0 || curThreadIndex >= requestedThreadCount) {
-        curThreadIndex = 0;
-    } else {
         curThreadIndex = DvigEngine2::ThreadPoolSystem::m_ThreadCursor;
+        // Increment thread cursor
+        DvigEngine2::ThreadPoolSystem::m_ThreadCursor += 1;
     }
 
     // Check if job count per thread
@@ -52,9 +52,6 @@ void DvigEngine2::ThreadPoolSystem::AddJob(deint32 threadIndex, depjob job, void
     );
     DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[curThreadIndex].m_Jobs[jobIndex].m_pJob = job;
     DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[curThreadIndex].m_JobCount += 1;
-
-    // Increment thread cursor
-    DvigEngine2::ThreadPoolSystem::m_ThreadCursor += 1;
 }
 
 void DvigEngine2::ThreadPoolSystem::DoJobs(demachword* arguments, deint32 threadIndex)
@@ -87,8 +84,6 @@ void DvigEngine2::ThreadPoolSystem::WaitForJobs()
         while (DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[i].m_IsRunning.load() == DV_TRUE);
         DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[i].m_Thread.join();
     }
-
-    std::cout << "a";
 }
 
 void DvigEngine2::ThreadPoolSystem::Terminate()
