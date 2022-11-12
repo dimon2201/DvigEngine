@@ -98,7 +98,7 @@ DvigEngine2::Engine::Engine(DvigEngine2::EngineInputProperty* engineInputPropert
     this->m_RegistryProp.m_AllocPoolIndexMap->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
 
     // INode global root node
-    DvigEngine2::INode::m_RootNode = this->Create<DvigEngine2::INode>( "_RootNode" );
+    this->Create<DvigEngine2::INode>( &DvigEngine2::INode::m_RootNode, "_RootNode" );
     DvigEngine2::INode::m_RootNode->Init();
 
     // Memory pool index for built-in types

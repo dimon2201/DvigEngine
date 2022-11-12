@@ -29,11 +29,8 @@ int main()
     DvigEngine2::Engine* pEngine = &engine;
 
     DvigEngine2::ThreadPoolSystem::Init();
-    DvigEngine2::ThreadPoolSystem::AddJob( 0, &Func, nullptr, 0 );
-    DvigEngine2::ThreadPoolSystem::AddJob( 1, &Func, nullptr, 0 );
-    DvigEngine2::ThreadPoolSystem::WaitForJobs();
 
-    // Create window
+    // // Create window
     // class AppWindow : public DvigEngine2::IWindow {
     //     public:
     //         void Update() override final {
@@ -52,11 +49,15 @@ int main()
     // const char* windowCaption = "DvigEngine Test";
     // glm::uvec2 windowSize(640, 480);
 
-    // DvigEngine2::Application* appSys = pEngine->Create <DvigEngine2::Application> ( "MyApplication_0" );
+    // DvigEngine2::Application* appSys;
+    // pEngine->Create <DvigEngine2::Application> ( &appSys, "MyApplication_0" );
     // appSys->Init();
     // appSys->AddWindow <AppWindow> ( "MyTestWindow_0", &windowCaption[0], windowSize );
 
     // appSys->Start();
+
+    DvigEngine2::ThreadPoolSystem::Terminate();
+    DvigEngine2::ThreadPoolSystem::WaitForJobs();
     
     /*
         Node "House"

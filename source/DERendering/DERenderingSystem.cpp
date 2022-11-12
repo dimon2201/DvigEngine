@@ -10,7 +10,7 @@ void DvigEngine2::RenderingSystem::Init()
     if (m_Instance != nullptr && m_Instance->m_Batches == nullptr)
     {
         DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
-        m_Instance->m_Batches = engine->Create<DvigEngine2::FixedSet>( "_RenderingSystemBatchSet" );
+        engine->Create<DvigEngine2::FixedSet>( &m_Instance->m_Batches, "_RenderingSystemBatchSet" );
         m_Instance->m_Batches->Init( 0, 1024, sizeof(GeometryBatch*) );
     }
 
@@ -25,7 +25,7 @@ void DvigEngine2::RenderingSystem::BeginRender()
     if (m_Instance->m_UniformBuffer == nullptr)
     {
         DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
-        m_Instance->m_UniformBuffer = engine->Create <DvigEngine2::DynamicBuffer> ( "_RenderingSystemUniformBuffer" );
+        engine->Create <DvigEngine2::DynamicBuffer> ( &m_Instance->m_UniformBuffer, "_RenderingSystemUniformBuffer" );
         m_Instance->m_UniformBuffer->Init( 0, 1024 );
     }
 

@@ -1,6 +1,6 @@
 #include "../../include/DECore.hpp"
 
-DvigEngine2::debool DvigEngine2::ThreadPoolSystem::m_IsRunning;
+std::atomic<DvigEngine2::debool> DvigEngine2::ThreadPoolSystem::m_IsRunning;
 DvigEngine2::deint32 DvigEngine2::ThreadPoolSystem::m_ThreadCursor;
 DvigEngine2::ThreadPoolThreadData DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[] = {};
 
@@ -9,7 +9,7 @@ void DvigEngine2::ThreadPoolSystem::Init()
     DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
     const deusize requestedThreadCount = engine->GetData()->m_RequestedThreadCount;
 
-    DvigEngine2::ThreadPoolSystem::m_IsRunning = DV_TRUE;
+    DvigEngine2::ThreadPoolSystem::m_IsRunning.store(DV_TRUE);
     DvigEngine2::ThreadPoolSystem::m_ThreadCursor = 0;
     for (deint32 i = 0; i < requestedThreadCount; ++i)
     {
@@ -59,16 +59,20 @@ void DvigEngine2::ThreadPoolSystem::AddJob(deint32 threadIndex, depjob job, void
 
 void DvigEngine2::ThreadPoolSystem::DoJobs(demachword* arguments, deint32 threadIndex)
 {
-    while (DvigEngine2::ThreadPoolSystem::m_IsRunning == DV_TRUE)
+    while (DvigEngine2::ThreadPoolSystem::m_IsRunning.load() == DV_TRUE)
     {
-        if (DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[threadIndex].m_JobCount == 0) { continue; }
+        if (DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[threadIndex].m_JobCount == 0) {
+            continue;
+        }
 
         for (deint32 i = 0; i < DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[threadIndex].m_JobCount; ++i)
         {
+            DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[i].m_IsRunning.store(DV_TRUE);
             demachword* jobArguments = &DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[threadIndex].m_Jobs[i].m_Arguments[0];
             DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[threadIndex].m_Jobs[i].m_pJob(
                 &jobArguments[0], threadIndex
             );
+            DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[i].m_IsRunning.store(DV_FALSE);
             DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[threadIndex].m_JobCount -= 1;
         }
     }
@@ -80,6 +84,17 @@ void DvigEngine2::ThreadPoolSystem::WaitForJobs()
     const deusize requestedThreadCount = engine->GetData()->m_RequestedThreadCount;
 
     for (deint32 i = 0; i < requestedThreadCount; ++i) {
+        while (DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[i].m_IsRunning.load() == DV_TRUE);
         DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[i].m_Thread.join();
     }
+
+    std::cout << "a";
+}
+
+void DvigEngine2::ThreadPoolSystem::Terminate()
+{
+    auto lambdaCall = [](demachword* arguments, deint32 jobIndex) {
+        DvigEngine2::ThreadPoolSystem::m_IsRunning.store(DV_FALSE);
+    };
+    DvigEngine2::ThreadPoolSystem::AddJob( 0, lambdaCall, nullptr, 0 );
 }

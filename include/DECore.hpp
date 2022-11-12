@@ -417,6 +417,7 @@ namespace DvigEngine2
     class ThreadPoolThreadData
     {
         public:
+            std::atomic<debool> m_IsRunning;
             std::thread m_Thread;
             deusize m_JobCount;
             ThreadPoolJobData m_Jobs[ DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT ];
@@ -432,9 +433,10 @@ namespace DvigEngine2
             static void AddJob(deint32 threadIndex, depjob callback, void* arguments, const deusize argumentCount);
             static void DoJobs(demachword* arguments, deint32 threadIndex);
             static void WaitForJobs();
+            static void Terminate();
 
         private:
-            static debool m_IsRunning;
+            static std::atomic<debool> m_IsRunning;
             static deint32 m_ThreadCursor;
             static ThreadPoolThreadData m_ThreadQueueData[ DV_MAX_JOB_QUEUE_THREAD_COUNT ];
     };
@@ -547,13 +549,44 @@ namespace DvigEngine2
             }
             
             template <typename T>
-            DV_FUNCTION_INLINE T* Create(const char* USID)
+            DV_FUNCTION_INLINE void Create(T** result, const char* USID)
             {
-                // DV_XMACRO_PUSH_JOB(CallCreate<T>, m_Instance, result, stringID, data)
-                
-                demachword argumentMemory[1] = { (demachword)&USID[0] };
+                demachword arguments[3] = { (demachword)result, (demachword)&USID[0], (demachword)this };
+                auto lambdaCall = [](demachword* arguments, deint32 jobIndex)
+                {
+                    T** result = (T**)arguments[ 0 ];
+                    deuchar* objectUSID = (deuchar*)arguments[ 1 ];
+                    DvigEngine2::Engine* engineInstance = (DvigEngine2::Engine*)arguments[ 2 ];
+                    void* pAllocationPoolIndex = engineInstance->m_RegistryProp.m_AllocPoolIndexMap->Find( typeid(T).name() );
+                    deuint32 allocationPoolIndex = (deuint32)(demachword)pAllocationPoolIndex;
+                    if (pAllocationPoolIndex == nullptr) { allocationPoolIndex = 0; }
+                    MemoryObject* memoryObject = Engine::Allocate(allocationPoolIndex, sizeof(T));
+                    T typedObjectOnStack;
+                    T* typedObject = memoryObject->Unwrap<T*>();
+                    Engine::CopyMemory( typedObject, &typedObjectOnStack, sizeof(demachword) ); // copy vpointer
+                    typedObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( objectUSID, Engine::GetGlobalUIID(), memoryObject, engineInstance );
+                    if (dynamic_cast<INode*>(typedObject) != nullptr)
+                    {
+                        INode* node = (INode*)typedObject;
+                        node->Init();
+                    }
+                    else if (dynamic_cast<ILayout*>(typedObject) != nullptr)
+                    {
+                        ILayout* layout = (ILayout*)typedObject;
+                        layout->m_LayoutByteWidth = sizeof(T);
+                    }
+                    engineInstance->m_RegistryProp.m_Instances->Insert( (const char*)&objectUSID[0], (void*)typedObject );
+                    *result = typedObject;
+                };
 
-                return CallCreate<T>(&argumentMemory[0], 0);
+                lambdaCall( &arguments[0], 0 );
+
+                // DvigEngine2::ThreadPoolSystem::AddJob(
+                //     0,
+                //     lambdaCall,
+                //     &arguments[0],
+                //     3
+                // );
             }
 
         public:
@@ -561,9 +594,10 @@ namespace DvigEngine2
 
         private:
             template <typename T>
-            T* CallCreate(demachword* argumentMemory, deint32 jobIndex)
+            void _CallCreate(demachword* arguments, deint32 jobIndex)
             {
-                deuchar* objectUSID = (deuchar*)argumentMemory[ 0 ];
+                T** result = (T**)arguments[ 0 ];
+                deuchar* objectUSID = (deuchar*)arguments[ 1 ];
                 void* pAllocationPoolIndex = m_RegistryProp.m_AllocPoolIndexMap->Find( typeid(T).name() );
                 deuint32 allocationPoolIndex = (deuint32)(demachword)pAllocationPoolIndex;
                 if (pAllocationPoolIndex == nullptr) { allocationPoolIndex = 0; }
@@ -583,7 +617,8 @@ namespace DvigEngine2
                     layout->m_LayoutByteWidth = sizeof(T);
                 }
                 this->m_RegistryProp.m_Instances->Insert( (const char*)&objectUSID[0], (void*)typedObject );
-                return typedObject;
+                *result = typedObject;
+                // return typedObject;
             }
 
         public:

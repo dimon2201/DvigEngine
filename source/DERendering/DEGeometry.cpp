@@ -13,7 +13,7 @@ void DvigEngine2::GeometryComponent::Init(const char* optGeometryPathOnDrive, vo
     // If needed
     if (DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer == nullptr)
     {
-        GeometryBatch::m_GlobalGeometryBuffer = engine->Create<DvigEngine2::DynamicBuffer>( "_GlobalGeometryBuffer" );
+        engine->Create<DvigEngine2::DynamicBuffer>( &GeometryBatch::m_GlobalGeometryBuffer, "_GlobalGeometryBuffer" );
         GeometryBatch::m_GlobalGeometryBuffer->Init( 0, 1024 );
     }
 
