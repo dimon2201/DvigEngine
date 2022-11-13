@@ -1,4 +1,5 @@
 #include "../../include/DEGUI.hpp"
+#include "../../include/DERendering.hpp"
 #include "../../include/DEThirdPartyMath.hpp"
 #include "../../include/DEThirdPartyWindow.hpp"
 
@@ -8,10 +9,12 @@ DvigEngine2::IWindow* DvigEngine2::WindowStack::m_WindowInstances[] = {};
 void DvigEngine2::IWindow::Init(Application* app, const char* caption, glm::uvec2& size)
 {
     // Create GLFW window
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     GLFWwindow* window = glfwCreateWindow(size.x, size.y, &caption[0], NULL, NULL);
+    glfwMakeContextCurrent(window);
+
+    // Load OpenGL4 procedures
+    // if needed
+    DvigEngine2::GL4::LoadGL4();
 
     DV_ASSERT_PTR(window);
 

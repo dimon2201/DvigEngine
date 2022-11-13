@@ -7,10 +7,8 @@
 #include <cstdio>
 #include <iostream>
 #include <typeinfo>
-#include <functional>
 #include <thread>
 #include <atomic>
-#include <cmath>
 
 #include "DvigEngineMacros.hpp"
 
@@ -29,8 +27,10 @@ namespace DvigEngine2
     typedef uint16_t            deuint16;
     typedef int32_t             deint32;
     typedef uint32_t            deuint32;
+    typedef float               defloat32;
     typedef int64_t             deint64;
     typedef uint64_t            deuint64;
+    typedef double              defloat64;
     #if defined(DV_MACRO_ARCH_32_BIT)
         typedef int32           demachint;
         typedef uint32          demachuint;

@@ -3,6 +3,7 @@
 #include "../include/DEGUI.hpp"
 #include "../include/DERendering.hpp"
 #include "../include/DEThirdPartyMath.hpp"
+#include <GL/gl.h>
 
 void Func(DvigEngine2::demachword* arguments, DvigEngine2::deint32 jobIndex)
 {
@@ -35,10 +36,6 @@ int main()
         public:
             void Start() override final {
                 DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::GeometryComponent>();
-                DvigEngine2::depjob jobs[3] = { &Func, &Func, &Func };
-                DvigEngine2::demachword arguments[6] = { 0, 0, 0, 0, 0, 0 };
-                DvigEngine2::deusize argumentCounts[3] = { 2, 2, 2 };
-                DvigEngine2::ThreadPoolSystem::AddJobArray( DV_NULL, &jobs[0], 3, &arguments[0], &argumentCounts[0] );
             }
             void Update() override final {
                 DvigEngine2::Application* app = this->GetApplication();
@@ -49,6 +46,10 @@ int main()
                 DvigEngine2::RenderingSystem::EndBatch();
 
                 DvigEngine2::RenderingSystem::EndRender();
+
+                DvigEngine2::GL4::Viewport( 0, 0, 640, 480 );
+                DvigEngine2::GL4::Clear( GL_COLOR_BUFFER_BIT );
+                DvigEngine2::GL4::ClearColor( 0.0f, 1.0f, 0.0f );
             }
     };
 

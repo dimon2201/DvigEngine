@@ -4,7 +4,7 @@
 
 void DvigEngine2::Application::Init()
 {
-    DvigEngine2::RenderingSystem::Init();
+    
 }
 
 void DvigEngine2::Application::Free()

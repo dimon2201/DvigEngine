@@ -6,6 +6,20 @@
 
 namespace DvigEngine2
 {
+    class GL4
+    {
+        DV_XMACRO_DECLARE_STATIC_CLASS(GL4)
+
+        public:
+            static void LoadGL4();
+
+        public:
+            static void (*_Init)(void);
+            static void (*Viewport)(deint32, deint32, deisize, deisize);
+            static void (*Clear)(deuint32);
+            static void (*ClearColor)(defloat32, defloat32, defloat32);
+    };
+
     class GeometryComponent : public IComponent
     {
         public:
