@@ -55,8 +55,8 @@ DvigEngine2::MemoryObject* DvigEngine2::String::ConcateCharacters(destring op1, 
     MemoryObject* memoryObject = Engine::Allocate(0, op1ByteWidth + op2ByteWidth);
     deuchar* chars = (deuchar*)memoryObject->GetAddress();
     
-    Engine::CopyMemory(chars, &op1[0], op1ByteWidth);
-    Engine::CopyMemory(&chars[op1ByteWidth], &op2[0], op2ByteWidth);
+    DvigEngine2::Engine::MemoryCopy(&chars[0], &op1[0], op1ByteWidth);
+    DvigEngine2::Engine::MemoryCopy(&chars[op1ByteWidth], &op2[0], op2ByteWidth);
 
     return memoryObject;
 }

@@ -35,7 +35,7 @@ DvigEngine2::deint32 DvigEngine2::DynamicBuffer::Insert(const deisize offset, co
 
         // Copy previous to new
         // And delete
-        Engine::CopyMemory( newDataObject->Unwrap<void*>(), this->m_DataObject->Unwrap<void*>(), this->m_DataByteWidth );
+        DvigEngine2::Engine::MemoryCopy( newDataObject->Unwrap<void*>(), this->m_DataObject->Unwrap<void*>(), this->m_DataByteWidth );
         engine->Delete( this->m_DataObject );
         this->m_DataObject = newDataObject;
 
@@ -48,10 +48,10 @@ DvigEngine2::deint32 DvigEngine2::DynamicBuffer::Insert(const deisize offset, co
     {
         const void* dataLastAddress = Ptr<void*>::Add( &dataAddress, this->m_DataByteWidth );
         const deusize moveByteWidth = (demachword)dataLastAddress - (demachword)insertToAddress;
-        Engine::MoveMemory( moveToAddress, insertToAddress, moveByteWidth );
+        DvigEngine2::Engine::MemoryCopy( moveToAddress, insertToAddress, moveByteWidth );
     }
     
-    Engine::CopyMemory( insertToAddress, data, dataByteWidth );
+    DvigEngine2::Engine::MemoryCopy( insertToAddress, data, dataByteWidth );
     this->m_Capacity += 1;
     this->m_DataByteWidth += dataByteWidth;
 
@@ -62,7 +62,7 @@ void DvigEngine2::DynamicBuffer::Find(const deisize offset, void* output, const 
 {
     void* dataAddress = this->m_DataObject->Unwrap<void*>();
     const void* copyFromAddress = Ptr<void*>::Add( &dataAddress, offset );
-    Engine::CopyMemory( output, copyFromAddress, copyByteWidth );
+    DvigEngine2::Engine::MemoryCopy( output, copyFromAddress, copyByteWidth );
 }
 
 void DvigEngine2::DynamicBuffer::Remove(const deisize offset, const deusize removeByteWidth)
@@ -74,7 +74,7 @@ void DvigEngine2::DynamicBuffer::Remove(const deisize offset, const deusize remo
     const deusize moveByteWidth = (demachword)dataLastAddress - (demachword)moveFromAddress;
 
     if (moveFromAddress < dataLastAddress) {
-        Engine::MoveMemory( removeAddress, moveFromAddress, moveByteWidth );
+        DvigEngine2::Engine::MemoryMove( removeAddress, moveFromAddress, moveByteWidth );
     }
 
     this->m_Capacity -= 1;
@@ -92,7 +92,7 @@ void DvigEngine2::DynamicBuffer::Clear()
     const deusize moveByteWidth = (demachword)dataLastAddress - (demachword)moveFromAddress;
 
     if (moveFromAddress < dataLastAddress) {
-        Engine::MoveMemory( removeAddress, moveFromAddress, moveByteWidth );
+        DvigEngine2::Engine::MemoryCopy( removeAddress, moveFromAddress, moveByteWidth );
     }
 
     this->m_Capacity = 0;

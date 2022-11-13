@@ -78,7 +78,7 @@ DvigEngine2::Engine::Engine(DvigEngine2::EngineInputProperty* engineInputPropert
     MemoryObject* registeredComponentsHashMapMemoryObject = Engine::Allocate(0, sizeof(HashMap));
     HashMap registeredComponentsHashMapObjectOnStack;
     HashMap* registeredComponentsHashMapObject = registeredComponentsHashMapMemoryObject->Unwrap<HashMap*>();
-    DvigEngine2::Engine::CopyMemory( registeredComponentsHashMapObject, &registeredComponentsHashMapObjectOnStack, sizeof(demachword) ); // copy vpointer
+    DvigEngine2::Engine::MemoryCopy( registeredComponentsHashMapObject, &registeredComponentsHashMapObjectOnStack, sizeof(demachword) ); // copy vpointer
     registeredComponentsHashMapObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryComponentsHashMap", Engine::GetGlobalUIID(), registeredComponentsHashMapMemoryObject, this );
     this->m_RegistryProp.m_RegisteredComponents = registeredComponentsHashMapObject;
     this->m_RegistryProp.m_RegisteredComponents->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
@@ -86,7 +86,7 @@ DvigEngine2::Engine::Engine(DvigEngine2::EngineInputProperty* engineInputPropert
     MemoryObject* createesHashMapMemoryObject = Engine::Allocate(0, sizeof(HashMap));
     HashMap createesHashMapObjectOnStack;
     HashMap* createesHashMapObject = createesHashMapMemoryObject->Unwrap<HashMap*>();
-    DvigEngine2::Engine::CopyMemory( createesHashMapObject, &createesHashMapObjectOnStack, sizeof(demachword) ); // copy vpointer
+    DvigEngine2::Engine::MemoryCopy( createesHashMapObject, &createesHashMapObjectOnStack, sizeof(demachword) ); // copy vpointer
     createesHashMapMemoryObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryCreateesHashMap", Engine::GetGlobalUIID(), createesHashMapMemoryObject, this );
     this->m_RegistryProp.m_Instances = createesHashMapObject;
     this->m_RegistryProp.m_Instances->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
@@ -94,7 +94,7 @@ DvigEngine2::Engine::Engine(DvigEngine2::EngineInputProperty* engineInputPropert
     MemoryObject* allocPoolIndexHashMapMemoryObject = Engine::Allocate(0, sizeof(HashMap));
     HashMap allocPoolIndexObjectOnStack;
     HashMap* allocPoolIndexMapObject = allocPoolIndexHashMapMemoryObject->Unwrap<HashMap*>();
-    DvigEngine2::Engine::CopyMemory( allocPoolIndexMapObject, &allocPoolIndexObjectOnStack, sizeof(demachword) ); // copy vpointer
+    DvigEngine2::Engine::MemoryCopy( allocPoolIndexMapObject, &allocPoolIndexObjectOnStack, sizeof(demachword) ); // copy vpointer
     allocPoolIndexHashMapMemoryObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryAllocPoolIndexHashMap", Engine::GetGlobalUIID(), allocPoolIndexHashMapMemoryObject, this );
     this->m_RegistryProp.m_AllocPoolIndexMap = allocPoolIndexMapObject;
     this->m_RegistryProp.m_AllocPoolIndexMap->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
@@ -321,17 +321,28 @@ void DvigEngine2::Engine::Delete(MemoryObject* memoryObject)
     memoryObject->m_FreeFlag = DV_TRUE;
 }
 
-void DvigEngine2::Engine::CopyMemory(void* dstAddress, const void* srcAddress, const deusize byteWidth)
+void DvigEngine2::Engine::MemoryCopy(void* dstAddress, const void* srcAddress, const deusize byteWidth)
 {
-    memcpy(dstAddress, srcAddress, byteWidth);
+    deuchar* const pDst = (deuchar* const)dstAddress;
+    deuchar* const pSrc = (deuchar* const)srcAddress;
+    for (deint32 i = 0; i < byteWidth; ++i) {
+        pDst[i] = pSrc[i];
+    }
 }
 
-void DvigEngine2::Engine::MoveMemory(void* dstAddress, const void* srcAddress, const deusize byteWidth)
+void DvigEngine2::Engine::MemoryMove(void* dstAddress, const void* srcAddress, const deusize byteWidth)
 {
-    memmove(dstAddress, srcAddress, byteWidth);
+    deuchar* const pDst = (deuchar* const)dstAddress;
+    deuchar* const pSrc = (deuchar* const)srcAddress;
+    for (deint32 i = 0; i < byteWidth; ++i) {
+        pDst[i] = pSrc[i];
+    }
 }
 
-void DvigEngine2::Engine::SetMemory(void* dstAddress, const demachword value, const deusize byteWidth)
+void DvigEngine2::Engine::MemorySet(void* dstAddress, const demachword value, const deusize byteWidth)
 {
-    memset(dstAddress, value, byteWidth);
+    deuchar* const pDst = (deuchar* const)dstAddress;
+    for (deint32 i = 0; i < byteWidth; ++i) {
+        pDst[i] = (deuchar)value;
+    }
 }

@@ -27,7 +27,7 @@ DvigEngine2::deint32 DvigEngine2::FixedSet::Insert(void* entry)
         const deusize allocByteWidth = this->m_EntryByteWidth + (this->m_Capacity * this->m_EntryByteWidth) + this->m_ReservedDataByteWidth;
         MemoryObject* newMemoryObject = DvigEngine2::Engine::Allocate( this->m_MemoryPoolIndex, allocByteWidth );
 
-        Engine::CopyMemory( newMemoryObject->Unwrap<void*>(), this->m_DataObject->Unwrap<void*>(), this->m_DataByteWidth );
+        DvigEngine2::Engine::MemoryCopy( newMemoryObject->Unwrap<void*>(), this->m_DataObject->Unwrap<void*>(), this->m_DataByteWidth );
         engine->Delete( this->m_DataObject );
 
         this->m_DataObject = newMemoryObject;
@@ -38,7 +38,7 @@ DvigEngine2::deint32 DvigEngine2::FixedSet::Insert(void* entry)
     const deuint32 capacity = this->m_Capacity;
     deuchar* entryAddress = this->m_DataObject->Unwrap<deuchar*>();
     entryAddress = DvigEngine2::Ptr<deuchar*>::Add( &entryAddress, capacity * this->m_EntryByteWidth );
-    Engine::CopyMemory( entryAddress, entry, this->m_EntryByteWidth );
+    DvigEngine2::Engine::MemoryCopy( entryAddress, entry, this->m_EntryByteWidth );
     this->m_Capacity += 1;
     this->m_DataByteWidth += this->m_EntryByteWidth;
 
@@ -50,7 +50,7 @@ void DvigEngine2::FixedSet::Replace(const deint32 index, void* entry)
     if (index >= (deint32)this->m_Capacity) { return; }
     void* entryAddress = this->m_DataObject->Unwrap<void*>();
     entryAddress = DvigEngine2::Ptr<void*>::Add( &entryAddress, index * this->m_EntryByteWidth );
-    Engine::CopyMemory( entryAddress, entry, this->m_EntryByteWidth );
+    DvigEngine2::Engine::MemoryCopy( entryAddress, entry, this->m_EntryByteWidth );
 }
 
 void DvigEngine2::FixedSet::Remove(const deint32 index)
@@ -62,7 +62,7 @@ void DvigEngine2::FixedSet::Remove(const deint32 index)
         void* entryAddress = DvigEngine2::Ptr<void*>::Add( &dataAddress, index * this->m_EntryByteWidth );
         void* nextEntryAddress = DvigEngine2::Ptr<void*>::Add( &entryAddress, this->m_EntryByteWidth );
         const deusize moveByteWidth = this->m_AllocatedDataByteWidth - ((index + 1) * this->m_EntryByteWidth);
-        Engine::MoveMemory( entryAddress, nextEntryAddress, moveByteWidth );
+        DvigEngine2::Engine::MemoryMove( entryAddress, nextEntryAddress, moveByteWidth );
     }
 
     this->m_Capacity -= 1;

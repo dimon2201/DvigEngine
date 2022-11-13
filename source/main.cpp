@@ -3,7 +3,6 @@
 #include "../include/DEGUI.hpp"
 #include "../include/DERendering.hpp"
 #include "../include/DEThirdPartyMath.hpp"
-#include <GL/gl.h>
 
 void Func(DvigEngine2::demachword* arguments, DvigEngine2::deint32 jobIndex)
 {
@@ -36,6 +35,8 @@ int main()
         public:
             void Start() override final {
                 DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::GeometryComponent>();
+
+
             }
             void Update() override final {
                 DvigEngine2::Application* app = this->GetApplication();

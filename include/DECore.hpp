@@ -465,9 +465,9 @@ namespace DvigEngine2
             Engine(EngineInputProperty* engineInputProperty);
             void Free();
             static MemoryObject* Allocate(deint32 memoryPoolIndex, deusize byteWidth);
-            static void CopyMemory(void* destAddress, const void* srcAddress, const deusize byteWidth);
-            static void MoveMemory(void* destAddress, const void* srcAddress, const deusize byteWidth);
-            static void SetMemory(void* destAddress, const demachword value, const deusize byteWidth);
+            static void MemoryCopy(void* destAddress, const void* srcAddress, const deusize byteWidth);
+            static void MemoryMove(void* destAddress, const void* srcAddress, const deusize byteWidth);
+            static void MemorySet(void* destAddress, const demachword value, const deusize byteWidth);
             static Engine* GetClassInstance() { return m_EngineInstance; }
             void Delete(MemoryObject* memoryObject);
 
@@ -542,7 +542,7 @@ namespace DvigEngine2
                 MemoryObject* memoryObject = Engine::Allocate(allocationPoolIndex, sizeof(T));
                 T typedObjectOnStack;
                 T* typedObject = memoryObject->Unwrap<T*>();
-                Engine::CopyMemory( typedObject, &typedObjectOnStack, sizeof(demachword) ); // copy vpointer
+                DvigEngine2::Engine::MemoryCopy( typedObject, &typedObjectOnStack, sizeof(demachword) ); // copy vpointer
                 typedObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( objectUSID, Engine::GetGlobalUIID(), memoryObject, engineInstance );
                 if (dynamic_cast<INode*>(typedObject) != nullptr)
                 {
@@ -553,7 +553,7 @@ namespace DvigEngine2
                 {
                     const char* typeName = typeid(T).name();
                     ILayout* layout = (ILayout*)typedObject;
-                    DvigEngine2::Engine::CopyMemory( &layout->m_TypeName[0], &typeName[0], DvigEngine2::String::CharactersCount((const deuchar*)&typeName[0]) );
+                    DvigEngine2::Engine::MemoryCopy( &layout->m_TypeName[0], &typeName[0], DvigEngine2::String::CharactersCount((const deuchar*)&typeName[0]) );
                     layout->m_LayoutByteWidth = sizeof(T);
                 }
                 engineInstance->m_RegistryProp.m_Instances->Insert( (const char*)&objectUSID[0], (void*)typedObject );

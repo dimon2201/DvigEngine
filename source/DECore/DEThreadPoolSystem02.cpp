@@ -45,7 +45,7 @@ void DvigEngine2::ThreadPoolSystem::AddJob(deint32 threadIndex, depjob job, void
 
     const deint32 jobIndex = DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[curThreadIndex].m_JobCount;
     const demachword* curArguments = (const demachword*)arguments;
-    DvigEngine2::Engine::CopyMemory(
+    DvigEngine2::Engine::MemoryCopy(
         &DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[curThreadIndex].m_Jobs[jobIndex].m_Arguments[0],
         &curArguments[0],
         sizeof(DvigEngine2::demachword) * argumentCount
@@ -82,7 +82,7 @@ void DvigEngine2::ThreadPoolSystem::AddJobArray(deint32 threadIndex, depjob* job
         jobIndex = DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[curThreadIndex].m_JobCount;
 
         // Copy arguments
-        DvigEngine2::Engine::CopyMemory(
+        DvigEngine2::Engine::MemoryCopy(
             &DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[curThreadIndex].m_Jobs[jobIndex].m_Arguments[0],
             &argumentsOffsetAddress[0],
             sizeof(DvigEngine2::demachword) * argumentCounts[i]

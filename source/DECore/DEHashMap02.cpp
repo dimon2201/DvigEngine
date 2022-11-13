@@ -92,8 +92,8 @@ DvigEngine2::deint32 DvigEngine2::HashMap::Insert(const char* key, void* value)
 
     const deusize keyByteWidth = String::CharactersCount((deuchar*)&key[0]);
     HashMapKeyValuePair insertedPair;
-    Engine::SetMemory( &insertedPair.m_Key[0], 0, DV_MEMORY_COMMON_STRING_BYTE_WIDTH );
-    Engine::CopyMemory( &insertedPair.m_Key[0], &key[0], keyByteWidth );
+    DvigEngine2::Engine::MemorySet( &insertedPair.m_Key[0], 0, DV_MEMORY_COMMON_STRING_BYTE_WIDTH );
+    DvigEngine2::Engine::MemoryCopy( &insertedPair.m_Key[0], &key[0], keyByteWidth );
     insertedPair.m_Key[keyByteWidth] = 0;
     insertedPair.m_Value = value;
 

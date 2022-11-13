@@ -1,6 +1,7 @@
 #ifndef _DE_LIB_RENDERING_H_
 #define _DE_LIB_RENDERING_H_
 
+#include <GL/gl.h>
 #include "DECore.hpp"
 #include "DEThirdPartyMath.hpp"
 
