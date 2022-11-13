@@ -15,15 +15,19 @@ namespace DvigEngine2
 
         public:
             static void (*_Init)(void);
-            static void (*Viewport)(deint32, deint32, deisize, deisize);
-            static void (*Clear)(deuint32);
-            static void (*ClearColor)(defloat32, defloat32, defloat32);
+            static void (*Viewport)(deint32 x, deint32 y, deisize width, deisize height);
+            static void (*Clear)(deuint32 mask);
+            static void (*ClearColor)(defloat32 red, defloat32 green, defloat32 blue, defloat32 alpha);
+            static void (*CreateBuffers)(deisize n, deuint32* buffers);
+            static void (*BindBuffer)(deuint32 target, deuint32 buffer);
+            static void (*BufferData)(deuint32 target, demachword size, const void* data, deuint32 usage);
+            static void (*DrawElementsBaseVertex)(deuint32 mode, deisize count, deuint32 type, void* indices, deint32 baseVertex);
     };
 
     class GeometryComponent : public IComponent
     {
         public:
-            void Init(const char* optGeometryPathOnDrive, void* optGeometryData, deusize optGeometryDataByteWidth);
+            void Init(const char* optGeometryDataPathOnDrive, const char* optIndicesDataPathOnDrive, void* optBufferData, deusize optGeometryDataByteWidth, deusize optIndicesDataByteWidth);
             void Free() override final;
 
         private:
@@ -31,11 +35,14 @@ namespace DvigEngine2
 
         private:
             static DynamicBuffer* m_GlobalGeometryBuffer;
+            static DynamicBuffer* m_GlobalIndexBuffer;
 
         public:
             int val;
-            deusize m_BufferByteWidth;
-            deint32 m_BufferOffset;
+            deusize m_GeometryBufferByteWidth;
+            deint32 m_GeometryBufferOffset;
+            deusize m_IndexBufferByteWidth;
+            deint32 m_IndexBufferOffset;
     };
 
     class TransformComponent : public IComponent

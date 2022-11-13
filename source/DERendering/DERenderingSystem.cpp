@@ -2,9 +2,13 @@
 #include "../../include/DEThirdPartyWindow.hpp"
 
 void (*DvigEngine2::GL4::_Init)(void) = nullptr;
-void (*DvigEngine2::GL4::Viewport)(deint32, deint32, deisize, deisize) = nullptr;
-void (*DvigEngine2::GL4::Clear)(deuint32) = nullptr;
-void (*DvigEngine2::GL4::ClearColor)(defloat32, defloat32, defloat32) = nullptr;
+void (*DvigEngine2::GL4::Viewport)(deint32 x, deint32 y, deisize width, deisize height) = nullptr;
+void (*DvigEngine2::GL4::Clear)(deuint32 mask) = nullptr;
+void (*DvigEngine2::GL4::ClearColor)(defloat32 red, defloat32 green, defloat32 blue, defloat32 alpha) = nullptr;
+void (*DvigEngine2::GL4::CreateBuffers)(deisize n, deuint32* buffers);
+void (*DvigEngine2::GL4::BindBuffer)(deuint32 target, deuint32 buffer);
+void (*DvigEngine2::GL4::BufferData)(deuint32 target, demachword size, const void* data, deuint32 usage);
+void (*DvigEngine2::GL4::DrawElementsBaseVertex)(deuint32 mode, deisize count, deuint32 type, void* indices, deint32 baseVertex) = nullptr;
 
 DvigEngine2::FixedSet* DvigEngine2::RenderingSystem::m_Batches = nullptr;
 DvigEngine2::debool DvigEngine2::RenderingSystem::m_IsBatchRecording = DV_FALSE;
@@ -19,7 +23,11 @@ void DvigEngine2::GL4::LoadGL4()
         DvigEngine2::GL4::_Init = (void (*)())DV_TRUE;
         DvigEngine2::GL4::Viewport = (void (*)(DvigEngine2::deint32, DvigEngine2::deint32, DvigEngine2::deisize, DvigEngine2::deisize))glfwGetProcAddress( "glViewport" ); 
         DvigEngine2::GL4::Clear = (void (*)(DvigEngine2::deuint32))glfwGetProcAddress( "glClear" );
-        DvigEngine2::GL4::ClearColor = (void (*)(DvigEngine2::defloat32, DvigEngine2::defloat32, DvigEngine2::defloat32))glfwGetProcAddress( "glClearColor" );
+        DvigEngine2::GL4::ClearColor = (void (*)(DvigEngine2::defloat32, DvigEngine2::defloat32, DvigEngine2::defloat32, DvigEngine2::defloat32))glfwGetProcAddress( "glClearColor" );
+        DvigEngine2::GL4::CreateBuffers = (void (*)(DvigEngine2::deisize, DvigEngine2::deuint32*))glfwGetProcAddress( "glCreateBuffers" );
+        DvigEngine2::GL4::BindBuffer = (void (*)(DvigEngine2::deuint32, DvigEngine2::deuint32))glfwGetProcAddress( "glBindBuffer" );
+        DvigEngine2::GL4::BufferData = (void (*)(DvigEngine2::deuint32, DvigEngine2::demachword, const void*, DvigEngine2::deuint32))glfwGetProcAddress( "glBufferData" );
+        DvigEngine2::GL4::DrawElementsBaseVertex = (void (*)(DvigEngine2::deuint32, DvigEngine2::deisize, DvigEngine2::deuint32, void*, DvigEngine2::deint32))glfwGetProcAddress( "glDrawElementsBaseVertex" );
     }
 }
 

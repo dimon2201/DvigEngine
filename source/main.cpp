@@ -49,7 +49,7 @@ int main()
 
                 DvigEngine2::GL4::Viewport( 0, 0, 640, 480 );
                 DvigEngine2::GL4::Clear( GL_COLOR_BUFFER_BIT );
-                DvigEngine2::GL4::ClearColor( 0.0f, 1.0f, 0.0f );
+                DvigEngine2::GL4::ClearColor( 1.0f, 1.0f, 0.0f, 1.0f );
             }
     };
 
