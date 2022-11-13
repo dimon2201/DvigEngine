@@ -22,16 +22,17 @@ namespace DvigEngine2
             static void (*GenBuffers)(deisize n, deuint32* buffers);
             static void (*BindBuffer)(deuint32 target, deuint32 buffer);
             static void (*BufferData)(deuint32 target, demachword size, const void* data, deuint32 usage);
-            static void (*CreateShader)(deuint32 shaderType);
+            static deuint32 (*CreateShader)(deuint32 shaderType);
             static void (*ShaderSource)(deuint32 shader, deisize count, const deuchar** string, const deint32* length);
             static void (*CompileShader)(deuint32 shader);
             static void (*GetShaderiv)(deint32 shader, deuint32 pname, deint32* params);
             static void (*GetShaderInfoLog)(deuint32 shader, deisize maxLength, deisize* length, deuchar* infoLog);
             static void (*DeleteShader)(deuint32 shader);
-            static void (*CreateProgram)(void);
+            static deuint32 (*CreateProgram)(void);
             static void (*AttachShader)(deuint32 program, deuint32 shader);
             static void (*LinkProgram)(deuint32 program);
             static void (*DetachShader)(deuint32 program, deuint32 shader);
+            static void (*DeleteProgram)(deuint32 program);
             static void (*UseProgram)(deuint32 program);
             static void (*DrawElements)(deuint32 mode, deisize count, deuint32 type, void* indices);
             static void (*DrawElementsBaseVertex)(deuint32 mode, deisize count, deuint32 type, void* indices, deint32 baseVertex);
@@ -66,6 +67,16 @@ namespace DvigEngine2
 
         public:
             glm::vec3 m_Position;
+    };
+
+    class ShaderComponent : public IComponent
+    {
+        public:
+            void Init(const char* vertexShaderPathOnDrive, const char* fragmentShaderPathOnDrive);
+            void Free() override final;
+
+        public:
+            deuint32 m_GLProgram;
     };
 
     class BatchInstanceData

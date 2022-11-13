@@ -9,7 +9,7 @@ void DvigEngine2::Application::Init()
 
 void DvigEngine2::Application::Free()
 {
-
+    this->GetEngine()->Delete( this->GetMemoryObject() );
 }
 
 void DvigEngine2::Application::RemoveWindow(deint32 index)
