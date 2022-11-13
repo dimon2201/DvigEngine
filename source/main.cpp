@@ -35,6 +35,10 @@ int main()
         public:
             void Start() override final {
                 DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::GeometryComponent>();
+                DvigEngine2::depjob jobs[3] = { &Func, &Func, &Func };
+                DvigEngine2::demachword arguments[6] = { 0, 0, 0, 0, 0, 0 };
+                DvigEngine2::deusize argumentCounts[3] = { 2, 2, 2 };
+                DvigEngine2::ThreadPoolSystem::AddJobArray( DV_NULL, &jobs[0], 3, &arguments[0], &argumentCounts[0] );
             }
             void Update() override final {
                 DvigEngine2::Application* app = this->GetApplication();

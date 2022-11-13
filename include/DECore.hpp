@@ -341,47 +341,6 @@ namespace DvigEngine2
             deusize m_OccupiedByteWidth;
     };
 
-    class JobQueueProperty : public IProperty
-    {
-        public:
-            std::atomic<demachword> m_StopFlag;
-            std::atomic<demachword> m_ReturnFlag;
-            std::thread m_Thread;
-            dedword m_JobCount;
-            demachword m_JobArguments[DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT * DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
-            depjob m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
-    };
-    
-    class JobQueue : public IHelperObject
-    {
-        DV_MACRO_FRIENDS(DvigEngine2::Engine)
-
-        public:
-            DV_FUNCTION_INLINE std::atomic<demachword>& GetStopFlag() { return m_StopFlag; }
-            DV_FUNCTION_INLINE std::atomic<demachword>& GetReturnFlag() { return m_ReturnFlag; }
-            DV_FUNCTION_INLINE std::thread& GetThread() { return m_Thread; }
-            DV_FUNCTION_INLINE deusize GetJobCount() { return m_JobCount; }
-            DV_FUNCTION_INLINE demachword GetJobArgument(deint32 arrayOffset) { return m_JobArguments[arrayOffset]; }
-            DV_FUNCTION_INLINE depjob& GetJob(deint32 arrayOffset) { return m_Jobs[arrayOffset]; }
-            
-            virtual void Delete();
-            void Push(depjob callback, void* argumentMemory, const deusize argumentCount);
-            void Start();
-            void Stop();
-
-        // private:
-        //     DV_XMACRO_GETTER_PROPERTY(JobQueueProperty)
-
-        private:
-            // JobQueueProperty m_Prop;
-            std::atomic<demachword> m_StopFlag;
-            std::atomic<demachword> m_ReturnFlag;
-            std::thread m_Thread;
-            dedword m_JobCount;
-            demachword m_JobArguments[DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT * DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
-            depjob m_Jobs[DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT];
-    };
-
     class ThreadPoolJobData
     {
         public:
@@ -405,7 +364,8 @@ namespace DvigEngine2
 
         public:
             static void Init();
-            static void AddJob(deint32 threadIndex, depjob callback, void* arguments, const deusize argumentCount);
+            static void AddJob(deint32 threadIndex, depjob job, void* arguments, const deusize argumentCount);
+            static void AddJobArray(deint32 threadIndex, depjob* jobs, const deusize jobCount, void* arguments, const deusize* argumentCounts);
             static void DoJobs(demachword* arguments, deint32 threadIndex);
             static void WaitForJobs();
             static void Terminate();
@@ -496,7 +456,6 @@ namespace DvigEngine2
             deusize m_RequestedThreadCount;
             MemoryPool* m_MemoryPools;
             demachword m_CurrentJobQueueCursor;
-            JobQueue* m_JobQueues;
             void* m_UserData;
     };
 

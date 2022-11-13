@@ -54,6 +54,65 @@ void DvigEngine2::ThreadPoolSystem::AddJob(deint32 threadIndex, depjob job, void
     DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[curThreadIndex].m_JobCount += 1;
 }
 
+void DvigEngine2::ThreadPoolSystem::AddJobArray(deint32 threadIndex, depjob* jobs, const deusize jobCount, void* arguments, const deusize* argumentCounts)
+{
+    // Get supported CPU thread count
+    DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
+    const deusize requestedThreadCount = engine->GetData()->m_RequestedThreadCount;
+    if (DvigEngine2::ThreadPoolSystem::m_ThreadCursor >= requestedThreadCount) {
+        DvigEngine2::ThreadPoolSystem::m_ThreadCursor = 0;
+    }
+
+    // Assign thread index
+    deint32 curThreadIndex = threadIndex;
+    if (curThreadIndex == DV_NULL || curThreadIndex < 0 || curThreadIndex >= requestedThreadCount) {
+        curThreadIndex = DvigEngine2::ThreadPoolSystem::m_ThreadCursor;
+    }
+
+    // Check if job count per thread
+    // exceeded maximum value
+    if (DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[curThreadIndex].m_JobCount >= DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT) {
+        return;
+    }
+
+    deint32 jobIndex;
+    demachword* argumentsOffsetAddress = (demachword*)arguments;
+    for (deint32 i = 0; i < jobCount; ++i)
+    {
+        jobIndex = DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[curThreadIndex].m_JobCount;
+
+        // Copy arguments
+        DvigEngine2::Engine::CopyMemory(
+            &DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[curThreadIndex].m_Jobs[jobIndex].m_Arguments[0],
+            &argumentsOffsetAddress[0],
+            sizeof(DvigEngine2::demachword) * argumentCounts[i]
+        );
+
+        // Assign job
+        DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[curThreadIndex].m_Jobs[jobIndex].m_pJob = jobs[i];
+        DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[curThreadIndex].m_JobCount += 1;
+
+        // Increase arguments offset
+        argumentsOffsetAddress = DvigEngine2::Ptr<demachword*>::Add( &argumentsOffsetAddress, sizeof(demachword) * argumentCounts[i] );
+        
+        // Increment job index
+        jobIndex += 1;
+        if (DvigEngine2::ThreadPoolSystem::m_ThreadQueueData[curThreadIndex].m_JobCount >= DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT) {
+            return;
+        }
+
+        // Increment thread index
+        if (threadIndex == DV_NULL || threadIndex < 0 || threadIndex >= requestedThreadCount) {
+            // Check
+            DvigEngine2::ThreadPoolSystem::m_ThreadCursor += 1;
+            if (DvigEngine2::ThreadPoolSystem::m_ThreadCursor >= requestedThreadCount) {
+                DvigEngine2::ThreadPoolSystem::m_ThreadCursor = 0;
+            }
+            curThreadIndex = DvigEngine2::ThreadPoolSystem::m_ThreadCursor;
+        }
+    }
+}
+
 void DvigEngine2::ThreadPoolSystem::DoJobs(demachword* arguments, deint32 threadIndex)
 {
     while (DvigEngine2::ThreadPoolSystem::m_IsRunning.load() == DV_TRUE)

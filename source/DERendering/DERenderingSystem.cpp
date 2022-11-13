@@ -70,5 +70,11 @@ void DvigEngine2::RenderingSystem::Draw(INode* node)
     }
 
     // Populate uniform buffer
-    
+    DvigEngine2::BatchInstanceData batchInstance;
+    DvigEngine2::Engine::CopyMemory( &batchInstance.m_Transform, nodeTransform, sizeof(DvigEngine2::TransformComponent) );
+    DvigEngine2::RenderingSystem::m_UniformBuffer->Insert(
+        DvigEngine2::RenderingSystem::m_NextBatchUniformBufferOffset,
+        &batchInstance,
+        sizeof(DvigEngine2::BatchInstanceData)
+    );
 }

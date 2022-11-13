@@ -42,9 +42,9 @@ DvigEngine2::Engine::Engine(DvigEngine2::EngineInputProperty* engineInputPropert
     engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset = DvigEngine2::Ptr<void*>::Add( &engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset, allocMemoryPoolsByteWidth );
 
     // Allocate memory for Engine Job queues
-    const deusize allocJobQueuesByteWidth = requestedThreadCount * sizeof(DvigEngine2::JobQueue);
-    this->m_Prop.m_JobQueues = (DvigEngine2::JobQueue*)engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset;
-    engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset = DvigEngine2::Ptr<void*>::Add( &engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset, allocJobQueuesByteWidth );
+    // const deusize allocJobQueuesByteWidth = requestedThreadCount * sizeof(DvigEngine2::JobQueue);
+    // this->m_Prop.m_JobQueues = (DvigEngine2::JobQueue*)engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset;
+    // engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset = DvigEngine2::Ptr<void*>::Add( &engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset, allocJobQueuesByteWidth );
 
     // Copy input data to Engine data
     for (deisize i = 0; i < engineInputProperty->m_MemoryPoolsCount; ++i)
