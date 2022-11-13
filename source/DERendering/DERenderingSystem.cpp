@@ -56,10 +56,19 @@ void DvigEngine2::RenderingSystem::EndRender()
 void DvigEngine2::RenderingSystem::Draw(INode* node)
 {
     DvigEngine2::GeometryComponent* nodeGeometry = (DvigEngine2::GeometryComponent*)node->GetComponent<DvigEngine2::GeometryComponent>(nullptr);
+    DvigEngine2::TransformComponent* nodeTransform = (DvigEngine2::TransformComponent*)node->GetComponent<DvigEngine2::TransformComponent>(nullptr);
+    
+    if (nodeGeometry == nullptr || nodeTransform == nullptr) { return; }
 
     // Create new batch if needed
     if (m_IsBatchRecording == DV_TRUE)
     {
         DvigEngine2::BatchData batch;
+        batch.m_GeometryComponent = nodeGeometry;
+        batch.m_UniformBufferOffset = DvigEngine2::RenderingSystem::m_NextBatchUniformBufferOffset;
+        DvigEngine2::RenderingSystem::m_Batches->Insert( &batch );
     }
+
+    // Populate uniform buffer
+    
 }

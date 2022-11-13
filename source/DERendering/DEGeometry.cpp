@@ -3,7 +3,7 @@
 
 #include <fstream>
 
-DvigEngine2::DynamicBuffer* DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer = nullptr;
+DvigEngine2::DynamicBuffer* DvigEngine2::GeometryComponent::m_GlobalGeometryBuffer = nullptr;
 
 void DvigEngine2::GeometryComponent::Init(const char* optGeometryPathOnDrive, void* optGeometryData, deusize optGeometryDataByteWidth)
 {
@@ -11,10 +11,10 @@ void DvigEngine2::GeometryComponent::Init(const char* optGeometryPathOnDrive, vo
 
     // Create global geometry buffer
     // If needed
-    if (DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer == nullptr)
+    if (DvigEngine2::GeometryComponent::m_GlobalGeometryBuffer == nullptr)
     {
-        engine->Create<DvigEngine2::DynamicBuffer>( &GeometryBatch::m_GlobalGeometryBuffer, "_GlobalGeometryBuffer" );
-        GeometryBatch::m_GlobalGeometryBuffer->Init( 0, 1024 );
+        engine->Create<DvigEngine2::DynamicBuffer>( &GeometryComponent::m_GlobalGeometryBuffer, "_GlobalGeometryBuffer" );
+        GeometryComponent::m_GlobalGeometryBuffer->Init( 0, 1024 );
     }
 
     // Geometry data address
@@ -43,7 +43,7 @@ void DvigEngine2::GeometryComponent::Init(const char* optGeometryPathOnDrive, vo
 
     // Copy to global geometry buffer
     this->m_BufferByteWidth = geometryDataByteWidth;
-    this->m_BufferOffset = DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer->Insert( DV_NULL, geometryData, geometryDataByteWidth );
+    this->m_BufferOffset = DvigEngine2::GeometryComponent::m_GlobalGeometryBuffer->Insert( DV_NULL, geometryData, geometryDataByteWidth );
 
     // Bind vertex buffer here
 }
@@ -53,10 +53,10 @@ void DvigEngine2::GeometryComponent::Free()
     this->GetEngine()->Delete( this->GetMemoryObject() );
 }
 
-void DvigEngine2::GeometryBatch::ClearGeometryBuffer()
+void DvigEngine2::GeometryComponent::ClearGeometryBuffer()
 {
-    DV_ASSERT_PTR(DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer)
+    DV_ASSERT_PTR(DvigEngine2::GeometryComponent::m_GlobalGeometryBuffer)
 
-    DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer->Free();
-    DvigEngine2::GeometryBatch::m_GlobalGeometryBuffer = nullptr;
+    DvigEngine2::GeometryComponent::m_GlobalGeometryBuffer->Free();
+    DvigEngine2::GeometryComponent::m_GlobalGeometryBuffer = nullptr;
 }

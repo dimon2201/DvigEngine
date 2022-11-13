@@ -34,14 +34,7 @@ int main()
     class AppWindow : public DvigEngine2::IWindow {
         public:
             void Start() override final {
-                DvigEngine2::INode* node;
-                DvigEngine2::Engine::GetClassInstance()->Create<DvigEngine2::INode>(&node, "MyNode_0");
-                DvigEngine2::GeometryComponent* geomComponent;
-                DvigEngine2::Engine::GetClassInstance()->Create<DvigEngine2::GeometryComponent>(&geomComponent, "MyGeometryComponent_0");
-                DvigEngine2::Engine::GetClassInstance()->AddComponent<DvigEngine2::GeometryComponent>(&node, geomComponent);
-                DvigEngine2::GeometryComponent* pGeomComponent = (DvigEngine2::GeometryComponent*)node->GetComponent<DvigEngine2::GeometryComponent>(nullptr);
-                std::cout << pGeomComponent << std::endl;
-                std::cout << "Hello!" << std::endl;
+                DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::GeometryComponent>();
             }
             void Update() override final {
                 DvigEngine2::Application* app = this->GetApplication();

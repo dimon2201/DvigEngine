@@ -2,6 +2,7 @@
 #define _DE_LIB_RENDERING_H_
 
 #include "DECore.hpp"
+#include "DEThirdPartyMath.hpp"
 
 namespace DvigEngine2
 {
@@ -11,21 +12,32 @@ namespace DvigEngine2
             void Init(const char* optGeometryPathOnDrive, void* optGeometryData, deusize optGeometryDataByteWidth);
             void Free() override final;
 
+        private:
+            static void ClearGeometryBuffer();
+
+        private:
+            static DynamicBuffer* m_GlobalGeometryBuffer;
+
         public:
             int val;
             deusize m_BufferByteWidth;
             deint32 m_BufferOffset;
     };
 
-    class GeometryBatch : public IHelperObject
+    class TransformComponent : public IComponent
     {
         public:
-            void Init();
-            void Free() override final;
-            static void ClearGeometryBuffer();
+            void Init() { }
+            void Free() override final { }
 
         public:
-            static DynamicBuffer* m_GlobalGeometryBuffer;
+            glm::vec3 m_Position;
+    };
+
+    class BatchInstanceData
+    {
+        public:
+            TransformComponent m_Transform;
     };
 
     class BatchData

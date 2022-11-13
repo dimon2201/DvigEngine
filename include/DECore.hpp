@@ -87,6 +87,7 @@ namespace DvigEngine2
     class ILayout : public ICommon
     {
         public:
+            destring m_TypeName;
             deusize m_LayoutByteWidth;
     };
 
@@ -428,20 +429,19 @@ namespace DvigEngine2
                 const char* requestedTypeName = typeid(T).name();
                 const char* componentUSID = &USID[0];
                 if (componentUSID == nullptr) { componentUSID = "";  }
+                const deusize capacity = m_Components->GetCapacity();
                 IComponent** dataAddress = (IComponent**)m_Components->GetDataAddress();
-                const IComponent* lastAddress = DvigEngine2::Ptr<IComponent*>::Add(dataAddress, m_Components->GetSize());
                 IComponent* component = *dataAddress;
-                while (component < lastAddress)
+                for (deint32 i = 0; i < capacity; ++i)
                 {
                     component = *dataAddress;
-                    const char* curTypeName = typeid(component).name();
-                    std::cout << requestedTypeName << " " << curTypeName << std::endl;
+                    const char* curTypeName = (const char*)&component->m_TypeName[0];
                     if ((DvigEngine2::String::CompareCharacters( &requestedTypeName[0], &curTypeName[0], DvigEngine2::String::CharactersCount((const deuchar*)&requestedTypeName[0]) ) == DV_TRUE) ||
-                    (DvigEngine2::String::CompareCharacters( &componentUSID[0], (const char*)component->GetUSID(), DvigEngine2::String::CharactersCount((const deuchar*)&componentUSID[0]) ) == DV_TRUE)) {
+                        (DvigEngine2::String::CompareCharacters( &componentUSID[0], (const char*)component->GetUSID(), DvigEngine2::String::CharactersCount((const deuchar*)&componentUSID[0]) ) == DV_TRUE)) {
                         return component;
                     }
 
-                    dataAddress = Ptr<IComponent**>::Add( &dataAddress, sizeof(IComponent**) );
+                    dataAddress = Ptr<IComponent**>::Add( &dataAddress, component->m_LayoutByteWidth );
                 }
 
                 return nullptr;
@@ -592,7 +592,9 @@ namespace DvigEngine2
                 }
                 else if (dynamic_cast<ILayout*>(typedObject) != nullptr)
                 {
+                    const char* typeName = typeid(T).name();
                     ILayout* layout = (ILayout*)typedObject;
+                    DvigEngine2::Engine::CopyMemory( &layout->m_TypeName[0], &typeName[0], DvigEngine2::String::CharactersCount((const deuchar*)&typeName[0]) );
                     layout->m_LayoutByteWidth = sizeof(T);
                 }
                 engineInstance->m_RegistryProp.m_Instances->Insert( (const char*)&objectUSID[0], (void*)typedObject );
