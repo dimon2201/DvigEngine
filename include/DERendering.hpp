@@ -1,8 +1,8 @@
 #ifndef _DE_LIB_RENDERING_H_
 #define _DE_LIB_RENDERING_H_
 
-#include <GL/gl.h>
 #include "DECore.hpp"
+#include "DEThirdPartyGL.hpp"
 #include "DEThirdPartyMath.hpp"
 
 namespace DvigEngine2
@@ -12,16 +12,17 @@ namespace DvigEngine2
         DV_XMACRO_DECLARE_STATIC_CLASS(GL4)
 
         public:
-            static void LoadGL4();
+            static void Load();
 
         public:
             static void (*_Init)(void);
             static void (*Viewport)(deint32 x, deint32 y, deisize width, deisize height);
             static void (*Clear)(deuint32 mask);
             static void (*ClearColor)(defloat32 red, defloat32 green, defloat32 blue, defloat32 alpha);
-            static void (*CreateBuffers)(deisize n, deuint32* buffers);
+            static void (*GenBuffers)(deisize n, deuint32* buffers);
             static void (*BindBuffer)(deuint32 target, deuint32 buffer);
             static void (*BufferData)(deuint32 target, demachword size, const void* data, deuint32 usage);
+            static void (*DrawElements)(deuint32 mode, deisize count, deuint32 type, void* indices);
             static void (*DrawElementsBaseVertex)(deuint32 mode, deisize count, deuint32 type, void* indices, deint32 baseVertex);
     };
 
@@ -87,6 +88,7 @@ namespace DvigEngine2
             static debool m_IsBatchRecording;
             static deint32 m_NextBatchUniformBufferOffset;
             static DynamicBuffer* m_UniformBuffer;
+            static deuint32 m_GLUniformBuffer;
     };
 }
 

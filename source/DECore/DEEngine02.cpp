@@ -108,11 +108,8 @@ DvigEngine2::Engine::Engine(DvigEngine2::EngineInputProperty* engineInputPropert
 
     // Init GLFW
     glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-
-    // Init systems
-    DvigEngine2::RenderingSystem::Init();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 
     // DvigEngine2::MemoryPoolProperty* memoryPoolsData = engineInputProperty->m_MemoryPoolsData;
     // deisize memoryPoolsCount = engineInputProperty->m_MemoryPoolsCount;

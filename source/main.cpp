@@ -36,7 +36,12 @@ int main()
             void Start() override final {
                 DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::GeometryComponent>();
 
-
+                DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
+                DvigEngine2::GeometryComponent* geomComp;
+                DvigEngine2::INode* node;
+                engine->Create <DvigEngine2::GeometryComponent> ( &geomComp, "MyGeometryComponent_0" );
+                engine->Create <DvigEngine2::INode> ( &node, "MyNode_0" );
+                engine->AddComponent <DvigEngine2::GeometryComponent> ( &node, geomComp );
             }
             void Update() override final {
                 DvigEngine2::Application* app = this->GetApplication();

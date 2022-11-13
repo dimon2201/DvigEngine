@@ -12,9 +12,9 @@ void DvigEngine2::IWindow::Init(Application* app, const char* caption, glm::uvec
     GLFWwindow* window = glfwCreateWindow(size.x, size.y, &caption[0], NULL, NULL);
     glfwMakeContextCurrent(window);
 
-    // Load OpenGL4 procedures
-    // if needed
-    DvigEngine2::GL4::LoadGL4();
+    // Init OpenGL procedures
+    DvigEngine2::GL4::Load();
+    DvigEngine2::RenderingSystem::Init();
 
     DV_ASSERT_PTR(window);
 

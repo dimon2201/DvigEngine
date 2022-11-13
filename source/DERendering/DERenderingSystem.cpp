@@ -5,29 +5,32 @@ void (*DvigEngine2::GL4::_Init)(void) = nullptr;
 void (*DvigEngine2::GL4::Viewport)(deint32 x, deint32 y, deisize width, deisize height) = nullptr;
 void (*DvigEngine2::GL4::Clear)(deuint32 mask) = nullptr;
 void (*DvigEngine2::GL4::ClearColor)(defloat32 red, defloat32 green, defloat32 blue, defloat32 alpha) = nullptr;
-void (*DvigEngine2::GL4::CreateBuffers)(deisize n, deuint32* buffers);
+void (*DvigEngine2::GL4::GenBuffers)(deisize n, deuint32* buffers);
 void (*DvigEngine2::GL4::BindBuffer)(deuint32 target, deuint32 buffer);
 void (*DvigEngine2::GL4::BufferData)(deuint32 target, demachword size, const void* data, deuint32 usage);
+void (*DvigEngine2::GL4::DrawElements)(deuint32 mode, deisize count, deuint32 type, void* indices);
 void (*DvigEngine2::GL4::DrawElementsBaseVertex)(deuint32 mode, deisize count, deuint32 type, void* indices, deint32 baseVertex) = nullptr;
 
 DvigEngine2::FixedSet* DvigEngine2::RenderingSystem::m_Batches = nullptr;
 DvigEngine2::debool DvigEngine2::RenderingSystem::m_IsBatchRecording = DV_FALSE;
 DvigEngine2::deint32 DvigEngine2::RenderingSystem::m_NextBatchUniformBufferOffset = 0;
 DvigEngine2::DynamicBuffer* DvigEngine2::RenderingSystem::m_UniformBuffer = nullptr;
+DvigEngine2::deuint32 DvigEngine2::RenderingSystem::m_GLUniformBuffer = DV_NULL;
 
-void DvigEngine2::GL4::LoadGL4()
+void DvigEngine2::GL4::Load()
 {
     // Load GL4 procedures
     if (DvigEngine2::GL4::_Init == nullptr)
     {
         DvigEngine2::GL4::_Init = (void (*)())DV_TRUE;
-        DvigEngine2::GL4::Viewport = (void (*)(DvigEngine2::deint32, DvigEngine2::deint32, DvigEngine2::deisize, DvigEngine2::deisize))glfwGetProcAddress( "glViewport" ); 
-        DvigEngine2::GL4::Clear = (void (*)(DvigEngine2::deuint32))glfwGetProcAddress( "glClear" );
-        DvigEngine2::GL4::ClearColor = (void (*)(DvigEngine2::defloat32, DvigEngine2::defloat32, DvigEngine2::defloat32, DvigEngine2::defloat32))glfwGetProcAddress( "glClearColor" );
-        DvigEngine2::GL4::CreateBuffers = (void (*)(DvigEngine2::deisize, DvigEngine2::deuint32*))glfwGetProcAddress( "glCreateBuffers" );
-        DvigEngine2::GL4::BindBuffer = (void (*)(DvigEngine2::deuint32, DvigEngine2::deuint32))glfwGetProcAddress( "glBindBuffer" );
-        DvigEngine2::GL4::BufferData = (void (*)(DvigEngine2::deuint32, DvigEngine2::demachword, const void*, DvigEngine2::deuint32))glfwGetProcAddress( "glBufferData" );
-        DvigEngine2::GL4::DrawElementsBaseVertex = (void (*)(DvigEngine2::deuint32, DvigEngine2::deisize, DvigEngine2::deuint32, void*, DvigEngine2::deint32))glfwGetProcAddress( "glDrawElementsBaseVertex" );
+        DvigEngine2::GL4::Viewport = (void (*)(DvigEngine2::deint32 x, DvigEngine2::deint32 y, DvigEngine2::deisize width, DvigEngine2::deisize height))glfwGetProcAddress( "glViewport" ); 
+        DvigEngine2::GL4::Clear = (void (*)(DvigEngine2::deuint32 mask))glfwGetProcAddress( "glClear" );
+        DvigEngine2::GL4::ClearColor = (void (*)(DvigEngine2::defloat32 red, DvigEngine2::defloat32 green, DvigEngine2::defloat32 blue, DvigEngine2::defloat32 alpha))glfwGetProcAddress( "glClearColor" );
+        DvigEngine2::GL4::GenBuffers = (void (*)(DvigEngine2::deisize n, DvigEngine2::deuint32* buffers))glfwGetProcAddress( "glGenBuffers" );
+        DvigEngine2::GL4::BindBuffer = (void (*)(DvigEngine2::deuint32 target, DvigEngine2::deuint32 buffer))glfwGetProcAddress( "glBindBuffer" );
+        DvigEngine2::GL4::BufferData = (void (*)(DvigEngine2::deuint32 target, DvigEngine2::demachword size, const void* data, DvigEngine2::deuint32 usage))glfwGetProcAddress( "glBufferData" );
+        DvigEngine2::GL4::DrawElements = (void (*)(DvigEngine2::deuint32 mode, DvigEngine2::deisize count, DvigEngine2::deuint32 type, void* indices))glfwGetProcAddress( "glDrawElements" );
+        DvigEngine2::GL4::DrawElementsBaseVertex = (void (*)(DvigEngine2::deuint32 mode, DvigEngine2::deisize count, DvigEngine2::deuint32 type, void* indices, DvigEngine2::deint32 baseVertex))glfwGetProcAddress( "glDrawElementsBaseVertex" );
     }
 }
 
@@ -40,18 +43,24 @@ void DvigEngine2::RenderingSystem::Init()
         engine->Create<DvigEngine2::FixedSet>( &m_Batches, "_RenderingSystemBatchSet" );
         m_Batches->Init( 0, 1024, sizeof(BatchData) );
     }
+
+    // Create uniform buffer instance if needed
+    if (m_UniformBuffer == nullptr)
+    {
+        // On-Heap buffer
+        DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
+        engine->Create <DvigEngine2::DynamicBuffer> ( &m_UniformBuffer, "_RenderingSystemUniformBuffer" );
+        m_UniformBuffer->Init( 0, 1024 );
+
+        // GL buffer
+        DvigEngine2::GL4::GenBuffers( 1, &m_GLUniformBuffer );
+        DvigEngine2::GL4::BindBuffer( GL_UNIFORM_BUFFER, m_GLUniformBuffer );
+        DvigEngine2::GL4::BindBuffer( GL_UNIFORM_BUFFER, 0 );
+    }
 }
 
 void DvigEngine2::RenderingSystem::BeginRender()
 {
-    // Create uniform buffer instance if needed
-    if (m_UniformBuffer == nullptr)
-    {
-        DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
-        engine->Create <DvigEngine2::DynamicBuffer> ( &m_UniformBuffer, "_RenderingSystemUniformBuffer" );
-        m_UniformBuffer->Init( 0, 1024 );
-    }
-
     // Clear uniform buffer
     m_NextBatchUniformBufferOffset = 0;
     m_UniformBuffer->Clear();
