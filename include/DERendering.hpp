@@ -34,7 +34,10 @@ namespace DvigEngine2
             static void (*LinkProgram)(deuint32 program);
             static void (*DetachShader)(deuint32 program, deuint32 shader);
             static void (*DeleteProgram)(deuint32 program);
+            static void (*EnableVertexAttribArray)(deuint32 index);
+            static void (*VertexAttribPointer)(deuint32 index, deint32 size, deuint32 type, bool normalized, deisize stride, const void* pointer);
             static void (*UseProgram)(deuint32 program);
+            static void (*DrawArrays)(deuint32 mode, deint32 first, deisize count);
             static void (*DrawElements)(deuint32 mode, deisize count, deuint32 type, void* indices);
             static void (*DrawElementsBaseVertex)(deuint32 mode, deisize count, deuint32 type, void* indices, deint32 baseVertex);
     };
@@ -48,12 +51,6 @@ namespace DvigEngine2
         private:
             static void ClearGeometryBuffer();
 
-        private:
-            static DynamicBuffer* m_GlobalGeometryBuffer;
-            static DynamicBuffer* m_GlobalIndexBuffer;
-            static deuint32 m_GLGlobalGeometryBuffer;
-            static deuint32 m_GLGlobalIndexBuffer;
-
         public:
             deusize m_GeometryBufferByteWidth;
             deint32 m_GeometryBufferOffset;
@@ -64,7 +61,7 @@ namespace DvigEngine2
     class TransformComponent : public IComponent
     {
         public:
-            void Init() { }
+            void Init(defloat32 x, defloat32 y, defloat32 z) { this->m_Position = glm::vec3(x, y, z); }
             void Free() override final { }
 
         public:
@@ -91,6 +88,7 @@ namespace DvigEngine2
     {
         public:
             GeometryComponent* m_GeometryComponent;
+            ShaderComponent* m_ShaderComponent;
             deint32 m_UniformBufferOffset;
     };
 
@@ -106,6 +104,13 @@ namespace DvigEngine2
             static void EndRender();
             static void EndBatch();
             static void Draw(INode* node);
+            static void ClearGeometryAndIndexBuffers();
+
+        public:
+            static DynamicBuffer* m_GlobalGeometryBuffer;
+            static DynamicBuffer* m_GlobalIndexBuffer;
+            static deuint32 m_GLGlobalGeometryBuffer;
+            static deuint32 m_GLGlobalIndexBuffer;
 
         private:
             static FixedSet* m_Batches;

@@ -3,6 +3,7 @@
 #include "../../include/DEThirdPartyWindow.hpp"
 
 DvigEngine2::Engine* DvigEngine2::Engine::m_EngineInstance = nullptr;
+DvigEngine2::deint32 DvigEngine2::Engine::m_GlobalComponentIndex = 0;
 
 DvigEngine2::Engine::Engine(DvigEngine2::EngineInputProperty* engineInputProperty)
 {

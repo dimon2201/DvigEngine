@@ -391,16 +391,15 @@ namespace DvigEngine2
                 const deusize capacity = m_Components->GetCapacity();
                 IComponent** dataAddress = (IComponent**)m_Components->GetDataAddress();
                 IComponent* component = *dataAddress;
+                deisize offset = 0;
                 for (deint32 i = 0; i < capacity; ++i)
                 {
-                    component = *dataAddress;
+                    m_Components->Find(i * sizeof(DvigEngine2::demachword), &component, sizeof(DvigEngine2::demachword));
                     const char* curTypeName = (const char*)&component->m_TypeName[0];
                     if ((DvigEngine2::String::CompareCharacters( &requestedTypeName[0], &curTypeName[0], DvigEngine2::String::CharactersCount((const deuchar*)&requestedTypeName[0]) ) == DV_TRUE)) {//||
                         //(DvigEngine2::String::CompareCharacters( &componentUSID[0], (const char*)component->GetUSID(), DvigEngine2::String::CharactersCount((const deuchar*)&componentUSID[0]) ) == DV_TRUE)) {
                         return component;
                     }
-
-                    dataAddress = Ptr<IComponent**>::Add( &dataAddress, component->m_LayoutByteWidth );
                 }
 
                 return nullptr;
@@ -479,10 +478,9 @@ namespace DvigEngine2
             template <typename T>
             DV_FUNCTION_INLINE void RegisterComponent()
             {
-                static demachint globalComponentIndex = 0;
                 const char* typeName = typeid(T).name();
                 if (m_RegistryProp.m_RegisteredComponents->Find( typeName ) == nullptr) {
-                    m_RegistryProp.m_RegisteredComponents->Insert( typeName, (void*)++globalComponentIndex );
+                    m_RegistryProp.m_RegisteredComponents->Insert( typeName, (void*)(DvigEngine2::demachword)++DvigEngine2::Engine::m_GlobalComponentIndex );
                 }
             }
 
@@ -564,6 +562,9 @@ namespace DvigEngine2
 
         private:
             static Engine* m_EngineInstance;
+            static deint32 m_GlobalComponentIndex;
+
+        private:
             EngineRegistryProperty m_RegistryProp;
             // EngineInputProperty m_InputProp;
             EngineProperty m_Prop;
