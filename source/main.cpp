@@ -35,20 +35,45 @@ int main()
         public:
             void Start() override final {
                 DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::GeometryComponent>();
+                DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::ShaderComponent>();
+
+                DvigEngine2::defloat32 vertices[9] = {
+                    -1.0f, -1.0f, 0.0f,
+                    0.0f, 1.0f, 0.0f,
+                    1.0f, -1.0f, 0.0f
+                };
+                DvigEngine2::deuint32 indices[3] = {
+                    0, 1, 2
+                };
 
                 DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
+
                 DvigEngine2::GeometryComponent* geomComp;
+                DvigEngine2::ShaderComponent* shaderComp;
                 DvigEngine2::INode* node;
+
                 engine->Create <DvigEngine2::GeometryComponent> ( &geomComp, "MyGeometryComponent_0" );
+                engine->Create <DvigEngine2::ShaderComponent> ( &shaderComp, "MyShaderComponent_0" );
                 engine->Create <DvigEngine2::INode> ( &node, "MyNode_0" );
+
+                geomComp->Init( nullptr, nullptr, &vertices[0], &indices[0],
+                                sizeof(DvigEngine2::defloat32) * 9,
+                                sizeof(DvigEngine2::deuint32) * 3
+                              );
+                shaderComp->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
+                                  "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
+                
                 engine->AddComponent <DvigEngine2::GeometryComponent> ( &node, geomComp );
             }
             void Update() override final {
+                DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
                 DvigEngine2::Application* app = this->GetApplication();
+                DvigEngine2::INode* myNode_0 = (DvigEngine2::INode*)engine->GetExistingInstance( "MyNode_0" );
 
                 DvigEngine2::RenderingSystem::BeginRender();
 
                 DvigEngine2::RenderingSystem::BeginBatch();
+                DvigEngine2::RenderingSystem::Draw( myNode_0 );
                 DvigEngine2::RenderingSystem::EndBatch();
 
                 DvigEngine2::RenderingSystem::EndRender();

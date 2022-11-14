@@ -166,7 +166,7 @@ void* DvigEngine2::HashMap::Find(const char* key)
         {
             HashMapKeyValuePair* newPair = this->m_Entries.Find<HashMapKeyValuePair*>( i );
             const deusize newPairKeyByteWidth = String::CharactersCount( &newPair->m_Key[0] );
-            if (newPairKeyByteWidth == keyByteWidth && (String::CompareCharacters( compKeyAddress, (const char*)&newPair->m_Key[0], keyByteWidth ) == DV_TRUE))
+            if (newPairKeyByteWidth == keyByteWidth && (String::CompareCharacters( &compKeyAddress[0], (const char*)&newPair->m_Key[0], keyByteWidth ) == DV_TRUE))
             {
                 return newPair->m_Value;
             }

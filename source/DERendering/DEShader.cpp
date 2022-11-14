@@ -48,6 +48,15 @@ void DvigEngine2::ShaderComponent::Init(const char* vertexShaderPathOnDrive, con
     DvigEngine2::GL4::AttachShader( this->m_GLProgram, vertexShader );
     DvigEngine2::GL4::AttachShader( this->m_GLProgram, fragmentShader );
     DvigEngine2::GL4::LinkProgram( this->m_GLProgram );
+    DvigEngine2::GL4::DetachShader( this->m_GLProgram, vertexShader );
+    DvigEngine2::GL4::DetachShader( this->m_GLProgram, fragmentShader );
+
+    deisize maxByteWidth = 1024;
+	deuchar infoLog[1024] = {};
+	DvigEngine2::GL4::GetShaderInfoLog(vertexShader, maxByteWidth, &maxByteWidth, &infoLog[0]);
+    std::cout << &infoLog[0] << std::endl;
+    DvigEngine2::GL4::GetShaderInfoLog(fragmentShader, maxByteWidth, &maxByteWidth, &infoLog[0]);
+    std::cout << &infoLog[0] << std::endl;
 
     // Delete temporary memory objects
     engine->Delete( vertexShaderTempMemoryObject );

@@ -22,6 +22,7 @@ namespace DvigEngine2
             static void (*GenBuffers)(deisize n, deuint32* buffers);
             static void (*BindBuffer)(deuint32 target, deuint32 buffer);
             static void (*BufferData)(deuint32 target, demachword size, const void* data, deuint32 usage);
+            static void (*BufferSubData)(deuint32 target, demachword offset, demachword size, const void* data);
             static deuint32 (*CreateShader)(deuint32 shaderType);
             static void (*ShaderSource)(deuint32 shader, deisize count, const deuchar** string, const deint32* length);
             static void (*CompileShader)(deuint32 shader);
@@ -41,7 +42,7 @@ namespace DvigEngine2
     class GeometryComponent : public IComponent
     {
         public:
-            void Init(const char* optGeometryDataPathOnDrive, const char* optIndicesDataPathOnDrive, void* optBufferData, deusize optGeometryDataByteWidth, deusize optIndicesDataByteWidth);
+            void Init(const char* optGeometryDataPathOnDrive, const char* optIndicesDataPathOnDrive, void* optGeometryData, void* optIndicesData, deusize optGeometryDataByteWidth, deusize optIndicesDataByteWidth);
             void Free() override final;
 
         private:
@@ -50,9 +51,10 @@ namespace DvigEngine2
         private:
             static DynamicBuffer* m_GlobalGeometryBuffer;
             static DynamicBuffer* m_GlobalIndexBuffer;
+            static deuint32 m_GLGlobalGeometryBuffer;
+            static deuint32 m_GLGlobalIndexBuffer;
 
         public:
-            int val;
             deusize m_GeometryBufferByteWidth;
             deint32 m_GeometryBufferOffset;
             deusize m_IndexBufferByteWidth;
@@ -82,7 +84,7 @@ namespace DvigEngine2
     class BatchInstanceData
     {
         public:
-            TransformComponent m_Transform;
+            glm::vec3 m_Position;
     };
 
     class BatchData

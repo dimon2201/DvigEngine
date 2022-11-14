@@ -5,8 +5,10 @@
 
 DvigEngine2::DynamicBuffer* DvigEngine2::GeometryComponent::m_GlobalGeometryBuffer = nullptr;
 DvigEngine2::DynamicBuffer* DvigEngine2::GeometryComponent::m_GlobalIndexBuffer = nullptr;
+DvigEngine2::deuint32 DvigEngine2::GeometryComponent::m_GLGlobalGeometryBuffer = DV_NULL;
+DvigEngine2::deuint32 DvigEngine2::GeometryComponent::m_GLGlobalIndexBuffer = DV_NULL;
 
-void DvigEngine2::GeometryComponent::Init(const char* optGeometryDataPathOnDrive, const char* optIndicesDataPathOnDrive, void* optBufferData, deusize optGeometryDataByteWidth, deusize optIndicesDataByteWidth)
+void DvigEngine2::GeometryComponent::Init(const char* optGeometryDataPathOnDrive, const char* optIndicesDataPathOnDrive, void* optGeometryData, void* optIndicesData, deusize optGeometryDataByteWidth, deusize optIndicesDataByteWidth)
 {
     DvigEngine2::Engine* engine = this->GetEngine();
 
@@ -18,11 +20,23 @@ void DvigEngine2::GeometryComponent::Init(const char* optGeometryDataPathOnDrive
         GeometryComponent::m_GlobalGeometryBuffer->Init( 0, 1024 );
         engine->Create<DvigEngine2::DynamicBuffer>( &GeometryComponent::m_GlobalIndexBuffer, "_GlobalIndexBuffer" );
         GeometryComponent::m_GlobalIndexBuffer->Init( 0, 1024 );
+
+        // GL vertex buffer
+        DvigEngine2::GL4::GenBuffers( 1, &GeometryComponent::m_GLGlobalGeometryBuffer );
+        DvigEngine2::GL4::BindBuffer( GL_ARRAY_BUFFER, GeometryComponent::m_GLGlobalGeometryBuffer );
+        DvigEngine2::GL4::BufferData( GL_ARRAY_BUFFER, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH, nullptr, GL_DYNAMIC_DRAW );
+        DvigEngine2::GL4::BindBuffer( GL_ARRAY_BUFFER, 0 );
+
+        // GL index buffer
+        DvigEngine2::GL4::GenBuffers( 1, &GeometryComponent::m_GLGlobalIndexBuffer );
+        DvigEngine2::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, GeometryComponent::m_GLGlobalIndexBuffer );
+        DvigEngine2::GL4::BufferData( GL_ELEMENT_ARRAY_BUFFER, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH, nullptr, GL_DYNAMIC_DRAW );
+        DvigEngine2::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
     }
 
     // Geometry data address
-    void* geometryData = optBufferData;
-    void* indicesData;
+    void* geometryData = optGeometryData;
+    void* indicesData = optIndicesData;
     deusize geometryDataByteWidth = optGeometryDataByteWidth;
     deusize indicesDataByteWidth = optIndicesDataByteWidth;
     if (geometryData == nullptr)
@@ -55,10 +69,6 @@ void DvigEngine2::GeometryComponent::Init(const char* optGeometryDataPathOnDrive
         engine->Delete( geometryTempMemoryObject );
         engine->Delete( indicesTempMemoryObject );
     }
-    else
-    {
-        indicesData = DvigEngine2::Ptr<void*>::Add( &optBufferData, optGeometryDataByteWidth );
-    }
 
     // Copy to global buffers
     this->m_GeometryBufferByteWidth = geometryDataByteWidth;
@@ -66,7 +76,15 @@ void DvigEngine2::GeometryComponent::Init(const char* optGeometryDataPathOnDrive
     this->m_IndexBufferByteWidth = indicesDataByteWidth;
     this->m_IndexBufferOffset = DvigEngine2::GeometryComponent::m_GlobalIndexBuffer->Insert( DV_NULL, indicesData, indicesDataByteWidth );
 
-    // Bind vertex buffer here
+    // Update vertex buffer
+    DvigEngine2::GL4::BindBuffer( GL_ARRAY_BUFFER, DvigEngine2::GeometryComponent::m_GLGlobalGeometryBuffer );
+    DvigEngine2::GL4::BufferSubData( GL_ARRAY_BUFFER, this->m_GeometryBufferOffset, geometryDataByteWidth, geometryData );
+    DvigEngine2::GL4::BindBuffer( GL_ARRAY_BUFFER, 0 );
+
+    // Update index buffer
+    DvigEngine2::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, DvigEngine2::GeometryComponent::m_GLGlobalIndexBuffer );
+    DvigEngine2::GL4::BufferSubData( GL_ELEMENT_ARRAY_BUFFER, this->m_IndexBufferOffset, indicesDataByteWidth, indicesData );
+    DvigEngine2::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 }
 
 void DvigEngine2::GeometryComponent::Free()

@@ -387,8 +387,7 @@ namespace DvigEngine2
             IComponent* GetComponent(const char* USID)
             {
                 const char* requestedTypeName = typeid(T).name();
-                const char* componentUSID = &USID[0];
-                if (componentUSID == nullptr) { componentUSID = "";  }
+                // const char* componentUSID = USID;
                 const deusize capacity = m_Components->GetCapacity();
                 IComponent** dataAddress = (IComponent**)m_Components->GetDataAddress();
                 IComponent* component = *dataAddress;
@@ -396,8 +395,8 @@ namespace DvigEngine2
                 {
                     component = *dataAddress;
                     const char* curTypeName = (const char*)&component->m_TypeName[0];
-                    if ((DvigEngine2::String::CompareCharacters( &requestedTypeName[0], &curTypeName[0], DvigEngine2::String::CharactersCount((const deuchar*)&requestedTypeName[0]) ) == DV_TRUE) ||
-                        (DvigEngine2::String::CompareCharacters( &componentUSID[0], (const char*)component->GetUSID(), DvigEngine2::String::CharactersCount((const deuchar*)&componentUSID[0]) ) == DV_TRUE)) {
+                    if ((DvigEngine2::String::CompareCharacters( &requestedTypeName[0], &curTypeName[0], DvigEngine2::String::CharactersCount((const deuchar*)&requestedTypeName[0]) ) == DV_TRUE)) {//||
+                        //(DvigEngine2::String::CompareCharacters( &componentUSID[0], (const char*)component->GetUSID(), DvigEngine2::String::CharactersCount((const deuchar*)&componentUSID[0]) ) == DV_TRUE)) {
                         return component;
                     }
 
@@ -556,8 +555,8 @@ namespace DvigEngine2
                     DvigEngine2::Engine::MemoryCopy( &layout->m_TypeName[0], &typeName[0], DvigEngine2::String::CharactersCount((const deuchar*)&typeName[0]) );
                     layout->m_LayoutByteWidth = sizeof(T);
                 }
-                engineInstance->m_RegistryProp.m_Instances->Insert( (const char*)&objectUSID[0], (void*)typedObject );
                 *result = typedObject;
+                engineInstance->m_RegistryProp.m_Instances->Insert( (const char*)&objectUSID[0], (void*)*result );
             }
 
         public:

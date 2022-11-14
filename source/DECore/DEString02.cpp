@@ -22,9 +22,9 @@ DvigEngine2::deresult DvigEngine2::String::CompareCharacters(const char* op1, co
     // }
 
     deint32 cycle = 0;
-    for (cycle = 0; op1[cycle] == op2[cycle] && op1[cycle] == '\0'; cycle++);
-      
-    if (op1[cycle] == op2[cycle]) {
+    while (op1[cycle] == op2[cycle] && ++cycle < opByteWidth);
+    
+    if (cycle == opByteWidth) {
         return DV_TRUE;
     } else {
         return DV_FALSE;
