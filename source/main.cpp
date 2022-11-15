@@ -63,7 +63,7 @@ int main()
                                 sizeof(DvigEngine2::defloat32) * 9,
                                 sizeof(DvigEngine2::deuint32) * 3
                               );
-                transComp->Init( 0.0f, 0.0f, 0.0f );
+                transComp->Init( 0.5f, 0.0f, 0.0f );
                 shaderComp->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
                 

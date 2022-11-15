@@ -22,6 +22,7 @@ namespace DvigEngine2
             static void (*GenBuffers)(deisize n, deuint32* buffers);
             static void (*GenVertexArrays)(deisize n, deuint32* arrays);
             static void (*BindBuffer)(deuint32 target, deuint32 buffer);
+            static void (*BindBufferBase)(deuint32 target, deuint32 index, deuint32 buffer);
             static void (*BindVertexArray)(deuint32 buffer);
             static void (*BufferData)(deuint32 target, demachword size, const void* data, deuint32 usage);
             static void (*BufferSubData)(deuint32 target, demachword offset, demachword size, const void* data);
@@ -39,6 +40,8 @@ namespace DvigEngine2
             static void (*DeleteProgram)(deuint32 program);
             static void (*EnableVertexAttribArray)(deuint32 index);
             static void (*VertexAttribPointer)(deuint32 index, deint32 size, deuint32 type, bool normalized, deisize stride, const void* pointer);
+            static deuint32 (*GetUniformBlockIndex)(deuint32 program, const char* uniformBlockName);
+            static void (*UniformBlockBinding)(deuint32 program, deuint32 uniformBlockIndex, deuint32 uniformBlockBinding);
             static void (*UseProgram)(deuint32 program);
             static void (*DrawArrays)(deuint32 mode, deint32 first, deisize count);
             static void (*DrawElements)(deuint32 mode, deisize count, deuint32 type, void* indices);
@@ -91,6 +94,7 @@ namespace DvigEngine2
     class BatchData
     {
         public:
+            deusize m_InstanceCount;
             GeometryComponent* m_GeometryComponent;
             ShaderComponent* m_ShaderComponent;
             deint32 m_UniformBufferOffset;

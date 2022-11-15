@@ -8,6 +8,7 @@ void (*DvigEngine2::GL4::ClearColor)(defloat32 red, defloat32 green, defloat32 b
 void (*DvigEngine2::GL4::GenBuffers)(deisize n, deuint32* buffers) = nullptr;
 void (*DvigEngine2::GL4::GenVertexArrays)(deisize n, deuint32* arrays) = nullptr;
 void (*DvigEngine2::GL4::BindBuffer)(deuint32 target, deuint32 buffer) = nullptr;
+void (*DvigEngine2::GL4::BindBufferBase)(deuint32 target, deuint32 index, deuint32 buffer) = nullptr;
 void (*DvigEngine2::GL4::BindVertexArray)(deuint32 buffer) = nullptr;
 void (*DvigEngine2::GL4::BufferData)(deuint32 target, demachword size, const void* data, deuint32 usage) = nullptr;
 void (*DvigEngine2::GL4::BufferSubData)(deuint32 target, demachword offset, demachword size, const void* data) = nullptr;
@@ -25,6 +26,8 @@ void (*DvigEngine2::GL4::DetachShader)(deuint32 program, deuint32 shader) = null
 void (*DvigEngine2::GL4::DeleteProgram)(deuint32 program) = nullptr;
 void (*DvigEngine2::GL4::EnableVertexAttribArray)(deuint32 index) = nullptr;
 void (*DvigEngine2::GL4::VertexAttribPointer)(deuint32 index, deint32 size, deuint32 type, bool normalized, deisize stride, const void* pointer) = nullptr;
+DvigEngine2::deuint32 (*DvigEngine2::GL4::GetUniformBlockIndex)(deuint32 program, const char* uniformBlockName) = nullptr;
+void (*DvigEngine2::GL4::UniformBlockBinding)(deuint32 program, deuint32 uniformBlockIndex, deuint32 uniformBlockBinding) = nullptr;
 void (*DvigEngine2::GL4::UseProgram)(deuint32 program) = nullptr;
 void (*DvigEngine2::GL4::DrawArrays)(deuint32 mode, deint32 first, deisize count) = nullptr;
 void (*DvigEngine2::GL4::DrawElements)(deuint32 mode, deisize count, deuint32 type, void* indices) = nullptr;
@@ -54,6 +57,7 @@ void DvigEngine2::GL4::Load()
         DvigEngine2::GL4::GenBuffers = (void (*)(DvigEngine2::deisize n, DvigEngine2::deuint32* buffers))glfwGetProcAddress( "glGenBuffers" );
         DvigEngine2::GL4::GenVertexArrays = (void (*)(DvigEngine2::deisize n, DvigEngine2::deuint32* arrays))glfwGetProcAddress( "glGenVertexArrays" );
         DvigEngine2::GL4::BindBuffer = (void (*)(DvigEngine2::deuint32 target, DvigEngine2::deuint32 buffer))glfwGetProcAddress( "glBindBuffer" );
+        DvigEngine2::GL4::BindBufferBase = (void (*)(DvigEngine2::deuint32 target, DvigEngine2::deuint32 index, DvigEngine2::deuint32 buffer))glfwGetProcAddress( "glBindBufferBase" );
         DvigEngine2::GL4::BindVertexArray = (void (*)(DvigEngine2::deuint32 array))glfwGetProcAddress( "glBindVertexArray" );
         DvigEngine2::GL4::BufferData = (void (*)(DvigEngine2::deuint32 target, DvigEngine2::demachword size, const void* data, DvigEngine2::deuint32 usage))glfwGetProcAddress( "glBufferData" );
         DvigEngine2::GL4::BufferSubData = (void (*)(DvigEngine2::deuint32 target, DvigEngine2::demachword offset, DvigEngine2::demachword size, const void* data))glfwGetProcAddress( "glBufferSubData" );
@@ -71,6 +75,8 @@ void DvigEngine2::GL4::Load()
         DvigEngine2::GL4::DeleteProgram = (void (*)(DvigEngine2::deuint32 program))glfwGetProcAddress( "glDeleteProgram" );
         DvigEngine2::GL4::EnableVertexAttribArray = (void (*)(DvigEngine2::deuint32 index))glfwGetProcAddress( "glEnableVertexAttribArray" );
         DvigEngine2::GL4::VertexAttribPointer = (void (*)(DvigEngine2::deuint32 index, DvigEngine2::deint32 size, DvigEngine2::deuint32 type, bool normalized, DvigEngine2::deisize stride, const void* pointer))glfwGetProcAddress( "glVertexAttribPointer" );
+        DvigEngine2::GL4::GetUniformBlockIndex = (DvigEngine2::deuint32 (*)(DvigEngine2::deuint32 program, const char* uniformBlockName))glfwGetProcAddress( "glGetUniformBlockIndex" );
+        DvigEngine2::GL4::UniformBlockBinding = (void (*)(DvigEngine2::deuint32 program, DvigEngine2::deuint32 uniformBlockIndex, DvigEngine2::deuint32 uniformBlockBinding))glfwGetProcAddress( "glUniformBlockBinding" );
         DvigEngine2::GL4::UseProgram = (void (*)(DvigEngine2::deuint32 program))glfwGetProcAddress( "glUseProgram" );
         DvigEngine2::GL4::DrawArrays = (void (*)(DvigEngine2::deuint32 mode, DvigEngine2::deint32 first, DvigEngine2::deisize count))glfwGetProcAddress( "glDrawArrays" );
         DvigEngine2::GL4::DrawElements = (void (*)(DvigEngine2::deuint32 mode, DvigEngine2::deisize count, DvigEngine2::deuint32 type, void* indices))glfwGetProcAddress( "glDrawElements" );
@@ -165,11 +171,17 @@ void DvigEngine2::RenderingSystem::EndBatch()
     const deusize batchSetCapacity = DvigEngine2::RenderingSystem::m_Batches->GetCapacity();
     const DvigEngine2::BatchData* lastBatch = DvigEngine2::RenderingSystem::m_Batches->Find<const DvigEngine2::BatchData*>( batchSetCapacity - 1 );
 
+    // Extract data from batch
+    DvigEngine2::deuint32 shaderProgram = lastBatch->m_ShaderComponent->m_GLProgram;
+
     // Finish uniform buffer population
     // Make a draw call
     // Bind VAO here
     DvigEngine2::GL4::BindVertexArray( DvigEngine2::RenderingSystem::m_GLVAO );
-    DvigEngine2::GL4::UseProgram( lastBatch->m_ShaderComponent->m_GLProgram );
+    DvigEngine2::deuint32 ubufferIndex = DvigEngine2::GL4::GetUniformBlockIndex( shaderProgram, "UBuffer" );
+    DvigEngine2::GL4::UniformBlockBinding( shaderProgram, ubufferIndex, 0 );
+    DvigEngine2::GL4::BindBufferBase( GL_UNIFORM_BUFFER, 0, DvigEngine2::RenderingSystem::m_GLUniformBuffer );
+    DvigEngine2::GL4::UseProgram( shaderProgram );
     DvigEngine2::GL4::DrawElements( GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr );
     // DvigEngine2::GL4::DrawArrays( GL_TRIANGLES, 0, 3 );
 }
@@ -191,6 +203,7 @@ void DvigEngine2::RenderingSystem::Draw(INode* node)
     if (m_IsBatchRecording == DV_TRUE)
     {
         DvigEngine2::BatchData batch;
+        batch.m_InstanceCount = 0;
         batch.m_GeometryComponent = nodeGeometry;
         batch.m_ShaderComponent = nodeShader;
         batch.m_UniformBufferOffset = DvigEngine2::RenderingSystem::m_NextBatchUniformBufferOffset;
@@ -198,6 +211,14 @@ void DvigEngine2::RenderingSystem::Draw(INode* node)
 
         // Only first is recorded
         m_IsBatchRecording = DV_FALSE;
+    }
+    else
+    {
+        // Get last batch and increment its
+        // instance count
+        const deusize batchSetCapacity = DvigEngine2::RenderingSystem::m_Batches->GetCapacity();
+        DvigEngine2::BatchData* lastBatch = DvigEngine2::RenderingSystem::m_Batches->Find<DvigEngine2::BatchData*>( batchSetCapacity - 1 );
+        lastBatch->m_InstanceCount += 1;
     }
 
     // Populate uniform buffer
