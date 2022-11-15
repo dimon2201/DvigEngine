@@ -40,6 +40,7 @@ DvigEngine2::DynamicBuffer* DvigEngine2::RenderingSystem::m_GlobalGeometryBuffer
 DvigEngine2::DynamicBuffer* DvigEngine2::RenderingSystem::m_GlobalIndexBuffer = nullptr;
 DvigEngine2::deuint32 DvigEngine2::RenderingSystem::m_GLGlobalGeometryBuffer = DV_NULL;
 DvigEngine2::deuint32 DvigEngine2::RenderingSystem::m_GLGlobalIndexBuffer = DV_NULL;
+DvigEngine2::deuint32 DvigEngine2::RenderingSystem::m_GLVAO = DV_NULL;
 
 void DvigEngine2::GL4::Load()
 {
@@ -83,7 +84,7 @@ void DvigEngine2::RenderingSystem::Init()
     DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
 
     // Create global geometry and index buffers
-    // If needed
+    // And VAO only if needed
     if (DvigEngine2::RenderingSystem::m_GlobalGeometryBuffer == nullptr)
     {
         engine->Create<DvigEngine2::DynamicBuffer>( &RenderingSystem::m_GlobalGeometryBuffer, "_GlobalGeometryBuffer" );
@@ -102,6 +103,17 @@ void DvigEngine2::RenderingSystem::Init()
         DvigEngine2::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, RenderingSystem::m_GLGlobalIndexBuffer );
         DvigEngine2::GL4::BufferData( GL_ELEMENT_ARRAY_BUFFER, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH, nullptr, GL_DYNAMIC_DRAW );
         DvigEngine2::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+
+        // VAO
+        DvigEngine2::GL4::GenVertexArrays( 1, &DvigEngine2::RenderingSystem::m_GLVAO );
+
+        // Bind VAO here
+        DvigEngine2::GL4::BindVertexArray( DvigEngine2::RenderingSystem::m_GLVAO );
+        DvigEngine2::GL4::BindBuffer( GL_ARRAY_BUFFER, DvigEngine2::RenderingSystem::m_GLGlobalGeometryBuffer );
+        DvigEngine2::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, DvigEngine2::RenderingSystem::m_GLGlobalIndexBuffer );
+        DvigEngine2::GL4::EnableVertexAttribArray( 0 );
+        DvigEngine2::GL4::VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(DvigEngine2::defloat32), (void*)0 );
+        DvigEngine2::GL4::BindVertexArray( 0 );
     }
 
     // Create batch set if needed
@@ -155,10 +167,8 @@ void DvigEngine2::RenderingSystem::EndBatch()
 
     // Finish uniform buffer population
     // Make a draw call
-    DvigEngine2::GL4::BindBuffer( GL_ARRAY_BUFFER, DvigEngine2::RenderingSystem::m_GLGlobalGeometryBuffer );
-    DvigEngine2::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, DvigEngine2::RenderingSystem::m_GLGlobalIndexBuffer );
-    DvigEngine2::GL4::EnableVertexAttribArray( 0 );
-    DvigEngine2::GL4::VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(DvigEngine2::defloat32), (void*)0 );
+    // Bind VAO here
+    DvigEngine2::GL4::BindVertexArray( DvigEngine2::RenderingSystem::m_GLVAO );
     DvigEngine2::GL4::UseProgram( lastBatch->m_ShaderComponent->m_GLProgram );
     DvigEngine2::GL4::DrawElements( GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr );
     // DvigEngine2::GL4::DrawArrays( GL_TRIANGLES, 0, 3 );

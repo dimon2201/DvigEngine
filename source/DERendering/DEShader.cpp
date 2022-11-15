@@ -59,10 +59,6 @@ void DvigEngine2::ShaderComponent::Init(const char* vertexShaderPathOnDrive, con
     DvigEngine2::GL4::GetProgramiv(this->m_GLProgram, GL_LINK_STATUS, (int *)&isLinked);
     if (isLinked == GL_FALSE) { std::cout << "Error linking shader program!" << std::endl; }
 
-    deuint32 vao = 0;
-    DvigEngine2::GL4::GenVertexArrays( 1, &vao );
-    DvigEngine2::GL4::BindVertexArray( vao );
-
     DvigEngine2::GL4::DetachShader( this->m_GLProgram, vertexShader );
     DvigEngine2::GL4::DetachShader( this->m_GLProgram, fragmentShader );
 

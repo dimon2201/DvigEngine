@@ -1,17 +1,11 @@
 #version 420
 
-layout (location = 0) in vec3 a_Position;
+layout (location = 0) in vec3 vsIn_Position;
+layout (location = 0) out vec3 vsOut_Position;
 
 void main()
 {
-    vec3 position = vec3(0.0);
-    if (gl_VertexID == 0) {
-        position = vec3(-1.0, -1.0, 0.0);
-    } else if (gl_VertexID == 1) {
-        position = vec3(0.0, 1.0, 0.0);
-    } else if (gl_VertexID == 2) {
-        position = vec3(1.0, -1.0, 0.0);
-    }
+    vsOut_Position = vsIn_Position;
     
-    gl_Position = vec4(a_Position.xyz, 1.0);
+    gl_Position = vec4(vsIn_Position.xyz, 1.0);
 }

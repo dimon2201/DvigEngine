@@ -45,6 +45,7 @@ namespace DvigEngine2
             static void (*DrawElementsBaseVertex)(deuint32 mode, deisize count, deuint32 type, void* indices, deint32 baseVertex);
             static deuint32 (*GetError)();
     };
+
     class GeometryComponent : public IComponent
     {
         public:
@@ -114,6 +115,7 @@ namespace DvigEngine2
             static DynamicBuffer* m_GlobalIndexBuffer;
             static deuint32 m_GLGlobalGeometryBuffer;
             static deuint32 m_GLGlobalIndexBuffer;
+            static deuint32 m_GLVAO;
 
         private:
             static FixedSet* m_Batches;
