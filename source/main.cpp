@@ -75,11 +75,11 @@ int main()
                 DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
                 DvigEngine2::Application* app = this->GetApplication();
                 DvigEngine2::INode* myNode_0 = (DvigEngine2::INode*)engine->GetExistingInstance( "MyNode_0" );
+                DvigEngine2::ShaderComponent* myNode_0_Shader = (DvigEngine2::ShaderComponent*)myNode_0->GetComponent<DvigEngine2::ShaderComponent>(nullptr);
 
                 DvigEngine2::GL4::Viewport( 0, 0, 640, 480 );
+                DvigEngine2::GL4::ClearColor( 0.0f, 0.0f, 1.0f, 1.0f );
                 DvigEngine2::GL4::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-                DvigEngine2::GL4::ClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-
                 DvigEngine2::RenderingSystem::BeginRender();
 
                 DvigEngine2::RenderingSystem::BeginBatch();

@@ -48,8 +48,6 @@ void DvigEngine2::ShaderComponent::Init(const char* vertexShaderPathOnDrive, con
     DvigEngine2::GL4::AttachShader( this->m_GLProgram, vertexShader );
     DvigEngine2::GL4::AttachShader( this->m_GLProgram, fragmentShader );
     DvigEngine2::GL4::LinkProgram( this->m_GLProgram );
-    DvigEngine2::GL4::DetachShader( this->m_GLProgram, vertexShader );
-    DvigEngine2::GL4::DetachShader( this->m_GLProgram, fragmentShader );
 
     deisize maxByteWidth = 1024;
 	deuchar infoLog[1024] = {};
@@ -57,6 +55,16 @@ void DvigEngine2::ShaderComponent::Init(const char* vertexShaderPathOnDrive, con
     std::cout << &infoLog[0] << std::endl;
     DvigEngine2::GL4::GetShaderInfoLog(fragmentShader, maxByteWidth, &maxByteWidth, &infoLog[0]);
     std::cout << &infoLog[0] << std::endl;
+    deint32 isLinked = 0;
+    DvigEngine2::GL4::GetProgramiv(this->m_GLProgram, GL_LINK_STATUS, (int *)&isLinked);
+    if (isLinked == GL_FALSE) { std::cout << "Error linking shader program!" << std::endl; }
+
+    deuint32 vao = 0;
+    DvigEngine2::GL4::GenVertexArrays( 1, &vao );
+    DvigEngine2::GL4::BindVertexArray( vao );
+
+    DvigEngine2::GL4::DetachShader( this->m_GLProgram, vertexShader );
+    DvigEngine2::GL4::DetachShader( this->m_GLProgram, fragmentShader );
 
     // Delete temporary memory objects
     engine->Delete( vertexShaderTempMemoryObject );

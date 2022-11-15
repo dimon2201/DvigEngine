@@ -6,7 +6,9 @@ void (*DvigEngine2::GL4::Viewport)(deint32 x, deint32 y, deisize width, deisize 
 void (*DvigEngine2::GL4::Clear)(deuint32 mask) = nullptr;
 void (*DvigEngine2::GL4::ClearColor)(defloat32 red, defloat32 green, defloat32 blue, defloat32 alpha) = nullptr;
 void (*DvigEngine2::GL4::GenBuffers)(deisize n, deuint32* buffers) = nullptr;
+void (*DvigEngine2::GL4::GenVertexArrays)(deisize n, deuint32* arrays) = nullptr;
 void (*DvigEngine2::GL4::BindBuffer)(deuint32 target, deuint32 buffer) = nullptr;
+void (*DvigEngine2::GL4::BindVertexArray)(deuint32 buffer) = nullptr;
 void (*DvigEngine2::GL4::BufferData)(deuint32 target, demachword size, const void* data, deuint32 usage) = nullptr;
 void (*DvigEngine2::GL4::BufferSubData)(deuint32 target, demachword offset, demachword size, const void* data) = nullptr;
 DvigEngine2::deuint32 (*DvigEngine2::GL4::CreateShader)(deuint32 shaderType) = nullptr;
@@ -14,6 +16,7 @@ void (*DvigEngine2::GL4::ShaderSource)(deuint32 shader, deisize count, const deu
 void (*DvigEngine2::GL4::CompileShader)(deuint32 shader) = nullptr;
 void (*DvigEngine2::GL4::GetShaderiv)(deint32 shader, deuint32 pname, deint32* params) = nullptr;
 void (*DvigEngine2::GL4::GetShaderInfoLog)(deuint32 shader, deisize maxLength, deisize* length, deuchar* infoLog) = nullptr;
+void (*DvigEngine2::GL4::GetProgramiv)(deuint32 program, deuint32 pname, deint32* params) = nullptr;
 void (*DvigEngine2::GL4::DeleteShader)(deuint32 shader) = nullptr;
 DvigEngine2::deuint32 (*DvigEngine2::GL4::CreateProgram)(void) = nullptr;
 void (*DvigEngine2::GL4::AttachShader)(deuint32 program, deuint32 shader) = nullptr;
@@ -25,6 +28,7 @@ void (*DvigEngine2::GL4::VertexAttribPointer)(deuint32 index, deint32 size, deui
 void (*DvigEngine2::GL4::UseProgram)(deuint32 program) = nullptr;
 void (*DvigEngine2::GL4::DrawArrays)(deuint32 mode, deint32 first, deisize count) = nullptr;
 void (*DvigEngine2::GL4::DrawElements)(deuint32 mode, deisize count, deuint32 type, void* indices) = nullptr;
+DvigEngine2::deuint32 (*DvigEngine2::GL4::GetError)(void) = nullptr;
 void (*DvigEngine2::GL4::DrawElementsBaseVertex)(deuint32 mode, deisize count, deuint32 type, void* indices, deint32 baseVertex) = nullptr;
 
 DvigEngine2::FixedSet* DvigEngine2::RenderingSystem::m_Batches = nullptr;
@@ -47,7 +51,9 @@ void DvigEngine2::GL4::Load()
         DvigEngine2::GL4::Clear = (void (*)(DvigEngine2::deuint32 mask))glfwGetProcAddress( "glClear" );
         DvigEngine2::GL4::ClearColor = (void (*)(DvigEngine2::defloat32 red, DvigEngine2::defloat32 green, DvigEngine2::defloat32 blue, DvigEngine2::defloat32 alpha))glfwGetProcAddress( "glClearColor" );
         DvigEngine2::GL4::GenBuffers = (void (*)(DvigEngine2::deisize n, DvigEngine2::deuint32* buffers))glfwGetProcAddress( "glGenBuffers" );
+        DvigEngine2::GL4::GenVertexArrays = (void (*)(DvigEngine2::deisize n, DvigEngine2::deuint32* arrays))glfwGetProcAddress( "glGenVertexArrays" );
         DvigEngine2::GL4::BindBuffer = (void (*)(DvigEngine2::deuint32 target, DvigEngine2::deuint32 buffer))glfwGetProcAddress( "glBindBuffer" );
+        DvigEngine2::GL4::BindVertexArray = (void (*)(DvigEngine2::deuint32 array))glfwGetProcAddress( "glBindVertexArray" );
         DvigEngine2::GL4::BufferData = (void (*)(DvigEngine2::deuint32 target, DvigEngine2::demachword size, const void* data, DvigEngine2::deuint32 usage))glfwGetProcAddress( "glBufferData" );
         DvigEngine2::GL4::BufferSubData = (void (*)(DvigEngine2::deuint32 target, DvigEngine2::demachword offset, DvigEngine2::demachword size, const void* data))glfwGetProcAddress( "glBufferSubData" );
         DvigEngine2::GL4::CreateShader = (DvigEngine2::deuint32 (*)(DvigEngine2::deuint32 shaderType))glfwGetProcAddress( "glCreateShader" );
@@ -55,6 +61,7 @@ void DvigEngine2::GL4::Load()
         DvigEngine2::GL4::CompileShader = (void (*)(DvigEngine2::deuint32 shader))glfwGetProcAddress( "glCompileShader" );
         DvigEngine2::GL4::GetShaderiv = (void (*)(DvigEngine2::deint32 shader, DvigEngine2::deuint32 pname, DvigEngine2::deint32* params))glfwGetProcAddress( "glGetShaderiv" );
         DvigEngine2::GL4::GetShaderInfoLog = (void (*)(DvigEngine2::deuint32 shader, DvigEngine2::deisize maxLength, DvigEngine2::deisize* length, DvigEngine2::deuchar* infoLog))glfwGetProcAddress( "glGetShaderInfoLog" );
+        DvigEngine2::GL4::GetProgramiv = (void (*)(DvigEngine2::deuint32 program, DvigEngine2::deuint32 pname, DvigEngine2::deint32* params))glfwGetProcAddress( "glGetProgramiv" );
         DvigEngine2::GL4::DeleteShader = (void (*)(DvigEngine2::deuint32 shader))glfwGetProcAddress( "glDeleteShader" );
         DvigEngine2::GL4::CreateProgram = (DvigEngine2::deuint32 (*)())glfwGetProcAddress( "glCreateProgram" );
         DvigEngine2::GL4::AttachShader = (void (*)(DvigEngine2::deuint32 program, DvigEngine2::deuint32 shader))glfwGetProcAddress( "glAttachShader" );
@@ -67,6 +74,7 @@ void DvigEngine2::GL4::Load()
         DvigEngine2::GL4::DrawArrays = (void (*)(DvigEngine2::deuint32 mode, DvigEngine2::deint32 first, DvigEngine2::deisize count))glfwGetProcAddress( "glDrawArrays" );
         DvigEngine2::GL4::DrawElements = (void (*)(DvigEngine2::deuint32 mode, DvigEngine2::deisize count, DvigEngine2::deuint32 type, void* indices))glfwGetProcAddress( "glDrawElements" );
         DvigEngine2::GL4::DrawElementsBaseVertex = (void (*)(DvigEngine2::deuint32 mode, DvigEngine2::deisize count, DvigEngine2::deuint32 type, void* indices, DvigEngine2::deint32 baseVertex))glfwGetProcAddress( "glDrawElementsBaseVertex" );
+        DvigEngine2::GL4::GetError = (DvigEngine2::deuint32 (*)())glfwGetProcAddress( "glGetError" );
     }
 }
 
@@ -147,13 +155,13 @@ void DvigEngine2::RenderingSystem::EndBatch()
 
     // Finish uniform buffer population
     // Make a draw call
-    // DvigEngine2::GL4::BindBuffer( GL_ARRAY_BUFFER, DvigEngine2::RenderingSystem::m_GLGlobalGeometryBuffer );
-    // DvigEngine2::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, DvigEngine2::RenderingSystem::m_GLGlobalIndexBuffer );
-    // DvigEngine2::GL4::EnableVertexAttribArray( 0 );
-    // DvigEngine2::GL4::VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(DvigEngine2::defloat32), (void*)0 );
+    DvigEngine2::GL4::BindBuffer( GL_ARRAY_BUFFER, DvigEngine2::RenderingSystem::m_GLGlobalGeometryBuffer );
+    DvigEngine2::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, DvigEngine2::RenderingSystem::m_GLGlobalIndexBuffer );
+    DvigEngine2::GL4::EnableVertexAttribArray( 0 );
+    DvigEngine2::GL4::VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(DvigEngine2::defloat32), (void*)0 );
     DvigEngine2::GL4::UseProgram( lastBatch->m_ShaderComponent->m_GLProgram );
-    // DvigEngine2::GL4::DrawElements( GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr );
-    DvigEngine2::GL4::DrawArrays( GL_TRIANGLES, 0, 3 );
+    DvigEngine2::GL4::DrawElements( GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr );
+    // DvigEngine2::GL4::DrawArrays( GL_TRIANGLES, 0, 3 );
 }
 
 void DvigEngine2::RenderingSystem::EndRender()

@@ -20,7 +20,9 @@ namespace DvigEngine2
             static void (*Clear)(deuint32 mask);
             static void (*ClearColor)(defloat32 red, defloat32 green, defloat32 blue, defloat32 alpha);
             static void (*GenBuffers)(deisize n, deuint32* buffers);
+            static void (*GenVertexArrays)(deisize n, deuint32* arrays);
             static void (*BindBuffer)(deuint32 target, deuint32 buffer);
+            static void (*BindVertexArray)(deuint32 buffer);
             static void (*BufferData)(deuint32 target, demachword size, const void* data, deuint32 usage);
             static void (*BufferSubData)(deuint32 target, demachword offset, demachword size, const void* data);
             static deuint32 (*CreateShader)(deuint32 shaderType);
@@ -28,6 +30,7 @@ namespace DvigEngine2
             static void (*CompileShader)(deuint32 shader);
             static void (*GetShaderiv)(deint32 shader, deuint32 pname, deint32* params);
             static void (*GetShaderInfoLog)(deuint32 shader, deisize maxLength, deisize* length, deuchar* infoLog);
+            static void (*GetProgramiv)(deuint32 program, deuint32 pname, deint32* params);
             static void (*DeleteShader)(deuint32 shader);
             static deuint32 (*CreateProgram)(void);
             static void (*AttachShader)(deuint32 program, deuint32 shader);
@@ -40,8 +43,8 @@ namespace DvigEngine2
             static void (*DrawArrays)(deuint32 mode, deint32 first, deisize count);
             static void (*DrawElements)(deuint32 mode, deisize count, deuint32 type, void* indices);
             static void (*DrawElementsBaseVertex)(deuint32 mode, deisize count, deuint32 type, void* indices, deint32 baseVertex);
+            static deuint32 (*GetError)();
     };
-
     class GeometryComponent : public IComponent
     {
         public:
