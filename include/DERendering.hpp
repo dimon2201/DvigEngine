@@ -45,6 +45,7 @@ namespace DvigEngine2
             static void (*UseProgram)(deuint32 program);
             static void (*DrawArrays)(deuint32 mode, deint32 first, deisize count);
             static void (*DrawElements)(deuint32 mode, deisize count, deuint32 type, void* indices);
+            static void (*DrawElementsInstanced)(deuint32 mode, deisize count, deuint32 type, void* indices, deisize instancecount);
             static void (*DrawElementsBaseVertex)(deuint32 mode, deisize count, deuint32 type, void* indices, deint32 baseVertex);
             static deuint32 (*GetError)();
     };
@@ -125,7 +126,7 @@ namespace DvigEngine2
             static FixedSet* m_Batches;
             static debool m_IsBatchRecording;
             static deint32 m_NextBatchUniformBufferOffset;
-            static DynamicBuffer* m_UniformBuffer;
+            static MemoryObject* m_UniformBufferMemoryObject;
             static deuint32 m_GLUniformBuffer;
     };
 }

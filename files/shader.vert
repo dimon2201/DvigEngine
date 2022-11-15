@@ -15,7 +15,8 @@ void main()
 {
     vsOut_Position = vsIn_Position;
     
-    vec3 position = vsIn_Position + u_Buffer.instances[0].m_Position;
+    int instanceIndex = gl_InstanceID;
+    vec3 position = vsIn_Position + u_Buffer.instances[instanceIndex].m_Position;
     
     gl_Position = vec4(position, 1.0);
 }
