@@ -8,7 +8,7 @@ struct UInstanceData {
 };
 
 layout (std140, binding = 0) uniform UBuffer {
-    UInstanceData instances[4];
+    UInstanceData instances[256];
 } u_Buffer;
 
 void main()
@@ -16,7 +16,8 @@ void main()
     vsOut_Position = vsIn_Position;
     
     int instanceIndex = gl_InstanceID;
-    vec3 position = vsIn_Position + u_Buffer.instances[instanceIndex].m_Position;
+    vec3 scale = vec3(0.4);
+    vec3 position = (scale * vsIn_Position) + u_Buffer.instances[instanceIndex].m_Position;
     
     gl_Position = vec4(position, 1.0);
 }

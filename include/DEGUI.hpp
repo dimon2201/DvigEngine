@@ -20,8 +20,9 @@ namespace DvigEngine2
             virtual void Update() = 0;
 
             DV_FUNCTION_INLINE Application* GetApplication() { return m_App; }
-
             DV_FUNCTION_INLINE deint32 GetWindowIndex() { return m_WindowIndex; }
+            DV_FUNCTION_INLINE void* GetGLFWWindow() { return m_GLFWWindow; }
+            DV_FUNCTION_INLINE MemoryObject* GetUserData() { return m_UserData; }
 
         private:
             Application* m_App;

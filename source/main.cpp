@@ -3,6 +3,7 @@
 #include "../include/DEGUI.hpp"
 #include "../include/DERendering.hpp"
 #include "../include/DEThirdPartyMath.hpp"
+#include "../include/DEThirdPartyWindow.hpp"
 
 void Func(DvigEngine2::demachword* arguments, DvigEngine2::deint32 jobIndex)
 {
@@ -12,7 +13,7 @@ void Func(DvigEngine2::demachword* arguments, DvigEngine2::deint32 jobIndex)
 int main()
 {
     DvigEngine2::MemoryPoolProperty memoryPoolsData[2];
-    memoryPoolsData[0].m_ByteWidth = 48 * DV_MEMORY_MiB;
+    memoryPoolsData[0].m_ByteWidth = 24 * DV_MEMORY_MiB;
     memoryPoolsData[1].m_ByteWidth = 24 * DV_MEMORY_KiB;
 
     DvigEngine2::EngineInputProperty engineInputData;
@@ -67,17 +68,11 @@ int main()
                 engine->Create <DvigEngine2::INode> ( &node0, "MyNode_0" );
                 engine->Create <DvigEngine2::INode> ( &node1, "MyNode_1" );
 
-                geomComp0->Init( nullptr, nullptr, &vertices[0], &indices[0],
-                                sizeof(DvigEngine2::defloat32) * 9,
-                                sizeof(DvigEngine2::deuint32) * 3
-                              );
+                geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\mesh.obj" );
                 transComp0->Init( 0.5f, 0.0f, 0.0f );
                 shaderComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
-                geomComp1->Init( nullptr, nullptr, &vertices[0], &indices[0],
-                                sizeof(DvigEngine2::defloat32) * 9,
-                                sizeof(DvigEngine2::deuint32) * 3
-                              );
+                geomComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\mesh.obj" );
                 transComp1->Init( 0.0f, 0.5f, 0.0f );
                 shaderComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
@@ -96,7 +91,12 @@ int main()
                 DvigEngine2::INode* myNode_1 = (DvigEngine2::INode*)engine->GetExistingInstance( "MyNode_1" );
                 DvigEngine2::ShaderComponent* myNode_0_Shader = (DvigEngine2::ShaderComponent*)myNode_0->GetComponent<DvigEngine2::ShaderComponent>(nullptr);
 
-                DvigEngine2::GL4::Viewport( 0, 0, 640, 480 );
+                DvigEngine2::IWindow* myWindow = app->GetWindow( "MyTestWindow_0" );
+                int windowWidth = 0;
+                int windowHeight = 0;
+                glfwGetFramebufferSize( (GLFWwindow*)myWindow->GetGLFWWindow(), &windowWidth, &windowHeight );
+
+                DvigEngine2::GL4::Viewport( 0, 0, windowWidth, windowHeight );
                 DvigEngine2::GL4::ClearColor( 0.0f, 0.0f, 1.0f, 1.0f );
                 DvigEngine2::GL4::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
                 DvigEngine2::RenderingSystem::BeginRender();

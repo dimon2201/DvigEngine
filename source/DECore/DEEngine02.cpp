@@ -254,12 +254,13 @@ DvigEngine2::MemoryObject* DvigEngine2::Engine::Allocate(deint32 memoryPoolIndex
     DvigEngine2::MemoryPool* memoryPool = (DvigEngine2::MemoryPool*)m_EngineInstance->GetMemoryPoolByIndex(memoryPoolIndex);
     void* prevPoolOffset = memoryPool->m_AddressOffset;
 
-    // Run through memory objects to find one
-    // That fits
     DvigEngine2::MemoryObject* memoryObject = (DvigEngine2::MemoryObject*)prevPoolOffset;
-    for (;;)
+    for (DvigEngine2::deint32 i = 0; ;++i)
     {
-        if (memoryObject->m_FreeFlag == DV_TRUE && memoryObject->m_ByteWidth >= allocByteWidth) { break; }
+        if (memoryObject->m_FreeFlag == DV_TRUE && memoryObject->m_ByteWidth >= allocByteWidth) {
+            break;
+        }
+        
         memoryObject = Ptr<DvigEngine2::MemoryObject*>::Add( &memoryObject, sizeof(DvigEngine2::MemoryObject) + memoryObject->m_ByteWidth );
     }
 

@@ -54,6 +54,7 @@ namespace DvigEngine2
     {
         public:
             void Init(const char* optGeometryDataPathOnDrive, const char* optIndicesDataPathOnDrive, void* optGeometryData, void* optIndicesData, deusize optGeometryDataByteWidth, deusize optIndicesDataByteWidth);
+            void Init(const char* meshPathOnDrive);
             void Free() override final;
 
         private:
@@ -88,6 +89,9 @@ namespace DvigEngine2
 
     class BatchInstanceData
     {
+        public:
+            static deusize m_GLAlignedByteWidth;
+
         public:
             glm::vec3 m_Position;
     };

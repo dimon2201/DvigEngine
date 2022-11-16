@@ -21,6 +21,8 @@ namespace DvigEngine2
                 return window;
             }
             void RemoveWindow(deint32 index);
+            IWindow* GetWindow(const char* USID);
+            deusize GetWindowCount();
             void WaitForWindows();
 
         private:
