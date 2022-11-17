@@ -13,7 +13,7 @@ void Func(DvigEngine2::demachword* arguments, DvigEngine2::deint32 jobIndex)
 int main()
 {
     DvigEngine2::MemoryPoolProperty memoryPoolsData[2];
-    memoryPoolsData[0].m_ByteWidth = 24 * DV_MEMORY_MiB;
+    memoryPoolsData[0].m_ByteWidth = 128 * DV_MEMORY_MiB;
     memoryPoolsData[1].m_ByteWidth = 24 * DV_MEMORY_KiB;
 
     DvigEngine2::EngineInputProperty engineInputData;
@@ -24,8 +24,6 @@ int main()
     engineInputData.m_ComponentStorageMemoryPoolIndex = 1;
     engineInputData.m_RequestedThreadCount = 2;
 
-    // DvigEngine2::Engine::Init(&engineInputData);
-    // DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
     DvigEngine2::Engine engine(&engineInputData);
     DvigEngine2::Engine* pEngine = &engine;
 
@@ -68,11 +66,11 @@ int main()
                 engine->Create <DvigEngine2::INode> ( &node0, "MyNode_0" );
                 engine->Create <DvigEngine2::INode> ( &node1, "MyNode_1" );
 
-                geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\mesh.obj" );
+                geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\cottage.obj" );
                 transComp0->Init( 0.5f, 0.0f, 0.0f );
                 shaderComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
-                geomComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\mesh.obj" );
+                geomComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\cottage.obj" );
                 transComp1->Init( 0.0f, 0.5f, 0.0f );
                 shaderComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
@@ -80,7 +78,7 @@ int main()
                 engine->AddComponent <DvigEngine2::GeometryComponent> ( &node0, geomComp0 );
                 engine->AddComponent <DvigEngine2::TransformComponent> ( &node0, transComp0 );
                 engine->AddComponent <DvigEngine2::ShaderComponent> ( &node0, shaderComp0 );
-                engine->AddComponent <DvigEngine2::GeometryComponent> ( &node1, geomComp1 );
+                engine->AddComponent <DvigEngine2::GeometryComponent> ( &node1, geomComp0 );
                 engine->AddComponent <DvigEngine2::TransformComponent> ( &node1, transComp1 );
                 engine->AddComponent <DvigEngine2::ShaderComponent> ( &node1, shaderComp1 );
             }
@@ -99,13 +97,12 @@ int main()
                 DvigEngine2::GL4::Viewport( 0, 0, windowWidth, windowHeight );
                 DvigEngine2::GL4::ClearColor( 0.0f, 0.0f, 1.0f, 1.0f );
                 DvigEngine2::GL4::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+                
                 DvigEngine2::RenderingSystem::BeginRender();
-
                 DvigEngine2::RenderingSystem::BeginBatch();
                 DvigEngine2::RenderingSystem::Draw( myNode_0 );
-                DvigEngine2::RenderingSystem::Draw( myNode_1 );
+                // DvigEngine2::RenderingSystem::Draw( myNode_1 );
                 DvigEngine2::RenderingSystem::EndBatch();
-
                 DvigEngine2::RenderingSystem::EndRender();
             }
     };
@@ -118,6 +115,12 @@ int main()
     appSys->Init();
     appSys->AddWindow <AppWindow> ( "MyTestWindow_0", &windowCaption[0], windowSize );
     appSys->WaitForWindows();
+
+    // DvigEngine2::MemoryObject* mo = DvigEngine2::Engine::Allocate( 0, 256 );
+    // std::cout << mo << std::endl;
+    // pEngine->Delete( mo );
+    // mo = DvigEngine2::Engine::Allocate( 0, 256 );
+    // std::cout << mo->Unwrap<float*>()[0] << std::endl;
 
     DvigEngine2::ThreadPoolSystem::Terminate();
     DvigEngine2::ThreadPoolSystem::WaitForJobs();

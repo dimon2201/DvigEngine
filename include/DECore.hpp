@@ -335,6 +335,7 @@ namespace DvigEngine2
             // MemoryPoolProperty m_Prop;
             deint32 m_Index;
             destring m_Label;
+            deusize m_AllocationCount;
             void* m_Address;
             void* m_AddressOffset;
             deusize m_ByteWidth;

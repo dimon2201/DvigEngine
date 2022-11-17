@@ -171,20 +171,20 @@ void DvigEngine2::RenderingSystem::EndBatch()
 {
     // Extract last batch
     const deusize batchSetCapacity = DvigEngine2::RenderingSystem::m_Batches->GetCapacity();
-    const DvigEngine2::BatchData* lastBatch = DvigEngine2::RenderingSystem::m_Batches->Find<const DvigEngine2::BatchData*>( batchSetCapacity - 1 );
+    // const DvigEngine2::BatchData* lastBatch = DvigEngine2::RenderingSystem::m_Batches->Find<const DvigEngine2::BatchData*>( batchSetCapacity - 1 );
 
     // Extract data from batch
-    DvigEngine2::deuint32 shaderProgram = lastBatch->m_ShaderComponent->m_GLProgram;
+    // DvigEngine2::deuint32 shaderProgram = lastBatch->m_ShaderComponent->m_GLProgram;
 
     // Finish uniform buffer population
     // Make a draw call
     // Bind VAO here
-    DvigEngine2::GL4::BindVertexArray( DvigEngine2::RenderingSystem::m_GLVAO );
-    DvigEngine2::deuint32 ubufferIndex = DvigEngine2::GL4::GetUniformBlockIndex( shaderProgram, "UBuffer" );
-    DvigEngine2::GL4::UniformBlockBinding( shaderProgram, ubufferIndex, 0 );
-    DvigEngine2::GL4::BindBufferBase( GL_UNIFORM_BUFFER, 0, DvigEngine2::RenderingSystem::m_GLUniformBuffer );
-    DvigEngine2::GL4::UseProgram( shaderProgram );
-    DvigEngine2::GL4::DrawElementsInstanced( GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, lastBatch->m_InstanceCount );
+    // DvigEngine2::GL4::BindVertexArray( DvigEngine2::RenderingSystem::m_GLVAO );
+    // DvigEngine2::deuint32 ubufferIndex = DvigEngine2::GL4::GetUniformBlockIndex( shaderProgram, "UBuffer" );
+    // DvigEngine2::GL4::UniformBlockBinding( shaderProgram, ubufferIndex, 0 );
+    // DvigEngine2::GL4::BindBufferBase( GL_UNIFORM_BUFFER, 0, DvigEngine2::RenderingSystem::m_GLUniformBuffer );
+    // DvigEngine2::GL4::UseProgram( shaderProgram );
+    // DvigEngine2::GL4::DrawElementsInstanced( GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr, lastBatch->m_InstanceCount );
     // DvigEngine2::GL4::DrawArrays( GL_TRIANGLES, 0, 3 );
 }
 
@@ -214,29 +214,29 @@ void DvigEngine2::RenderingSystem::Draw(INode* node)
         // Only first is recorded
         m_IsBatchRecording = DV_FALSE;
     }
-    else
-    {
-        // Get last batch and increment its
-        // instance count
-        const deusize batchSetCapacity = DvigEngine2::RenderingSystem::m_Batches->GetCapacity();
-        DvigEngine2::BatchData* lastBatch = DvigEngine2::RenderingSystem::m_Batches->Find<DvigEngine2::BatchData*>( batchSetCapacity - 1 );
-        lastBatch->m_InstanceCount += 1;
-    }
+    // else
+    // {
+    //     // Get last batch and increment its
+    //     // instance count
+    //     const deusize batchSetCapacity = DvigEngine2::RenderingSystem::m_Batches->GetCapacity();
+    //     DvigEngine2::BatchData* lastBatch = DvigEngine2::RenderingSystem::m_Batches->Find<DvigEngine2::BatchData*>( batchSetCapacity - 1 );
+    //     lastBatch->m_InstanceCount += 1;
+    // }
 
-    // Populate uniform buffer
-    void* uniformBufferMemory = m_UniformBufferMemoryObject->Unwrap<void*>();
-    uniformBufferMemory = DvigEngine2::Ptr<void*>::Add( &uniformBufferMemory, m_NextBatchUniformBufferOffset );
-    DvigEngine2::BatchInstanceData batchInstance;
-    DvigEngine2::Engine::MemoryCopy( &batchInstance.m_Position, (const void*)&nodeTransform->m_Position, sizeof(DvigEngine2::BatchInstanceData) );
-    DvigEngine2::Engine::MemoryCopy( uniformBufferMemory, &batchInstance, sizeof(DvigEngine2::BatchInstanceData) );
+    // // Populate uniform buffer
+    // void* uniformBufferMemory = m_UniformBufferMemoryObject->Unwrap<void*>();
+    // uniformBufferMemory = DvigEngine2::Ptr<void*>::Add( &uniformBufferMemory, m_NextBatchUniformBufferOffset );
+    // DvigEngine2::BatchInstanceData batchInstance;
+    // DvigEngine2::Engine::MemoryCopy( &batchInstance.m_Position, (const void*)&nodeTransform->m_Position, sizeof(DvigEngine2::BatchInstanceData) );
+    // DvigEngine2::Engine::MemoryCopy( uniformBufferMemory, &batchInstance, sizeof(DvigEngine2::BatchInstanceData) );
 
-    // Send uniform buffer to GPU
-    DvigEngine2::GL4::BindBuffer( GL_UNIFORM_BUFFER, DvigEngine2::RenderingSystem::m_GLUniformBuffer );
-    DvigEngine2::GL4::BufferSubData( GL_UNIFORM_BUFFER, m_NextBatchUniformBufferOffset, sizeof(DvigEngine2::BatchInstanceData), (const void*)uniformBufferMemory );
-    DvigEngine2::GL4::BindBuffer( GL_UNIFORM_BUFFER, 0 );
+    // // Send uniform buffer to GPU
+    // DvigEngine2::GL4::BindBuffer( GL_UNIFORM_BUFFER, DvigEngine2::RenderingSystem::m_GLUniformBuffer );
+    // DvigEngine2::GL4::BufferSubData( GL_UNIFORM_BUFFER, m_NextBatchUniformBufferOffset, sizeof(DvigEngine2::BatchInstanceData), (const void*)uniformBufferMemory );
+    // DvigEngine2::GL4::BindBuffer( GL_UNIFORM_BUFFER, 0 );
 
-    // Increase uniform buffer offset
-    DvigEngine2::RenderingSystem::m_NextBatchUniformBufferOffset += DvigEngine2::BatchInstanceData::m_GLAlignedByteWidth;
+    // // Increase uniform buffer offset
+    // DvigEngine2::RenderingSystem::m_NextBatchUniformBufferOffset += DvigEngine2::BatchInstanceData::m_GLAlignedByteWidth;
 }
 
 void DvigEngine2::RenderingSystem::ClearGeometryAndIndexBuffers()
