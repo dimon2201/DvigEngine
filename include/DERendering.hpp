@@ -16,6 +16,8 @@ namespace DvigEngine2
 
         public:
             static void (*_Init)(void);
+            static void (*Enable)(deuint32 cap);
+            static void (*Disable)(deuint32 cap);
             static void (*Viewport)(deint32 x, deint32 y, deisize width, deisize height);
             static void (*Clear)(deuint32 mask);
             static void (*ClearColor)(defloat32 red, defloat32 green, defloat32 blue, defloat32 alpha);
@@ -50,6 +52,13 @@ namespace DvigEngine2
             static deuint32 (*GetError)();
     };
 
+    class GeometryVertex
+    {
+        public:
+            defloat32 m_Position[3];
+            defloat32 m_Normal[3];
+    };
+
     class GeometryComponent : public IComponent
     {
         public:
@@ -61,6 +70,7 @@ namespace DvigEngine2
             static void ClearGeometryBuffer();
 
         public:
+            deusize m_IndexCount;
             deusize m_GeometryBufferByteWidth;
             deint32 m_GeometryBufferOffset;
             deusize m_IndexBufferByteWidth;

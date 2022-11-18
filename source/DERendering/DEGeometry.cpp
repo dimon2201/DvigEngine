@@ -76,18 +76,28 @@ void DvigEngine2::GeometryComponent::Init(const char* meshPathOnDrive)
     meshFileStream.seekg(0, std::ios::beg);
 
     // Allocate temp memory object for mesh
-    // DvigEngine2::MemoryObject* meshDataMemoryObject = DvigEngine2::Engine::Allocate( 0, meshDataByteWidth );
-    DvigEngine2::deuchar* const meshData = (DvigEngine2::deuchar* const)malloc(DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH);//meshDataMemoryObject->Unwrap<DvigEngine2::deuchar* const>();
+    DvigEngine2::MemoryObject* meshDataMemoryObject = DvigEngine2::Engine::Allocate( 0, meshDataByteWidth );
+    DvigEngine2::deuchar* const meshData = meshDataMemoryObject->Unwrap<DvigEngine2::deuchar* const>();
 
     // Allocate geometry buffer
-    DvigEngine2::deint32 meshPointCount = 0;
-    // DvigEngine2::MemoryObject* meshGeometryDataMemoryObject = DvigEngine2::Engine::Allocate( 0, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH );
-    DvigEngine2::defloat32* meshGeometryData = (DvigEngine2::defloat32*)malloc(DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH);//meshGeometryDataMemoryObject->Unwrap<DvigEngine2::defloat32*>();
+    DvigEngine2::deint32 meshVertexCount = 0;
+    DvigEngine2::MemoryObject* meshGeometryDataMemoryObject = DvigEngine2::Engine::Allocate( 0, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH );
+    DvigEngine2::GeometryVertex* meshGeometryData = meshGeometryDataMemoryObject->Unwrap<DvigEngine2::GeometryVertex*>();
+
+    // Allocate geometry position buffer
+    DvigEngine2::deint32 meshPositionCount = 0;
+    DvigEngine2::MemoryObject* meshGeometryPositionDataMemoryObject = DvigEngine2::Engine::Allocate( 0, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH );
+    DvigEngine2::defloat32* meshGeometryPositionData = meshGeometryPositionDataMemoryObject->Unwrap<DvigEngine2::defloat32*>();
+
+    // Allocate geometry normal buffer
+    DvigEngine2::deint32 meshNormalCount = 0;
+    DvigEngine2::MemoryObject* meshGeometryNormalDataMemoryObject = DvigEngine2::Engine::Allocate( 0, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH );
+    DvigEngine2::defloat32* meshGeometryNormalData = meshGeometryNormalDataMemoryObject->Unwrap<DvigEngine2::defloat32*>();
 
     // Allocate index buffer
     DvigEngine2::deisize meshIndexCount = 0;
-    // DvigEngine2::MemoryObject* meshIndexDataMemoryObject = DvigEngine2::Engine::Allocate( 0, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH );
-    DvigEngine2::deuint32* meshIndexData = (DvigEngine2::deuint32*)malloc(DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH);//meshIndexDataMemoryObject->Unwrap<DvigEngine2::deuint32*>();
+    DvigEngine2::MemoryObject* meshIndexDataMemoryObject = DvigEngine2::Engine::Allocate( 0, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH );
+    DvigEngine2::deuint32* meshIndexData = meshIndexDataMemoryObject->Unwrap<DvigEngine2::deuint32*>();
 
     // Read file
     meshFileStream.read((char*)meshData, meshDataByteWidth);
@@ -128,9 +138,34 @@ void DvigEngine2::GeometryComponent::Init(const char* meshPathOnDrive)
             float zz = std::strtof( (const char*)&nValue[2], &end );
 
             // // Insert vertex to buffer
-            meshGeometryData[ meshPointCount++ ] = xx;
-            meshGeometryData[ meshPointCount++ ] = yy;
-            meshGeometryData[ meshPointCount++ ] = zz;
+            meshGeometryPositionData[ meshPositionCount++ ] = xx;
+            meshGeometryPositionData[ meshPositionCount++ ] = yy;
+            meshGeometryPositionData[ meshPositionCount++ ] = zz;
+        }
+        else if (keyword[0] == 'v' && keyword[1] == 'n' && keywordByteWidth == 2)
+        {
+            // Vertex
+            DvigEngine2::destring nValue[3] = { {}, {}, {} };
+            DvigEngine2::deisize nValueCursor[3] = {};
+            DvigEngine2::deint32 curValueIndex = -1;
+            while (i < meshDataByteWidth && meshData[i] != '\n')
+            {
+                while (meshData[i] == ' ' || meshData[i] == '\t') { i += 1; }
+                if (meshData[i - 1] == ' ' || meshData[i - 1] == '\t') { curValueIndex += 1; }
+                nValue[curValueIndex][nValueCursor[curValueIndex]++] = meshData[i];
+                i += 1;
+            }
+            
+            // Convert strings to floats
+            char* end;
+            float xx = std::strtof( (const char*)&nValue[0], &end );
+            float yy = std::strtof( (const char*)&nValue[1], &end );
+            float zz = std::strtof( (const char*)&nValue[2], &end );
+
+            // Insert normal to buffer
+            meshGeometryNormalData[ meshNormalCount++ ] = xx;
+            meshGeometryNormalData[ meshNormalCount++ ] = yy;
+            meshGeometryNormalData[ meshNormalCount++ ] = zz;
         }
         else if (keyword[0] == 'f')
         {
@@ -162,9 +197,11 @@ void DvigEngine2::GeometryComponent::Init(const char* meshPathOnDrive)
 
             // Insert vertex to buffer
             meshIndexData[ meshIndexCount++ ] = position1 - 1;
+            meshIndexData[ meshIndexCount++ ] = normal1 - 1;
             meshIndexData[ meshIndexCount++ ] = position2 - 1;
+            meshIndexData[ meshIndexCount++ ] = normal2 - 1;
             meshIndexData[ meshIndexCount++ ] = position3 - 1;
-            while (meshData[i++] != '\n');
+            meshIndexData[ meshIndexCount++ ] = normal3 - 1;
         }
         else
         {
@@ -173,14 +210,41 @@ void DvigEngine2::GeometryComponent::Init(const char* meshPathOnDrive)
         }
     }
 
+    // Setup geometry buffer
+    const DvigEngine2::deisize actualVertexCount = meshIndexCount / 2;
+    for (DvigEngine2::deint32 i = 0; i < actualVertexCount; ++i)
+    {
+        const DvigEngine2::deint32 indexDataIndex = 2 * i;
+        const DvigEngine2::deint32 indexPosition = meshIndexData[ indexDataIndex ];
+        const DvigEngine2::deint32 indexNormal = meshIndexData[ 1 + indexDataIndex ];
+        const DvigEngine2::deint32 positionDataIndex = 3 * indexPosition;
+        const DvigEngine2::deint32 normalDataIndex = 3 * indexNormal;
+        meshGeometryData[ meshVertexCount ].m_Position[ 0 ] = meshGeometryPositionData[ positionDataIndex ];
+        meshGeometryData[ meshVertexCount ].m_Position[ 1 ] = meshGeometryPositionData[ 1 + positionDataIndex ];
+        meshGeometryData[ meshVertexCount ].m_Position[ 2 ] = meshGeometryPositionData[ 2 + positionDataIndex ];        
+        meshGeometryData[ meshVertexCount ].m_Normal[ 0 ] = meshGeometryNormalData[ normalDataIndex ];
+        meshGeometryData[ meshVertexCount ].m_Normal[ 1 ] = meshGeometryNormalData[ 1 + normalDataIndex ];
+        meshGeometryData[ meshVertexCount ].m_Normal[ 2 ] = meshGeometryNormalData[ 2 + normalDataIndex ];        
+        meshIndexData[ meshVertexCount ] = i;
+        meshVertexCount += 1;
+    }
+
+    // Rewrite index buffer
+    // meshIndexCount = 0;
+    // for (DvigEngine2::deint32 i = 0; i < meshVertexCount; ++i)
+    // {
+    //     meshIndexData[ meshIndexCount ] = i;
+    //     meshIndexCount += 1;
+    // }
+
     // Copy to global buffers
-    const deusize meshGeometryDataByteWidth = sizeof(DvigEngine2::defloat32) * meshPointCount;
+    this->m_IndexCount = meshVertexCount;
+    const deusize meshGeometryDataByteWidth = sizeof(DvigEngine2::GeometryVertex) * meshVertexCount;
     this->m_GeometryBufferByteWidth = meshGeometryDataByteWidth;
-    std::cout << "geometry : " << meshGeometryDataByteWidth << std::endl;
     this->m_GeometryBufferOffset = DvigEngine2::RenderingSystem::m_GlobalGeometryBuffer->Insert( DV_NULL, meshGeometryData, meshGeometryDataByteWidth );
-    // const deusize meshIndexDataByteWidth = sizeof(DvigEngine2::deuint32) * meshIndexCount;
-    // this->m_IndexBufferByteWidth = meshIndexDataByteWidth;
-    // this->m_IndexBufferOffset = DvigEngine2::RenderingSystem::m_GlobalIndexBuffer->Insert( DV_NULL, meshIndexData, meshIndexDataByteWidth );
+    const deusize meshIndexDataByteWidth = sizeof(DvigEngine2::deuint32) * meshVertexCount;
+    this->m_IndexBufferByteWidth = meshIndexDataByteWidth;
+    this->m_IndexBufferOffset = DvigEngine2::RenderingSystem::m_GlobalIndexBuffer->Insert( DV_NULL, meshIndexData, meshIndexDataByteWidth );
 
     // for (int i = 0; i < 9; ++i) {
     //     std::cout << meshGeometryData[i] << " ";
@@ -192,19 +256,21 @@ void DvigEngine2::GeometryComponent::Init(const char* meshPathOnDrive)
     // // std::cout << std::endl;
 
     // Update vertex buffer
-    // DvigEngine2::GL4::BindBuffer( GL_ARRAY_BUFFER, DvigEngine2::RenderingSystem::m_GLGlobalGeometryBuffer );
-    // DvigEngine2::GL4::BufferSubData( GL_ARRAY_BUFFER, this->m_GeometryBufferOffset, meshGeometryDataByteWidth, meshGeometryData );
-    // DvigEngine2::GL4::BindBuffer( GL_ARRAY_BUFFER, 0 );
+    DvigEngine2::GL4::BindBuffer( GL_ARRAY_BUFFER, DvigEngine2::RenderingSystem::m_GLGlobalGeometryBuffer );
+    DvigEngine2::GL4::BufferSubData( GL_ARRAY_BUFFER, this->m_GeometryBufferOffset, meshGeometryDataByteWidth, meshGeometryData );
+    DvigEngine2::GL4::BindBuffer( GL_ARRAY_BUFFER, 0 );
 
-    // // // Update index buffer
-    // DvigEngine2::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, DvigEngine2::RenderingSystem::m_GLGlobalIndexBuffer );
-    // DvigEngine2::GL4::BufferSubData( GL_ELEMENT_ARRAY_BUFFER, this->m_IndexBufferOffset, meshIndexDataByteWidth, meshIndexData );
-    // DvigEngine2::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+    // Update index buffer
+    DvigEngine2::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, DvigEngine2::RenderingSystem::m_GLGlobalIndexBuffer );
+    DvigEngine2::GL4::BufferSubData( GL_ELEMENT_ARRAY_BUFFER, this->m_IndexBufferOffset, meshIndexDataByteWidth, meshIndexData );
+    DvigEngine2::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 
     // Delete temp memory object
-    // engine->Delete( meshDataMemoryObject );
-    // engine->Delete( meshGeometryDataMemoryObject );
-    // engine->Delete( meshIndexDataMemoryObject );
+    engine->Delete( meshDataMemoryObject );
+    engine->Delete( meshGeometryDataMemoryObject );
+    engine->Delete( meshGeometryPositionDataMemoryObject );
+    engine->Delete( meshGeometryNormalDataMemoryObject );
+    engine->Delete( meshIndexDataMemoryObject );
 }
 
 void DvigEngine2::GeometryComponent::Free()

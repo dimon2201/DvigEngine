@@ -66,12 +66,12 @@ int main()
                 engine->Create <DvigEngine2::INode> ( &node0, "MyNode_0" );
                 engine->Create <DvigEngine2::INode> ( &node1, "MyNode_1" );
 
-                geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\cottage.obj" );
-                transComp0->Init( 0.5f, 0.0f, 0.0f );
+                geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\moai.obj" );
+                transComp0->Init( 0.0f, 0.0f, 0.0f );
                 shaderComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
-                geomComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\cottage.obj" );
-                transComp1->Init( 0.0f, 0.5f, 0.0f );
+                geomComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\moai.obj" );
+                transComp1->Init( 0.5f, 0.0f, 0.0f );
                 shaderComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
                 
@@ -81,6 +81,8 @@ int main()
                 engine->AddComponent <DvigEngine2::GeometryComponent> ( &node1, geomComp0 );
                 engine->AddComponent <DvigEngine2::TransformComponent> ( &node1, transComp1 );
                 engine->AddComponent <DvigEngine2::ShaderComponent> ( &node1, shaderComp1 );
+
+                DvigEngine2::GL4::Enable( GL_DEPTH_TEST );
             }
             void Update() override final {
                 DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
@@ -95,7 +97,7 @@ int main()
                 glfwGetFramebufferSize( (GLFWwindow*)myWindow->GetGLFWWindow(), &windowWidth, &windowHeight );
 
                 DvigEngine2::GL4::Viewport( 0, 0, windowWidth, windowHeight );
-                DvigEngine2::GL4::ClearColor( 0.0f, 0.0f, 1.0f, 1.0f );
+                DvigEngine2::GL4::ClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
                 DvigEngine2::GL4::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
                 
                 DvigEngine2::RenderingSystem::BeginRender();

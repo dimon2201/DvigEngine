@@ -293,7 +293,6 @@ DvigEngine2::MemoryObject* DvigEngine2::Engine::Allocate(deint32 memoryPoolIndex
     DvigEngine2::MemoryObject* memoryObject = (DvigEngine2::MemoryObject*)memoryPoolOffset;
     for (allocIndex = 0; allocIndex < memoryPoolAllocationCount; ++allocIndex)
     {
-        std::cout << allocIndex << " ";
         if ((memoryObject->m_FreeFlag & DV_TRUE) == DV_TRUE && memoryObject->m_ByteWidth > byteWidth + sizeof(DvigEngine2::MemoryObject)) {
             break;
         }
@@ -320,8 +319,6 @@ DvigEngine2::MemoryObject* DvigEngine2::Engine::Allocate(deint32 memoryPoolIndex
     memoryObject->m_ByteWidth = byteWidth;
     memoryObject->m_FreeFlag = DV_FALSE;
     memoryObject->m_MemoryPoolIndex = memoryPoolIndex;
-
-    std::cout << std::endl << allocIndex << " " << memoryPool->m_AllocationCount << " " << byteWidth << " " << memoryObject->m_ByteWidth << std::endl;
 
     return memoryObject;
 }
