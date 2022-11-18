@@ -119,9 +119,9 @@ int main()
 
                 DvigEngine2::INode* viewer = (DvigEngine2::INode*)engine->GetExistingInstance( "Viewer_0" );
                 static demfloat fRot = 0.0f;
-                if (fRot > 360.0f) { fRot = 0.0f; }
-                fRot += 0.01f;
-                viewer->GetComponent<DvigEngine2::ViewerComponent>(nullptr)->SetRotation( glm::vec3(0.0f), fRot, 0.0f, 0.0f );
+                if (fRot > 1.0f) { fRot = 0.0f; }
+                fRot += 0.0001f;
+                viewer->GetComponent<DvigEngine2::ViewerComponent>(nullptr)->SetRotation( glm::vec3(fRot), 0.0f, 0.0f, 0.0f );
 
                 DvigEngine2::RenderingSystem::BeginRender(viewer);
                 DvigEngine2::RenderingSystem::BeginBatch();
