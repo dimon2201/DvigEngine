@@ -1,8 +1,12 @@
 #ifndef _DE_LIB_THIRD_PARTY_MATH_H_
 #define _DE_LIB_THIRD_PARTY_MATH_H_
 
-#include "../thirdparty/glm/vec2.hpp"
-#include "../thirdparty/glm/vec3.hpp"
-#include "../thirdparty/glm/vec4.hpp"
+#include "../include/DECore.hpp"
+#include "../thirdparty/glm/glm.hpp"
+#include "../thirdparty/glm/gtc/quaternion.hpp"
+#include "../thirdparty/glm/gtc/matrix_transform.hpp"
+#include "../thirdparty/glm/gtx/transform.hpp"
+
+typedef DvigEngine2::defloat32 demfloat;
 
 #endif

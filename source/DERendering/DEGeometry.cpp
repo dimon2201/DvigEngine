@@ -1,6 +1,5 @@
 #include "../../include/DECore.hpp"
 #include "../../include/DERendering.hpp"
-
 #include <fstream>
 
 void DvigEngine2::GeometryComponent::Init(const char* optGeometryDataPathOnDrive, const char* optIndicesDataPathOnDrive, void* optGeometryData, void* optIndicesData, deusize optGeometryDataByteWidth, deusize optIndicesDataByteWidth)
@@ -229,14 +228,6 @@ void DvigEngine2::GeometryComponent::Init(const char* meshPathOnDrive)
         meshVertexCount += 1;
     }
 
-    // Rewrite index buffer
-    // meshIndexCount = 0;
-    // for (DvigEngine2::deint32 i = 0; i < meshVertexCount; ++i)
-    // {
-    //     meshIndexData[ meshIndexCount ] = i;
-    //     meshIndexCount += 1;
-    // }
-
     // Copy to global buffers
     this->m_IndexCount = meshVertexCount;
     const deusize meshGeometryDataByteWidth = sizeof(DvigEngine2::GeometryVertex) * meshVertexCount;
@@ -245,15 +236,6 @@ void DvigEngine2::GeometryComponent::Init(const char* meshPathOnDrive)
     const deusize meshIndexDataByteWidth = sizeof(DvigEngine2::deuint32) * meshVertexCount;
     this->m_IndexBufferByteWidth = meshIndexDataByteWidth;
     this->m_IndexBufferOffset = DvigEngine2::RenderingSystem::m_GlobalIndexBuffer->Insert( DV_NULL, meshIndexData, meshIndexDataByteWidth );
-
-    // for (int i = 0; i < 9; ++i) {
-    //     std::cout << meshGeometryData[i] << " ";
-    // }
-    // std::cout << std::endl;
-    // // for (int i = 0; i < 6; ++i) {
-    // //     std::cout << meshIndexData[i] << " ";
-    // // }
-    // // std::cout << std::endl;
 
     // Update vertex buffer
     DvigEngine2::GL4::BindBuffer( GL_ARRAY_BUFFER, DvigEngine2::RenderingSystem::m_GLGlobalGeometryBuffer );

@@ -385,7 +385,7 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE static INode* GetRootNode() { return m_RootNode; }
             INode* GetChildNode(const char* USID);
             template <typename T>
-            IComponent* GetComponent(const char* USID)
+            T* GetComponent(const char* USID)
             {
                 const char* requestedTypeName = typeid(T).name();
                 // const char* componentUSID = USID;
@@ -395,11 +395,11 @@ namespace DvigEngine2
                 deisize offset = 0;
                 for (deint32 i = 0; i < capacity; ++i)
                 {
-                    m_Components->Find(i * sizeof(DvigEngine2::demachword), &component, sizeof(DvigEngine2::demachword));
+                    this->m_Components->Find(i * sizeof(DvigEngine2::demachword), &component, sizeof(DvigEngine2::demachword));
                     const char* curTypeName = (const char*)&component->m_TypeName[0];
                     if ((DvigEngine2::String::CompareCharacters( &requestedTypeName[0], &curTypeName[0], DvigEngine2::String::CharactersCount((const deuchar*)&requestedTypeName[0]) ) == DV_TRUE)) {//||
                         //(DvigEngine2::String::CompareCharacters( &componentUSID[0], (const char*)component->GetUSID(), DvigEngine2::String::CharactersCount((const deuchar*)&componentUSID[0]) ) == DV_TRUE)) {
-                        return component;
+                        return (T*)component;
                     }
                 }
 

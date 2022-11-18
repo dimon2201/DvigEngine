@@ -37,6 +37,7 @@ void (*DvigEngine2::GL4::DrawElementsInstanced)(deuint32 mode, deisize count, de
 DvigEngine2::deuint32 (*DvigEngine2::GL4::GetError)(void) = nullptr;
 void (*DvigEngine2::GL4::DrawElementsBaseVertex)(deuint32 mode, deisize count, deuint32 type, void* indices, deint32 baseVertex) = nullptr;
 
+DvigEngine2::INode* DvigEngine2::RenderingSystem::m_Viewer = nullptr;
 DvigEngine2::FixedSet* DvigEngine2::RenderingSystem::m_Batches = nullptr;
 DvigEngine2::debool DvigEngine2::RenderingSystem::m_IsBatchRecording = DV_FALSE;
 DvigEngine2::deint32 DvigEngine2::RenderingSystem::m_NextBatchUniformBufferOffset = 0;
@@ -48,7 +49,7 @@ DvigEngine2::deuint32 DvigEngine2::RenderingSystem::m_GLGlobalGeometryBuffer = D
 DvigEngine2::deuint32 DvigEngine2::RenderingSystem::m_GLGlobalIndexBuffer = DV_NULL;
 DvigEngine2::deuint32 DvigEngine2::RenderingSystem::m_GLVAO = DV_NULL;
 
-DvigEngine2::deusize DvigEngine2::BatchInstanceData::m_GLAlignedByteWidth = 16;
+DvigEngine2::deusize DvigEngine2::UniformBatchInstanceData::m_GLAlignedByteWidth = 16;
 
 void DvigEngine2::GL4::Load()
 {
@@ -156,8 +157,11 @@ void DvigEngine2::RenderingSystem::Init()
     // Bind vertex and index buffer
 }
 
-void DvigEngine2::RenderingSystem::BeginRender()
+void DvigEngine2::RenderingSystem::BeginRender(INode* const viewer)
 {
+    // Bind viewer
+    m_Viewer = viewer;
+
     // Clear uniform buffer
     m_NextBatchUniformBufferOffset = 0;
 
@@ -201,12 +205,17 @@ void DvigEngine2::RenderingSystem::EndRender()
     // Unmap uniform buffer here
 }
 
-void DvigEngine2::RenderingSystem::Draw(INode* node)
+void DvigEngine2::RenderingSystem::Draw(INode* const node)
 {
-    DvigEngine2::GeometryComponent* nodeGeometry = (DvigEngine2::GeometryComponent*)node->GetComponent<DvigEngine2::GeometryComponent>(nullptr);
-    DvigEngine2::TransformComponent* nodeTransform = (DvigEngine2::TransformComponent*)node->GetComponent<DvigEngine2::TransformComponent>(nullptr);
-    DvigEngine2::ShaderComponent* nodeShader = (DvigEngine2::ShaderComponent*)node->GetComponent<DvigEngine2::ShaderComponent>(nullptr);
+    DvigEngine2::INode* viewer = DvigEngine2::RenderingSystem::m_Viewer;
+    if (viewer == nullptr) { return; }
+    DvigEngine2::TransformComponent* viewerTransform = viewer->GetComponent<DvigEngine2::TransformComponent>(nullptr);
+    DvigEngine2::ViewerComponent* viewerViewer = viewer->GetComponent<DvigEngine2::ViewerComponent>(nullptr);
+    if (viewerTransform == nullptr || viewerViewer == nullptr) { return; }
 
+    DvigEngine2::GeometryComponent* nodeGeometry = node->GetComponent<DvigEngine2::GeometryComponent>(nullptr);
+    DvigEngine2::TransformComponent* nodeTransform = node->GetComponent<DvigEngine2::TransformComponent>(nullptr);
+    DvigEngine2::ShaderComponent* nodeShader = node->GetComponent<DvigEngine2::ShaderComponent>(nullptr);
     if (nodeGeometry == nullptr || nodeTransform == nullptr || nodeShader == nullptr) { return; }
 
     // Create new batch if needed
@@ -232,19 +241,24 @@ void DvigEngine2::RenderingSystem::Draw(INode* node)
     }
 
     // Populate uniform buffer
+    const deint32 actualUniformDataOffset = sizeof(DvigEngine2::UniformViewerData) + m_NextBatchUniformBufferOffset;
     void* uniformBufferMemory = m_UniformBufferMemoryObject->Unwrap<void*>();
-    uniformBufferMemory = DvigEngine2::Ptr<void*>::Add( &uniformBufferMemory, m_NextBatchUniformBufferOffset );
-    DvigEngine2::BatchInstanceData batchInstance;
-    DvigEngine2::Engine::MemoryCopy( &batchInstance.m_Position, (const void*)&nodeTransform->m_Position, sizeof(DvigEngine2::BatchInstanceData) );
-    DvigEngine2::Engine::MemoryCopy( uniformBufferMemory, &batchInstance, sizeof(DvigEngine2::BatchInstanceData) );
+    DvigEngine2::UniformViewerData uniformViewerData;
+    DvigEngine2::Engine::MemoryCopy( &uniformViewerData.m_WorldSpaceMatrix, &viewerTransform->m_WorldTranslationMatrix, sizeof(glm::mat4) );
+    DvigEngine2::Engine::MemoryCopy( uniformBufferMemory, &uniformViewerData, sizeof(DvigEngine2::UniformViewerData) );
+    uniformBufferMemory = DvigEngine2::Ptr<void*>::Add( &uniformBufferMemory, actualUniformDataOffset );
+    DvigEngine2::UniformBatchInstanceData uniformBatchInstance;
+    DvigEngine2::Engine::MemoryCopy( &uniformBatchInstance.m_Position, (const void*)&nodeTransform->m_Position, sizeof(DvigEngine2::UniformBatchInstanceData) );
+    DvigEngine2::Engine::MemoryCopy( uniformBufferMemory, &uniformBatchInstance, sizeof(DvigEngine2::UniformBatchInstanceData) );
 
     // Send uniform buffer to GPU
     DvigEngine2::GL4::BindBuffer( GL_UNIFORM_BUFFER, DvigEngine2::RenderingSystem::m_GLUniformBuffer );
-    DvigEngine2::GL4::BufferSubData( GL_UNIFORM_BUFFER, m_NextBatchUniformBufferOffset, sizeof(DvigEngine2::BatchInstanceData), (const void*)uniformBufferMemory );
+    DvigEngine2::GL4::BufferSubData( GL_UNIFORM_BUFFER, 0, sizeof(DvigEngine2::UniformViewerData), (const void*)&uniformViewerData );
+    DvigEngine2::GL4::BufferSubData( GL_UNIFORM_BUFFER, actualUniformDataOffset, sizeof(DvigEngine2::UniformBatchInstanceData), (const void*)uniformBufferMemory );
     DvigEngine2::GL4::BindBuffer( GL_UNIFORM_BUFFER, 0 );
 
     // Increase uniform buffer offset
-    DvigEngine2::RenderingSystem::m_NextBatchUniformBufferOffset += DvigEngine2::BatchInstanceData::m_GLAlignedByteWidth;
+    DvigEngine2::RenderingSystem::m_NextBatchUniformBufferOffset += DvigEngine2::UniformBatchInstanceData::m_GLAlignedByteWidth;
 }
 
 void DvigEngine2::RenderingSystem::ClearGeometryAndIndexBuffers()

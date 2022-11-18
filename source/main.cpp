@@ -36,6 +36,7 @@ int main()
                 DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::GeometryComponent>();
                 DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::TransformComponent>();
                 DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::ShaderComponent>();
+                DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::ViewerComponent>();
 
                 DvigEngine2::defloat32 vertices[9] = {
                     -1.0f, -1.0f, -1.0f,
@@ -54,8 +55,11 @@ int main()
                 DvigEngine2::GeometryComponent* geomComp1;
                 DvigEngine2::TransformComponent* transComp1;
                 DvigEngine2::ShaderComponent* shaderComp1;
+                DvigEngine2::TransformComponent* viewerTransComp;
+                DvigEngine2::ViewerComponent* viewerViewerComp;
                 DvigEngine2::INode* node0;
                 DvigEngine2::INode* node1;
+                DvigEngine2::INode* viewer;
 
                 engine->Create <DvigEngine2::GeometryComponent> ( &geomComp0, "MyGeometryComponent_0" );
                 engine->Create <DvigEngine2::TransformComponent> ( &transComp0, "MyTransformComponent_0" );
@@ -63,17 +67,25 @@ int main()
                 engine->Create <DvigEngine2::GeometryComponent> ( &geomComp1, "MyGeometryComponent_1" );
                 engine->Create <DvigEngine2::TransformComponent> ( &transComp1, "MyTransformComponent_1" );
                 engine->Create <DvigEngine2::ShaderComponent> ( &shaderComp1, "MyShaderComponent_1" );
+                engine->Create <DvigEngine2::TransformComponent> ( &viewerTransComp, "ViewerTransformComponent_1" );
+                engine->Create <DvigEngine2::ViewerComponent> ( &viewerViewerComp, "ViewerComponent_0" );
                 engine->Create <DvigEngine2::INode> ( &node0, "MyNode_0" );
                 engine->Create <DvigEngine2::INode> ( &node1, "MyNode_1" );
+                engine->Create <DvigEngine2::INode> ( &viewer, "Viewer_0" );
 
                 geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\moai.obj" );
-                transComp0->Init( 0.0f, 0.0f, 0.0f );
+                transComp0->Init();
                 shaderComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
                 geomComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\moai.obj" );
-                transComp1->Init( 0.5f, 0.0f, 0.0f );
+                transComp1->Init();
                 shaderComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
+                viewerTransComp->Init();
+                viewerViewerComp->Init();
+                node0->Init();
+                node1->Init();
+                viewer->Init();
                 
                 engine->AddComponent <DvigEngine2::GeometryComponent> ( &node0, geomComp0 );
                 engine->AddComponent <DvigEngine2::TransformComponent> ( &node0, transComp0 );
@@ -81,6 +93,8 @@ int main()
                 engine->AddComponent <DvigEngine2::GeometryComponent> ( &node1, geomComp0 );
                 engine->AddComponent <DvigEngine2::TransformComponent> ( &node1, transComp1 );
                 engine->AddComponent <DvigEngine2::ShaderComponent> ( &node1, shaderComp1 );
+                engine->AddComponent <DvigEngine2::TransformComponent> ( &viewer, viewerTransComp );
+                engine->AddComponent <DvigEngine2::ViewerComponent> ( &viewer, viewerViewerComp );
 
                 DvigEngine2::GL4::Enable( GL_DEPTH_TEST );
             }
@@ -99,11 +113,14 @@ int main()
                 DvigEngine2::GL4::Viewport( 0, 0, windowWidth, windowHeight );
                 DvigEngine2::GL4::ClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
                 DvigEngine2::GL4::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-                
-                DvigEngine2::RenderingSystem::BeginRender();
+
+                DvigEngine2::INode* viewer = (DvigEngine2::INode*)engine->GetExistingInstance( "Viewer_0" );
+                viewer->GetComponent<DvigEngine2::TransformComponent>(nullptr)->SetPosition( 0.7f, 0.1f, 0.0f );
+
+                DvigEngine2::RenderingSystem::BeginRender(viewer);
                 DvigEngine2::RenderingSystem::BeginBatch();
                 DvigEngine2::RenderingSystem::Draw( myNode_0 );
-                // DvigEngine2::RenderingSystem::Draw( myNode_1 );
+                DvigEngine2::RenderingSystem::Draw( myNode_1 );
                 DvigEngine2::RenderingSystem::EndBatch();
                 DvigEngine2::RenderingSystem::EndRender();
             }

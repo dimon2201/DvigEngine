@@ -80,11 +80,32 @@ namespace DvigEngine2
     class TransformComponent : public IComponent
     {
         public:
-            void Init(defloat32 x, defloat32 y, defloat32 z) { this->m_Position = glm::vec3(x, y, z); }
-            void Free() override final { }
+            void Init();
+            void Free() override final;
+            
+            DV_FUNCTION_INLINE demfloat GetPositionX() { return (demfloat)this->m_Position.x; }
+            DV_FUNCTION_INLINE demfloat GetPositionY() { return (demfloat)this->m_Position.y; }
+            DV_FUNCTION_INLINE demfloat GetPositionZ() { return (demfloat)this->m_Position.z; }
+            DV_FUNCTION_INLINE demfloat GetRotationX() { return (demfloat)this->m_RotationEuler.x; }
+            DV_FUNCTION_INLINE demfloat GetRotationY() { return (demfloat)this->m_RotationEuler.y; }
+            DV_FUNCTION_INLINE demfloat GetRotationZ() { return (demfloat)this->m_RotationEuler.z; }
+            DV_FUNCTION_INLINE demfloat GetScaleX() { return (demfloat)this->m_Scale.x; }
+            DV_FUNCTION_INLINE demfloat GetScaleY() { return (demfloat)this->m_Scale.y; }
+            DV_FUNCTION_INLINE demfloat GetScaleZ() { return (demfloat)this->m_Scale.z; }
+
+            void SetPosition(demfloat x, demfloat y, demfloat z);
+            void SetRotationEuler(demfloat x, demfloat y, demfloat z);
+            void SetScale(demfloat x, demfloat y, demfloat z);
 
         public:
             glm::vec3 m_Position;
+            glm::vec3 m_RotationEuler;
+            glm::vec3 m_Scale;
+            glm::quat m_WorldRotationQuaternion;
+            glm::mat4 m_WorldTranslationMatrix;
+            glm::mat4 m_WorldRotationMatrix;
+            glm::mat4 m_WorldScaleMatrix;
+            glm::mat4 m_WorldSpaceMatrix;
     };
 
     class ShaderComponent : public IComponent
@@ -97,7 +118,36 @@ namespace DvigEngine2
             deuint32 m_GLProgram;
     };
 
-    class BatchInstanceData
+    class ViewerComponent : public IComponent
+    {
+        public:
+            void Init();
+            void Free() override final;
+
+            DV_FUNCTION_INLINE demfloat GetRotationX() { return (demfloat)this->m_RotationEuler.x; }
+            DV_FUNCTION_INLINE demfloat GetRotationY() { return (demfloat)this->m_RotationEuler.y; }
+            DV_FUNCTION_INLINE demfloat GetRotationZ() { return (demfloat)this->m_RotationEuler.z; }
+
+            void SetRotationEuler(demfloat x, demfloat y, demfloat z);
+            void SetOrthographicProjection(demfloat left, demfloat right, demfloat bottom, demfloat top);
+            void SetPerspectiveProjection(demfloat fov, demfloat aspect, demfloat zNear, demfloat zFar);
+
+        public:
+            glm::vec3 m_RotationEuler;
+            glm::quat m_ViewRotationQuaternion;
+            glm::mat4 m_ViewSpaceMatrix;
+            glm::mat4 m_ProjectionSpaceMatrix;
+    };
+
+    class UniformViewerData
+    {
+        public:
+            glm::mat4 m_WorldSpaceMatrix;
+            glm::mat4 m_ViewSpaceMatrix;
+            glm::mat4 m_ProjectionSpaceMatrix;
+    };
+
+    class UniformBatchInstanceData
     {
         public:
             static deusize m_GLAlignedByteWidth;
@@ -122,11 +172,11 @@ namespace DvigEngine2
 
         public:
             static void Init();
-            static void BeginRender();
+            static void BeginRender(INode* const viewer);
             static void BeginBatch();
             static void EndRender();
             static void EndBatch();
-            static void Draw(INode* node);
+            static void Draw(INode* const node);
             static void ClearGeometryAndIndexBuffers();
 
         public:
@@ -137,6 +187,7 @@ namespace DvigEngine2
             static deuint32 m_GLVAO;
 
         private:
+            static INode* m_Viewer;
             static FixedSet* m_Batches;
             static debool m_IsBatchRecording;
             static deint32 m_NextBatchUniformBufferOffset;
