@@ -29,10 +29,12 @@ void DvigEngine2::TransformComponent::SetPosition(demfloat x, demfloat y, demflo
 
 void DvigEngine2::TransformComponent::SetRotationEuler(demfloat x, demfloat y, demfloat z)
 {
-    this->m_RotationEuler.x = x;
-    this->m_RotationEuler.y = y;
-    this->m_RotationEuler.z = z;
-    this->m_WorldRotationQuaternion = glm::quat( this->m_RotationEuler );
+    this->m_RotationEuler.x = glm::radians(x);
+    this->m_RotationEuler.y = glm::radians(y);
+    this->m_RotationEuler.z = glm::radians(z);
+    // this->m_WorldRotationQuaternion = glm::quat( this->m_RotationEuler );
+    glm::quat tempQuatX = glm::angleAxis( this->m_RotationEuler.x, glm::vec3(1.0f, 0.0f, 0.0f) );
+    this->m_WorldRotationQuaternion = tempQuatX;
     this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
 }
 

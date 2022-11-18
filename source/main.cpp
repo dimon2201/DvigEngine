@@ -115,7 +115,7 @@ int main()
                 DvigEngine2::GL4::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
                 DvigEngine2::INode* viewer = (DvigEngine2::INode*)engine->GetExistingInstance( "Viewer_0" );
-                viewer->GetComponent<DvigEngine2::TransformComponent>(nullptr)->SetPosition( 0.7f, 0.1f, 0.0f );
+                viewer->GetComponent<DvigEngine2::ViewerComponent>(nullptr)->SetRotationEuler( 12.0f, 12.0f, 0.0f );
 
                 DvigEngine2::RenderingSystem::BeginRender(viewer);
                 DvigEngine2::RenderingSystem::BeginBatch();

@@ -245,6 +245,7 @@ void DvigEngine2::RenderingSystem::Draw(INode* const node)
     void* uniformBufferMemory = m_UniformBufferMemoryObject->Unwrap<void*>();
     DvigEngine2::UniformViewerData uniformViewerData;
     DvigEngine2::Engine::MemoryCopy( &uniformViewerData.m_WorldSpaceMatrix, &viewerTransform->m_WorldTranslationMatrix, sizeof(glm::mat4) );
+    DvigEngine2::Engine::MemoryCopy( &uniformViewerData.m_ViewSpaceMatrix, &viewerViewer->m_ViewSpaceMatrix, sizeof(glm::mat4) );
     DvigEngine2::Engine::MemoryCopy( uniformBufferMemory, &uniformViewerData, sizeof(DvigEngine2::UniformViewerData) );
     uniformBufferMemory = DvigEngine2::Ptr<void*>::Add( &uniformBufferMemory, actualUniformDataOffset );
     DvigEngine2::UniformBatchInstanceData uniformBatchInstance;
