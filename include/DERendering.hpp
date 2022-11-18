@@ -128,7 +128,7 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE demfloat GetRotationY() { return (demfloat)this->m_RotationEuler.y; }
             DV_FUNCTION_INLINE demfloat GetRotationZ() { return (demfloat)this->m_RotationEuler.z; }
 
-            void SetRotationEuler(demfloat x, demfloat y, demfloat z);
+            void SetRotation(glm::vec3 eye, demfloat eulerX, demfloat eulerY, demfloat eulerZ);
             void SetOrthographicProjection(demfloat left, demfloat right, demfloat bottom, demfloat top);
             void SetPerspectiveProjection(demfloat fov, demfloat aspect, demfloat zNear, demfloat zFar);
 
