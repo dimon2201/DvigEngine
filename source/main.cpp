@@ -102,6 +102,9 @@ int main()
                 DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
                 DvigEngine2::Application* app = this->GetApplication();
                 DvigEngine2::INode* myNode_0 = (DvigEngine2::INode*)engine->GetExistingInstance( "MyNode_0" );
+                myNode_0->GetComponent<DvigEngine2::TransformComponent>(nullptr)->SetPosition( 0.0f, 0.0f, 0.0f );
+                myNode_0->GetComponent<DvigEngine2::TransformComponent>(nullptr)->SetRotationEuler( 0.0f, 0.0f, 0.0f );
+                myNode_0->GetComponent<DvigEngine2::TransformComponent>(nullptr)->SetScale( 1.0f, 1.0f, 1.0f );
                 DvigEngine2::INode* myNode_1 = (DvigEngine2::INode*)engine->GetExistingInstance( "MyNode_1" );
                 DvigEngine2::ShaderComponent* myNode_0_Shader = (DvigEngine2::ShaderComponent*)myNode_0->GetComponent<DvigEngine2::ShaderComponent>(nullptr);
 
@@ -115,12 +118,11 @@ int main()
                 DvigEngine2::GL4::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
                 DvigEngine2::INode* viewer = (DvigEngine2::INode*)engine->GetExistingInstance( "Viewer_0" );
-                viewer->GetComponent<DvigEngine2::ViewerComponent>(nullptr)->SetRotationEuler( 12.0f, 12.0f, 0.0f );
 
                 DvigEngine2::RenderingSystem::BeginRender(viewer);
                 DvigEngine2::RenderingSystem::BeginBatch();
                 DvigEngine2::RenderingSystem::Draw( myNode_0 );
-                DvigEngine2::RenderingSystem::Draw( myNode_1 );
+                // DvigEngine2::RenderingSystem::Draw( myNode_1 );
                 DvigEngine2::RenderingSystem::EndBatch();
                 DvigEngine2::RenderingSystem::EndRender();
             }

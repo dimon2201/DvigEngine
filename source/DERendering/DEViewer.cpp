@@ -24,9 +24,6 @@ void DvigEngine2::ViewerComponent::SetRotationEuler(demfloat x, demfloat y, demf
     glm::quat tempQuatZ = glm::angleAxis( this->m_RotationEuler.z, glm::vec3(0.0f, 0.0f, 1.0f) );
     this->m_ViewRotationQuaternion = tempQuatX * tempQuatY * tempQuatZ;
     this->m_ViewSpaceMatrix = glm::mat4_cast( this->m_ViewRotationQuaternion );
-    std::cout << this->m_ViewSpaceMatrix[0][0] << " " << this->m_ViewSpaceMatrix[1][0] << " " << this->m_ViewSpaceMatrix[2][0] << std::endl;
-    std::cout << this->m_ViewSpaceMatrix[0][1] << " " << this->m_ViewSpaceMatrix[1][1] << " " << this->m_ViewSpaceMatrix[2][1] << std::endl;
-    std::cout << this->m_ViewSpaceMatrix[0][2] << " " << this->m_ViewSpaceMatrix[1][2] << " " << this->m_ViewSpaceMatrix[2][2] << std::endl;
 }
 
 void DvigEngine2::ViewerComponent::SetOrthographicProjection(demfloat left, demfloat right, demfloat bottom, demfloat top)

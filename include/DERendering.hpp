@@ -153,7 +153,7 @@ namespace DvigEngine2
             static deusize m_GLAlignedByteWidth;
 
         public:
-            glm::vec3 m_Position;
+            glm::mat4 m_TransformMatrix;
     };
 
     class BatchData

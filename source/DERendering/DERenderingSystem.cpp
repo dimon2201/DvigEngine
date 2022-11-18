@@ -49,7 +49,7 @@ DvigEngine2::deuint32 DvigEngine2::RenderingSystem::m_GLGlobalGeometryBuffer = D
 DvigEngine2::deuint32 DvigEngine2::RenderingSystem::m_GLGlobalIndexBuffer = DV_NULL;
 DvigEngine2::deuint32 DvigEngine2::RenderingSystem::m_GLVAO = DV_NULL;
 
-DvigEngine2::deusize DvigEngine2::UniformBatchInstanceData::m_GLAlignedByteWidth = 16;
+DvigEngine2::deusize DvigEngine2::UniformBatchInstanceData::m_GLAlignedByteWidth = sizeof(DvigEngine2::UniformBatchInstanceData);
 
 void DvigEngine2::GL4::Load()
 {
@@ -197,7 +197,6 @@ void DvigEngine2::RenderingSystem::EndBatch()
     DvigEngine2::GL4::BindBufferBase( GL_UNIFORM_BUFFER, 0, DvigEngine2::RenderingSystem::m_GLUniformBuffer );
     DvigEngine2::GL4::UseProgram( shaderProgram );
     DvigEngine2::GL4::DrawElementsInstanced( GL_TRIANGLES, geometryIndexCount, GL_UNSIGNED_INT, nullptr, lastBatch->m_InstanceCount );
-    // DvigEngine2::GL4::DrawArrays( GL_TRIANGLES, 0, 3 );
 }
 
 void DvigEngine2::RenderingSystem::EndRender()
@@ -249,7 +248,7 @@ void DvigEngine2::RenderingSystem::Draw(INode* const node)
     DvigEngine2::Engine::MemoryCopy( uniformBufferMemory, &uniformViewerData, sizeof(DvigEngine2::UniformViewerData) );
     uniformBufferMemory = DvigEngine2::Ptr<void*>::Add( &uniformBufferMemory, actualUniformDataOffset );
     DvigEngine2::UniformBatchInstanceData uniformBatchInstance;
-    DvigEngine2::Engine::MemoryCopy( &uniformBatchInstance.m_Position, (const void*)&nodeTransform->m_Position, sizeof(DvigEngine2::UniformBatchInstanceData) );
+    DvigEngine2::Engine::MemoryCopy( &uniformBatchInstance.m_TransformMatrix, &nodeTransform->m_WorldSpaceMatrix, sizeof(glm::mat4) );
     DvigEngine2::Engine::MemoryCopy( uniformBufferMemory, &uniformBatchInstance, sizeof(DvigEngine2::UniformBatchInstanceData) );
 
     // Send uniform buffer to GPU

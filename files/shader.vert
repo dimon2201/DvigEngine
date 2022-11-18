@@ -12,7 +12,7 @@ struct UViewer {
 };
 
 struct UInstanceData {
-    vec3 m_Position;
+    mat4 m_WorldSpaceMatrix;
 };
 
 layout (std140, binding = 0) uniform UBuffer {
@@ -27,10 +27,10 @@ void main()
     
     int instanceIndex = gl_InstanceID;
     vec3 scale = vec3(0.7);
-    vec3 position = (scale * vsIn_Position) + u_Buffer.m_Instances[instanceIndex].m_Position;
+    vec3 position = scale * vsIn_Position;
     // if (gl_VertexID == 0) { position = vec3(-1.0,-1.0,0.0); }
     // if (gl_VertexID == 1) { position = vec3(0.0,1.0,0.0); }
     // if (gl_VertexID == 2) { position = vec3(1.0,-1.0,0.0); }
     
-    gl_Position = u_Buffer.m_Viewer.m_ViewSpaceMatrix * vec4(position, 1.0);
+    gl_Position = u_Buffer.m_Instances[instanceIndex].m_WorldSpaceMatrix * vec4(position, 1.0);
 }
