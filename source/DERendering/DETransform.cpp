@@ -18,6 +18,81 @@ void DvigEngine2::TransformComponent::Free()
     this->GetEngine()->Delete( this->GetMemoryObject() );
 }
 
+void DvigEngine2::TransformComponent::AddPositionX(demfloat value)
+{
+    this->m_Position.x = value;
+    this->m_WorldTranslationMatrix = glm::translate( this->m_Position );
+    this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
+}
+
+void DvigEngine2::TransformComponent::AddPositionY(demfloat value)
+{
+    this->m_Position.y = value;
+    this->m_WorldTranslationMatrix = glm::translate( this->m_Position );
+    this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
+}
+
+void DvigEngine2::TransformComponent::AddPositionZ(demfloat value)
+{
+    this->m_Position.z = value;
+    this->m_WorldTranslationMatrix = glm::translate( this->m_Position );
+    this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
+}
+
+void DvigEngine2::TransformComponent::AddRotationEulerX(demfloat value)
+{
+    this->m_RotationEuler.x += glm::radians(value);
+    glm::quat tempQuatX = glm::angleAxis( this->m_RotationEuler.x, glm::vec3(1.0f, 0.0f, 0.0f) );
+    glm::quat tempQuatY = glm::angleAxis( this->m_RotationEuler.y, glm::vec3(0.0f, 1.0f, 0.0f) );
+    glm::quat tempQuatZ = glm::angleAxis( this->m_RotationEuler.z, glm::vec3(0.0f, 0.0f, 1.0f) );
+    this->m_WorldRotationQuaternion = tempQuatX * tempQuatY * tempQuatZ;
+    this->m_WorldRotationMatrix = glm::mat4_cast( this->m_WorldRotationQuaternion );
+    this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
+}
+
+void DvigEngine2::TransformComponent::AddRotationEulerY(demfloat value)
+{
+    this->m_RotationEuler.y += glm::radians(value);
+    glm::quat tempQuatX = glm::angleAxis( this->m_RotationEuler.x, glm::vec3(1.0f, 0.0f, 0.0f) );
+    glm::quat tempQuatY = glm::angleAxis( this->m_RotationEuler.y, glm::vec3(0.0f, 1.0f, 0.0f) );
+    glm::quat tempQuatZ = glm::angleAxis( this->m_RotationEuler.z, glm::vec3(0.0f, 0.0f, 1.0f) );
+    this->m_WorldRotationQuaternion = tempQuatX * tempQuatY * tempQuatZ;
+    this->m_WorldRotationMatrix = glm::mat4_cast( this->m_WorldRotationQuaternion );
+    this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
+}
+
+void DvigEngine2::TransformComponent::AddRotationEulerZ(demfloat value)
+{
+    this->m_RotationEuler.z += glm::radians(value);
+    glm::quat tempQuatX = glm::angleAxis( this->m_RotationEuler.x, glm::vec3(1.0f, 0.0f, 0.0f) );
+    glm::quat tempQuatY = glm::angleAxis( this->m_RotationEuler.y, glm::vec3(0.0f, 1.0f, 0.0f) );
+    glm::quat tempQuatZ = glm::angleAxis( this->m_RotationEuler.z, glm::vec3(0.0f, 0.0f, 1.0f) );
+    this->m_WorldRotationQuaternion = tempQuatX * tempQuatY * tempQuatZ;
+    this->m_WorldRotationMatrix = glm::mat4_cast( this->m_WorldRotationQuaternion );
+    this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
+}
+
+void DvigEngine2::TransformComponent::AddScaleX(demfloat value)
+{
+    this->m_Scale.x = value;
+    this->m_WorldScaleMatrix = glm::scale( this->m_Scale );
+    this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
+}
+
+void DvigEngine2::TransformComponent::AddScaleY(demfloat value)
+{
+    this->m_Scale.y = value;
+    this->m_WorldScaleMatrix = glm::scale( this->m_Scale );
+    this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
+}
+
+void DvigEngine2::TransformComponent::AddScaleZ(demfloat value)
+{
+    this->m_Scale.z = value;
+    this->m_WorldScaleMatrix = glm::scale( this->m_Scale );
+    this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
+}
+
 void DvigEngine2::TransformComponent::SetPosition(demfloat x, demfloat y, demfloat z)
 {
     this->m_Position.x = x;

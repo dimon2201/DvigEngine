@@ -32,5 +32,5 @@ void main()
     // if (gl_VertexID == 1) { position = vec3(0.0,1.0,0.0); }
     // if (gl_VertexID == 2) { position = vec3(1.0,-1.0,0.0); }
     
-    gl_Position = u_Buffer.m_Viewer.m_ViewSpaceMatrix * vec4(position, 1.0);
+    gl_Position = u_Buffer.m_Viewer.m_ProjectionSpaceMatrix * u_Buffer.m_Viewer.m_ViewSpaceMatrix * vec4(position, 1.0);
 }

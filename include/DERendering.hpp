@@ -93,6 +93,15 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE demfloat GetScaleY() { return (demfloat)this->m_Scale.y; }
             DV_FUNCTION_INLINE demfloat GetScaleZ() { return (demfloat)this->m_Scale.z; }
 
+            void AddPositionX(demfloat value);
+            void AddPositionY(demfloat value);
+            void AddPositionZ(demfloat value);
+            void AddRotationEulerX(demfloat value);
+            void AddRotationEulerY(demfloat value);
+            void AddRotationEulerZ(demfloat value);
+            void AddScaleX(demfloat value);
+            void AddScaleY(demfloat value);
+            void AddScaleZ(demfloat value);
             void SetPosition(demfloat x, demfloat y, demfloat z);
             void SetRotationEuler(demfloat x, demfloat y, demfloat z);
             void SetScale(demfloat x, demfloat y, demfloat z);
@@ -123,16 +132,27 @@ namespace DvigEngine2
         public:
             void Init();
             void Free() override final;
+            void AddPositionX(demfloat value);
+            void AddPositionY(demfloat value);
+            void AddPositionZ(demfloat value);
+            void AddRotationEulerX(demfloat value);
+            void AddRotationEulerY(demfloat value);
+            void AddRotationEulerZ(demfloat value);
 
+            DV_FUNCTION_INLINE demfloat GetPositionX() { return (demfloat)this->m_Position.x; }
+            DV_FUNCTION_INLINE demfloat GetPositionY() { return (demfloat)this->m_Position.y; }
+            DV_FUNCTION_INLINE demfloat GetPositionZ() { return (demfloat)this->m_Position.z; }
             DV_FUNCTION_INLINE demfloat GetRotationX() { return (demfloat)this->m_RotationEuler.x; }
             DV_FUNCTION_INLINE demfloat GetRotationY() { return (demfloat)this->m_RotationEuler.y; }
             DV_FUNCTION_INLINE demfloat GetRotationZ() { return (demfloat)this->m_RotationEuler.z; }
-
-            void SetRotation(glm::vec3 eye, demfloat eulerX, demfloat eulerY, demfloat eulerZ);
+            void SetPosition(demfloat x, demfloat y, demfloat z);
+            void SetRotationEuler(demfloat eulerX, demfloat eulerY, demfloat eulerZ);
             void SetOrthographicProjection(demfloat left, demfloat right, demfloat bottom, demfloat top);
             void SetPerspectiveProjection(demfloat fov, demfloat aspect, demfloat zNear, demfloat zFar);
 
         public:
+            glm::vec3 m_Position;
+            glm::vec4 m_Direction;
             glm::vec3 m_RotationEuler;
             glm::quat m_ViewRotationQuaternion;
             glm::mat4 m_ViewSpaceMatrix;

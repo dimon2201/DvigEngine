@@ -121,7 +121,9 @@ int main()
                 static demfloat fRot = 0.0f;
                 if (fRot > 1.0f) { fRot = 0.0f; }
                 fRot += 0.0001f;
-                viewer->GetComponent<DvigEngine2::ViewerComponent>(nullptr)->SetRotation( glm::vec3(fRot), 0.0f, 0.0f, 0.0f );
+                viewer->GetComponent<DvigEngine2::ViewerComponent>(nullptr)->SetPosition( 0.0f, 0.0f, 0.0f );
+                viewer->GetComponent<DvigEngine2::ViewerComponent>(nullptr)->SetRotationEuler( 0.0f, 0.0f, 0.0f );
+                viewer->GetComponent<DvigEngine2::ViewerComponent>(nullptr)->SetPerspectiveProjection( 65.0f, 640.0f/480.0f, 0.1f, 100.0f );
 
                 DvigEngine2::RenderingSystem::BeginRender(viewer);
                 DvigEngine2::RenderingSystem::BeginBatch();
