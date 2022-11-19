@@ -1,7 +1,5 @@
 #include "../../include/DEGUI.hpp"
 #include "../../include/DERendering.hpp"
-#include "../../include/DEThirdPartyMath.hpp"
-#include "../../include/DEThirdPartyWindow.hpp"
 
 void* DvigEngine::WindowStack::m_GLFWWindows[] = {};
 DvigEngine::IWindow* DvigEngine::WindowStack::m_WindowInstances[] = {};
@@ -12,6 +10,9 @@ void DvigEngine::IWindow::Init(Application* app, const char* caption, glm::uvec2
     GLFWwindow* window = glfwCreateWindow(size.x, size.y, &caption[0], NULL, NULL);
     glfwMakeContextCurrent(window);
 
+    // Set user data
+    glfwSetWindowUserPointer( window, this );
+
     // Init OpenGL procedures
     DvigEngine::GL4::Load();
     DvigEngine::RenderingSystem::Init();
@@ -20,7 +21,7 @@ void DvigEngine::IWindow::Init(Application* app, const char* caption, glm::uvec2
 
     // Assign to member variables
     this->m_App = app;
-    this->m_GLFWWindow = (void*)window;
+    this->m_GLFWWindow = window;
 
     // Add to global stack
     deint32 cycle = 0;
@@ -92,3 +93,8 @@ void DvigEngine::IWindow::Wait()
         }
     } while (presentWindowCount > 0);
 }
+
+void DvigEngine::IWindow::SetOnKeyCallback(GLFWkeyfun callback)
+{
+    glfwSetKeyCallback( this->m_GLFWWindow, callback );
+} 

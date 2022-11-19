@@ -5,9 +5,16 @@
 #include "../include/DEThirdPartyMath.hpp"
 #include "../include/DEThirdPartyWindow.hpp"
 
-void Func(DvigEngine::demachword* arguments, DvigEngine::deint32 jobIndex)
-{
-    std::cout << "Hello from " << jobIndex << " thread!" << std::endl;
+void OnKey(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
+    DvigEngine::INode* viewer = (DvigEngine::INode*)engine->GetExistingInstance("Viewer_0");
+    DvigEngine::ViewerComponent* viewerViewer = viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr);
+
+    if (key == 'W') {
+        viewerViewer->Move(0.1f);
+    } else if (key == 'S') {
+        viewerViewer->Move(-0.1f);
+    }
 }
 
 int main()
@@ -124,7 +131,6 @@ int main()
                 DvigEngine::INode* viewer = (DvigEngine::INode*)engine->GetExistingInstance( "Viewer_0" );
                 viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetRotationEuler( 0.0f, 0.0f, 0.0f );
                 viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetPerspectiveProjection( 65.0f, 640.0f/480.0f, 0.1f, 100.0f );
-                viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->Move(0.05f / 60.0f);
 
                 DvigEngine::RenderingSystem::BeginRender(viewer);
                 DvigEngine::RenderingSystem::BeginBatch();
@@ -141,7 +147,8 @@ int main()
     DvigEngine::Application* appSys;
     pEngine->Create <DvigEngine::Application> ( &appSys, "MyApplication_0" );
     appSys->Init();
-    appSys->AddWindow <AppWindow> ( "MyTestWindow_0", &windowCaption[0], windowSize );
+    DvigEngine::IWindow* window = appSys->AddWindow <AppWindow> ( "MyTestWindow_0", &windowCaption[0], windowSize );
+    window->SetOnKeyCallback((GLFWkeyfun)&OnKey);
     appSys->WaitForWindows();
 
     // DvigEngine::MemoryObject* mo = DvigEngine::Engine::Allocate( 0, 256 );
