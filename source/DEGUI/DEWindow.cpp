@@ -92,8 +92,3 @@ void DvigEngine::IWindow::Wait()
         }
     } while (presentWindowCount > 0);
 }
-
-void DvigEngine::IWindow::SetOnKeyPressCallback(GLFWkeyfun callback)
-{
-    glfwSetKeyCallback( (GLFWwindow*)this->m_GLFWWindow, callback );
-}

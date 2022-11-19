@@ -3,7 +3,6 @@
 
 #include "DECore.hpp"
 #include "DEThirdPartyMath.hpp"
-#include "DEThirdPartyWindow.hpp"
 
 namespace DvigEngine
 {
@@ -24,7 +23,6 @@ namespace DvigEngine
             DV_FUNCTION_INLINE deint32 GetWindowIndex() { return m_WindowIndex; }
             DV_FUNCTION_INLINE void* GetGLFWWindow() { return m_GLFWWindow; }
             DV_FUNCTION_INLINE MemoryObject* GetUserData() { return m_UserData; }
-            void SetOnKeyPressCallback(GLFWkeyfun callback);
 
         private:
             Application* m_App;

@@ -73,7 +73,7 @@ int main()
                 engine->Create <DvigEngine::INode> ( &node1, "MyNode_1" );
                 engine->Create <DvigEngine::INode> ( &viewer, "Viewer_0" );
 
-                geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
+                geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\moai.obj" );
                 transComp0->Init();
                 shaderComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
@@ -83,7 +83,7 @@ int main()
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
                 viewerTransComp->Init();
                 viewerViewerComp->Init();
-                viewerViewerComp->SetPosition( 0.0f, 2.0f, 9.0f );
+                viewerViewerComp->SetPosition( 0.0f, 0.0f, 4.0f );
                 node0->Init();
                 node1->Init();
                 viewer->Init();
@@ -124,6 +124,7 @@ int main()
                 DvigEngine::INode* viewer = (DvigEngine::INode*)engine->GetExistingInstance( "Viewer_0" );
                 viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetRotationEuler( 0.0f, 0.0f, 0.0f );
                 viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetPerspectiveProjection( 65.0f, 640.0f/480.0f, 0.1f, 100.0f );
+                viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->Move(0.05f / 60.0f);
 
                 DvigEngine::RenderingSystem::BeginRender(viewer);
                 DvigEngine::RenderingSystem::BeginBatch();
