@@ -5,18 +5,18 @@
 #include "../include/DEThirdPartyMath.hpp"
 #include "../include/DEThirdPartyWindow.hpp"
 
-void Func(DvigEngine2::demachword* arguments, DvigEngine2::deint32 jobIndex)
+void Func(DvigEngine::demachword* arguments, DvigEngine::deint32 jobIndex)
 {
     std::cout << "Hello from " << jobIndex << " thread!" << std::endl;
 }
 
 int main()
 {
-    DvigEngine2::MemoryPoolProperty memoryPoolsData[2];
+    DvigEngine::MemoryPoolProperty memoryPoolsData[2];
     memoryPoolsData[0].m_ByteWidth = 128 * DV_MEMORY_MiB;
     memoryPoolsData[1].m_ByteWidth = 24 * DV_MEMORY_KiB;
 
-    DvigEngine2::EngineInputProperty engineInputData;
+    DvigEngine::EngineInputProperty engineInputData;
     engineInputData.m_Version = DV_ENGINE_VERSION_NUMBER;
     engineInputData.m_MemoryPoolsCount = 2u;
     engineInputData.m_MemoryPoolsData = memoryPoolsData;
@@ -24,54 +24,54 @@ int main()
     engineInputData.m_ComponentStorageMemoryPoolIndex = 1;
     engineInputData.m_RequestedThreadCount = 2;
 
-    DvigEngine2::Engine engine(&engineInputData);
-    DvigEngine2::Engine* pEngine = &engine;
+    DvigEngine::Engine engine(&engineInputData);
+    DvigEngine::Engine* pEngine = &engine;
 
-    DvigEngine2::ThreadPoolSystem::Init();
+    DvigEngine::ThreadPoolSystem::Init();
 
     // Create window
-    class AppWindow : public DvigEngine2::IWindow {
+    class AppWindow : public DvigEngine::IWindow {
         public:
             void Start() override final {
-                DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::GeometryComponent>();
-                DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::TransformComponent>();
-                DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::ShaderComponent>();
-                DvigEngine2::Engine::GetClassInstance()->RegisterComponent<DvigEngine2::ViewerComponent>();
+                DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::GeometryComponent>();
+                DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::TransformComponent>();
+                DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::ShaderComponent>();
+                DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::ViewerComponent>();
 
-                DvigEngine2::defloat32 vertices[9] = {
+                DvigEngine::defloat32 vertices[9] = {
                     -1.0f, -1.0f, -1.0f,
                     0.0f, 1.0f, -1.0f,
                     1.0f, -1.0f, -1.0f
                 };
-                DvigEngine2::deuint32 indices[3] = {
+                DvigEngine::deuint32 indices[3] = {
                     0, 1, 2
                 };
 
-                DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
+                DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
 
-                DvigEngine2::GeometryComponent* geomComp0;
-                DvigEngine2::TransformComponent* transComp0;
-                DvigEngine2::ShaderComponent* shaderComp0;
-                DvigEngine2::GeometryComponent* geomComp1;
-                DvigEngine2::TransformComponent* transComp1;
-                DvigEngine2::ShaderComponent* shaderComp1;
-                DvigEngine2::TransformComponent* viewerTransComp;
-                DvigEngine2::ViewerComponent* viewerViewerComp;
-                DvigEngine2::INode* node0;
-                DvigEngine2::INode* node1;
-                DvigEngine2::INode* viewer;
+                DvigEngine::GeometryComponent* geomComp0;
+                DvigEngine::TransformComponent* transComp0;
+                DvigEngine::ShaderComponent* shaderComp0;
+                DvigEngine::GeometryComponent* geomComp1;
+                DvigEngine::TransformComponent* transComp1;
+                DvigEngine::ShaderComponent* shaderComp1;
+                DvigEngine::TransformComponent* viewerTransComp;
+                DvigEngine::ViewerComponent* viewerViewerComp;
+                DvigEngine::INode* node0;
+                DvigEngine::INode* node1;
+                DvigEngine::INode* viewer;
 
-                engine->Create <DvigEngine2::GeometryComponent> ( &geomComp0, "MyGeometryComponent_0" );
-                engine->Create <DvigEngine2::TransformComponent> ( &transComp0, "MyTransformComponent_0" );
-                engine->Create <DvigEngine2::ShaderComponent> ( &shaderComp0, "MyShaderComponent_0" );
-                engine->Create <DvigEngine2::GeometryComponent> ( &geomComp1, "MyGeometryComponent_1" );
-                engine->Create <DvigEngine2::TransformComponent> ( &transComp1, "MyTransformComponent_1" );
-                engine->Create <DvigEngine2::ShaderComponent> ( &shaderComp1, "MyShaderComponent_1" );
-                engine->Create <DvigEngine2::TransformComponent> ( &viewerTransComp, "ViewerTransformComponent_1" );
-                engine->Create <DvigEngine2::ViewerComponent> ( &viewerViewerComp, "ViewerComponent_0" );
-                engine->Create <DvigEngine2::INode> ( &node0, "MyNode_0" );
-                engine->Create <DvigEngine2::INode> ( &node1, "MyNode_1" );
-                engine->Create <DvigEngine2::INode> ( &viewer, "Viewer_0" );
+                engine->Create <DvigEngine::GeometryComponent> ( &geomComp0, "MyGeometryComponent_0" );
+                engine->Create <DvigEngine::TransformComponent> ( &transComp0, "MyTransformComponent_0" );
+                engine->Create <DvigEngine::ShaderComponent> ( &shaderComp0, "MyShaderComponent_0" );
+                engine->Create <DvigEngine::GeometryComponent> ( &geomComp1, "MyGeometryComponent_1" );
+                engine->Create <DvigEngine::TransformComponent> ( &transComp1, "MyTransformComponent_1" );
+                engine->Create <DvigEngine::ShaderComponent> ( &shaderComp1, "MyShaderComponent_1" );
+                engine->Create <DvigEngine::TransformComponent> ( &viewerTransComp, "ViewerTransformComponent_1" );
+                engine->Create <DvigEngine::ViewerComponent> ( &viewerViewerComp, "ViewerComponent_0" );
+                engine->Create <DvigEngine::INode> ( &node0, "MyNode_0" );
+                engine->Create <DvigEngine::INode> ( &node1, "MyNode_1" );
+                engine->Create <DvigEngine::INode> ( &viewer, "Viewer_0" );
 
                 geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\moai.obj" );
                 transComp0->Init();
@@ -83,74 +83,75 @@ int main()
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
                 viewerTransComp->Init();
                 viewerViewerComp->Init();
+                viewerViewerComp->SetPosition( 0.0f, 0.0f, 4.0f );
                 node0->Init();
                 node1->Init();
                 viewer->Init();
                 
-                engine->AddComponent <DvigEngine2::GeometryComponent> ( &node0, geomComp0 );
-                engine->AddComponent <DvigEngine2::TransformComponent> ( &node0, transComp0 );
-                engine->AddComponent <DvigEngine2::ShaderComponent> ( &node0, shaderComp0 );
-                engine->AddComponent <DvigEngine2::GeometryComponent> ( &node1, geomComp0 );
-                engine->AddComponent <DvigEngine2::TransformComponent> ( &node1, transComp1 );
-                engine->AddComponent <DvigEngine2::ShaderComponent> ( &node1, shaderComp1 );
-                engine->AddComponent <DvigEngine2::TransformComponent> ( &viewer, viewerTransComp );
-                engine->AddComponent <DvigEngine2::ViewerComponent> ( &viewer, viewerViewerComp );
+                engine->AddComponent <DvigEngine::GeometryComponent> ( &node0, geomComp0 );
+                engine->AddComponent <DvigEngine::TransformComponent> ( &node0, transComp0 );
+                engine->AddComponent <DvigEngine::ShaderComponent> ( &node0, shaderComp0 );
+                engine->AddComponent <DvigEngine::GeometryComponent> ( &node1, geomComp0 );
+                engine->AddComponent <DvigEngine::TransformComponent> ( &node1, transComp1 );
+                engine->AddComponent <DvigEngine::ShaderComponent> ( &node1, shaderComp1 );
+                engine->AddComponent <DvigEngine::TransformComponent> ( &viewer, viewerTransComp );
+                engine->AddComponent <DvigEngine::ViewerComponent> ( &viewer, viewerViewerComp );
 
-                DvigEngine2::GL4::Enable( GL_DEPTH_TEST );
+                DvigEngine::GL4::Enable( GL_DEPTH_TEST );
             }
             void Update() override final {
-                DvigEngine2::Engine* engine = DvigEngine2::Engine::GetClassInstance();
-                DvigEngine2::Application* app = this->GetApplication();
-                DvigEngine2::INode* myNode_0 = (DvigEngine2::INode*)engine->GetExistingInstance( "MyNode_0" );
-                myNode_0->GetComponent<DvigEngine2::TransformComponent>(nullptr)->SetPosition( 0.0f, 0.0f, 0.0f );
-                myNode_0->GetComponent<DvigEngine2::TransformComponent>(nullptr)->SetRotationEuler( 0.0f, 0.0f, 0.0f );
-                myNode_0->GetComponent<DvigEngine2::TransformComponent>(nullptr)->SetScale( 1.0f, 1.0f, 1.0f );
-                DvigEngine2::INode* myNode_1 = (DvigEngine2::INode*)engine->GetExistingInstance( "MyNode_1" );
-                DvigEngine2::ShaderComponent* myNode_0_Shader = (DvigEngine2::ShaderComponent*)myNode_0->GetComponent<DvigEngine2::ShaderComponent>(nullptr);
+                static demfloat fRot = 0.0f;
+                if (fRot > 360.0f) { fRot = 0.0f; }
+                fRot += 0.1f;
+                DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
+                DvigEngine::Application* app = this->GetApplication();
+                DvigEngine::INode* myNode_0 = (DvigEngine::INode*)engine->GetExistingInstance( "MyNode_0" );
+                myNode_0->GetComponent<DvigEngine::TransformComponent>(nullptr)->SetPosition( 0.0f, 0.0f, 0.0f );
+                myNode_0->GetComponent<DvigEngine::TransformComponent>(nullptr)->SetRotationEuler( 0.0f, fRot, 0.0f );
+                myNode_0->GetComponent<DvigEngine::TransformComponent>(nullptr)->SetScale( 1.0f, 1.0f, 1.0f );
+                DvigEngine::INode* myNode_1 = (DvigEngine::INode*)engine->GetExistingInstance( "MyNode_1" );
+                DvigEngine::ShaderComponent* myNode_0_Shader = (DvigEngine::ShaderComponent*)myNode_0->GetComponent<DvigEngine::ShaderComponent>(nullptr);
 
-                DvigEngine2::IWindow* myWindow = app->GetWindow( "MyTestWindow_0" );
+                DvigEngine::IWindow* myWindow = app->GetWindow( "MyTestWindow_0" );
                 int windowWidth = 0;
                 int windowHeight = 0;
                 glfwGetFramebufferSize( (GLFWwindow*)myWindow->GetGLFWWindow(), &windowWidth, &windowHeight );
 
-                DvigEngine2::GL4::Viewport( 0, 0, windowWidth, windowHeight );
-                DvigEngine2::GL4::ClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-                DvigEngine2::GL4::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+                DvigEngine::GL4::Viewport( 0, 0, windowWidth, windowHeight );
+                DvigEngine::GL4::ClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+                DvigEngine::GL4::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-                DvigEngine2::INode* viewer = (DvigEngine2::INode*)engine->GetExistingInstance( "Viewer_0" );
-                static demfloat fRot = 0.0f;
-                if (fRot > 1.0f) { fRot = 0.0f; }
-                fRot += 0.0001f;
-                viewer->GetComponent<DvigEngine2::ViewerComponent>(nullptr)->SetPosition( 0.0f, 0.0f, 0.0f );
-                viewer->GetComponent<DvigEngine2::ViewerComponent>(nullptr)->SetRotationEuler( 0.0f, 0.0f, 0.0f );
-                viewer->GetComponent<DvigEngine2::ViewerComponent>(nullptr)->SetPerspectiveProjection( 65.0f, 640.0f/480.0f, 0.1f, 100.0f );
+                DvigEngine::INode* viewer = (DvigEngine::INode*)engine->GetExistingInstance( "Viewer_0" );
+                viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetRotationEuler( 0.0f, 0.0f, 0.0f );
+                viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetPerspectiveProjection( 65.0f, 640.0f/480.0f, 0.1f, 100.0f );
+                viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->Move(0.05f / 60.0f);
 
-                DvigEngine2::RenderingSystem::BeginRender(viewer);
-                DvigEngine2::RenderingSystem::BeginBatch();
-                DvigEngine2::RenderingSystem::Draw( myNode_0 );
-                // DvigEngine2::RenderingSystem::Draw( myNode_1 );
-                DvigEngine2::RenderingSystem::EndBatch();
-                DvigEngine2::RenderingSystem::EndRender();
+                DvigEngine::RenderingSystem::BeginRender(viewer);
+                DvigEngine::RenderingSystem::BeginBatch();
+                DvigEngine::RenderingSystem::Draw( myNode_0 );
+                // DvigEngine::RenderingSystem::Draw( myNode_1 );
+                DvigEngine::RenderingSystem::EndBatch();
+                DvigEngine::RenderingSystem::EndRender();
             }
     };
 
     const char* windowCaption = "DvigEngine Test";
     glm::uvec2 windowSize(640, 480);
 
-    DvigEngine2::Application* appSys;
-    pEngine->Create <DvigEngine2::Application> ( &appSys, "MyApplication_0" );
+    DvigEngine::Application* appSys;
+    pEngine->Create <DvigEngine::Application> ( &appSys, "MyApplication_0" );
     appSys->Init();
     appSys->AddWindow <AppWindow> ( "MyTestWindow_0", &windowCaption[0], windowSize );
     appSys->WaitForWindows();
 
-    // DvigEngine2::MemoryObject* mo = DvigEngine2::Engine::Allocate( 0, 256 );
+    // DvigEngine::MemoryObject* mo = DvigEngine::Engine::Allocate( 0, 256 );
     // std::cout << mo << std::endl;
     // pEngine->Delete( mo );
-    // mo = DvigEngine2::Engine::Allocate( 0, 256 );
+    // mo = DvigEngine::Engine::Allocate( 0, 256 );
     // std::cout << mo->Unwrap<float*>()[0] << std::endl;
 
-    DvigEngine2::ThreadPoolSystem::Terminate();
-    DvigEngine2::ThreadPoolSystem::WaitForJobs();
+    DvigEngine::ThreadPoolSystem::Terminate();
+    DvigEngine::ThreadPoolSystem::WaitForJobs();
     
     /*
         Node "House"

@@ -5,7 +5,7 @@
 #include "DEThirdPartyGL.hpp"
 #include "DEThirdPartyMath.hpp"
 
-namespace DvigEngine2
+namespace DvigEngine
 {
     class GL4
     {
@@ -138,6 +138,8 @@ namespace DvigEngine2
             void AddRotationEulerX(demfloat value);
             void AddRotationEulerY(demfloat value);
             void AddRotationEulerZ(demfloat value);
+            void Move(demfloat value);
+            void Strafe(demfloat value);
 
             DV_FUNCTION_INLINE demfloat GetPositionX() { return (demfloat)this->m_Position.x; }
             DV_FUNCTION_INLINE demfloat GetPositionY() { return (demfloat)this->m_Position.y; }
@@ -187,7 +189,7 @@ namespace DvigEngine2
 
     class RenderingSystem : public ISystem
     {
-        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+        DV_MACRO_FRIENDS(DvigEngine::Engine)
         DV_XMACRO_DECLARE_STATIC_CLASS(RenderingSystem)
 
         public:

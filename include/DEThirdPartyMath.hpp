@@ -6,7 +6,8 @@
 #include "../thirdparty/glm/gtc/quaternion.hpp"
 #include "../thirdparty/glm/gtc/matrix_transform.hpp"
 #include "../thirdparty/glm/gtx/transform.hpp"
+#include "../thirdparty/glm/geometric.hpp"
 
-typedef DvigEngine2::defloat32 demfloat;
+typedef DvigEngine::defloat32 demfloat;
 
 #endif

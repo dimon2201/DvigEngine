@@ -1,266 +1,387 @@
-// #include "../../include/DECore.hpp"
+#include "../../include/DECore.hpp"
+#include "../../include/DERendering.hpp"
+#include "../../include/DEThirdPartyWindow.hpp"
 
-// #include <iostream>
-// #include <typeinfo>
-// #include <thread>
+DvigEngine::Engine* DvigEngine::Engine::m_EngineInstance = nullptr;
+DvigEngine::deint32 DvigEngine::Engine::m_GlobalComponentIndex = 0;
 
-// DV_MACRO_DEFINE_SINGLETON(DvigEngine::Engine)
+DvigEngine::Engine::Engine(DvigEngine::EngineInputProperty* engineInputProperty)
+{
+    // Get thread info
+    deusize requestedThreadCount = engineInputProperty->m_RequestedThreadCount;
+    const deusize maxThreadCount = std::thread::hardware_concurrency();
+    if (requestedThreadCount > 0 && requestedThreadCount <= maxThreadCount) {
+        requestedThreadCount = engineInputProperty->m_RequestedThreadCount;
+    } else {
+        requestedThreadCount = 1;
+    }
 
-// void DvigEngine::Engine::Init(DvigEngine::ENGINE_INPUT_DATA* engineInputData)
-// {
-//     DV_ASSERT((!m_Instance))
-//     DV_ASSERT((engineInputData->m_Version == DV_ENGINE_VERSION_NUMBER))
+    // Count all memory pools byte width
+    deusize mallocByteWidth = 0;
+    for (deisize i = 0; i < engineInputProperty->m_MemoryPoolsCount; ++i) { mallocByteWidth += engineInputProperty->m_MemoryPoolsData[i].m_ByteWidth; }
 
-//     DvigEngine::MEMORY_POOL_DATA* memoryPoolsData = engineInputData->m_MemoryPoolsData;
-//     deisize memoryPoolsCount = engineInputData->m_MemoryPoolsCount;
+    // Single-allocated data block
+    const void* mallocAddress = malloc( mallocByteWidth );
 
-//     // Count total memory occupancy for pools
-//     deusize totalPoolByteWidth = 0;
-//     for (deisize i = 0; i < memoryPoolsCount; ++i) { totalPoolByteWidth += memoryPoolsData[i].m_ByteWidth; }
-//     totalPoolByteWidth += sizeof(DvigEngine::MEMORY_POOL_DATA); // for global pool info
+    // Assign proper pointers to memory pools
+    void* movingAddress = (void*)mallocAddress;
+    for (deisize i = 0; i < engineInputProperty->m_MemoryPoolsCount; ++i)
+    {
+        engineInputProperty->m_MemoryPoolsData[i].m_Address = movingAddress;
+        engineInputProperty->m_MemoryPoolsData[i].m_AddressOffset = movingAddress;
+        movingAddress = Ptr<void*>::Add( &movingAddress, engineInputProperty->m_MemoryPoolsData[i].m_ByteWidth );
+    }
 
-//     // Allocate global memory pool
-//     void* globalMemoryPoolAddress = malloc(totalPoolByteWidth);
-//     void* globalMemoryPoolOffset = globalMemoryPoolAddress;
-//     deusize globalMemoryPoolByteWidth = totalPoolByteWidth;
-//     memset(globalMemoryPoolAddress, 0, globalMemoryPoolByteWidth);
+    // Allocate memory for Engine
+    // const deusize allocEngineByteWidth = sizeof(DvigEngine::Engine);
+    // m_Instance = (DvigEngine::Engine*)engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset;
+    // engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset = DvigEngine::Ptr<void*>::Add( &engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset, allocEngineByteWidth );
 
-//     // Update memory pools addresses based on global memory pool
-//     totalPoolByteWidth = 0;
-//     for (deisize i = 0; i < memoryPoolsCount; ++i)
-//     {
-//         DvigEngine::MEMORY_POOL_DATA* poolInfo = &memoryPoolsData[i];
-//         poolInfo->m_Address = (void*)((deusize)globalMemoryPoolOffset + totalPoolByteWidth);
-//         poolInfo->m_AddressOffset = poolInfo->m_Address;
-//         totalPoolByteWidth += poolInfo->m_ByteWidth;
-//     }
+    m_EngineInstance = this;
 
-//     // Start System memory pools
-//     deint32 reservedMemoryPoolID = engineInputData->m_SystemMemoryPoolID;
-//     deint32 prototypeStorageMemoryPoolID = engineInputData->m_PrototypeStorageMemoryPoolID;
-//     deint32 storageMemoryPoolID = engineInputData->m_StorageMemoryPoolID;
-//     DvigEngine::MEMORY_POOL_DATA* reservedMemoryPoolData = &memoryPoolsData[reservedMemoryPoolID];
-//     DvigEngine::MEMORY_POOL_DATA* prototypeStorageMemoryPoolData = &memoryPoolsData[prototypeStorageMemoryPoolID];
-//     DvigEngine::MEMORY_POOL_DATA* storageMemoryPoolData = &memoryPoolsData[storageMemoryPoolID];
+    // Allocate memory for Engine Memory pools
+    const deusize allocMemoryPoolsByteWidth = engineInputProperty->m_MemoryPoolsCount * sizeof(DvigEngine::MemoryPool);
+    this->m_Prop.m_MemoryPools = (DvigEngine::MemoryPool*)engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset;
+    engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset = DvigEngine::Ptr<void*>::Add( &engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset, allocMemoryPoolsByteWidth );
 
-//     // Memory allocation for Engine
-//     m_Instance = (DvigEngine::Engine*)DvigEngine::Engine::AllocateUsingData(reservedMemoryPoolData, sizeof(DvigEngine::Engine));
+    // Allocate memory for Engine Job queues
+    // const deusize allocJobQueuesByteWidth = requestedThreadCount * sizeof(DvigEngine::JobQueue);
+    // this->m_Prop.m_JobQueues = (DvigEngine::JobQueue*)engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset;
+    // engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset = DvigEngine::Ptr<void*>::Add( &engineInputProperty->m_MemoryPoolsData[ 0 ].m_AddressOffset, allocJobQueuesByteWidth );
 
-//     // Assign Engine data
-//     DvigEngine::ENGINE_DATA* engineData = (DvigEngine::ENGINE_DATA*)m_Instance->GetData();
-//     engineData->m_MaxThreadCount = std::thread::hardware_concurrency();
-//     if (engineInputData->m_RequestedThreadCount > 0 && engineInputData->m_RequestedThreadCount <= engineData->m_MaxThreadCount)
-//     {
-//         engineData->m_RequestedThreadCount = engineInputData->m_RequestedThreadCount;
-//     }
-//     else
-//     {
-//         engineData->m_RequestedThreadCount = 1;
-//     }
+    // Copy input data to Engine data
+    for (deisize i = 0; i < engineInputProperty->m_MemoryPoolsCount; ++i)
+    {
+        this->GetData()->m_MemoryPools[i].m_AllocationCount = 1;
+        this->GetData()->m_MemoryPools[i].m_Address = engineInputProperty->m_MemoryPoolsData[i].m_Address;
+        this->GetData()->m_MemoryPools[i].m_AddressOffset = engineInputProperty->m_MemoryPoolsData[i].m_AddressOffset;
+        this->GetData()->m_MemoryPools[i].m_ByteWidth = engineInputProperty->m_MemoryPoolsData[i].m_ByteWidth;
+        this->GetData()->m_MemoryPools[i].m_OccupiedByteWidth = 0;
 
-
-//     // Memory allocation for Job Queues
-//     m_Instance->m_Data.m_JobQueues = (DvigEngine::JobQueue*)DvigEngine::Engine::AllocateUsingData(reservedMemoryPoolData, engineData->m_RequestedThreadCount * sizeof(DvigEngine::JobQueue));
+        // Put stub memory object
+        MemoryObject* memoryObject = (MemoryObject*)this->GetData()->m_MemoryPools[i].m_AddressOffset;
+        memoryObject->m_Address = nullptr;
+        memoryObject->m_ByteWidth =    (demachword)this->GetData()->m_MemoryPools[i].m_ByteWidth -
+                                        (demachword)this->GetData()->m_MemoryPools[i].m_OccupiedByteWidth;
+        memoryObject->m_FreeFlag = DV_TRUE | DV_XMACRO_MEMORY_OBJECT_STUB;
+        memoryObject->m_MemoryPoolIndex = i;
+    }
     
-//     // Instantiate Job Queues
-//     m_Instance->m_Data.m_CurrentJobQueueCursor = 0;
-//     for (deisize i = 0; i < (deisize)engineData->m_RequestedThreadCount; ++i)
-//     {
-//         m_Instance->m_Data.m_JobQueues[i].m_Data.m_JobCount = 0;
-//     }
+    this->GetData()->m_Version = engineInputProperty->m_Version;
+    this->GetData()->m_MemoryPoolsCount = engineInputProperty->m_MemoryPoolsCount;
+    this->GetData()->m_SystemMemoryPoolIndex = engineInputProperty->m_SystemMemoryPoolIndex;
+    this->GetData()->m_ComponentStorageMemoryPoolIndex = engineInputProperty->m_ComponentStorageMemoryPoolIndex;
+    this->GetData()->m_MaxThreadCount = maxThreadCount;
+    this->GetData()->m_RequestedThreadCount = requestedThreadCount;
+    this->GetData()->m_CurrentJobQueueCursor = 0u;
+    this->GetData()->m_UserData = nullptr;
 
-//     // Allocate memory for memory pools classes (1 Extra pool)
-//     deusize allocClassByteWidth = (1 + memoryPoolsCount) * sizeof(DvigEngine::MemoryPool);
-//     DvigEngine::MemoryPool* allocMemoryPools = (DvigEngine::MemoryPool*)DvigEngine::Engine::AllocateUsingData(reservedMemoryPoolData, allocClassByteWidth);
+    // Hardcoded creation of registry objects
+    // Create registered components hash map
+    MemoryObject* registeredComponentsHashMapMemoryObject = Engine::Allocate(0, sizeof(HashMap));
+    HashMap registeredComponentsHashMapObjectOnStack;
+    HashMap* registeredComponentsHashMapObject = registeredComponentsHashMapMemoryObject->Unwrap<HashMap*>();
+    DvigEngine::Engine::MemoryCopy( registeredComponentsHashMapObject, &registeredComponentsHashMapObjectOnStack, sizeof(demachword) ); // copy vpointer
+    registeredComponentsHashMapObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryComponentsHashMap", Engine::GetGlobalUIID(), registeredComponentsHashMapMemoryObject, this );
+    this->m_RegistryProp.m_RegisteredComponents = registeredComponentsHashMapObject;
+    this->m_RegistryProp.m_RegisteredComponents->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
+    // Create createes hash map
+    MemoryObject* createesHashMapMemoryObject = Engine::Allocate(0, sizeof(HashMap));
+    HashMap createesHashMapObjectOnStack;
+    HashMap* createesHashMapObject = createesHashMapMemoryObject->Unwrap<HashMap*>();
+    DvigEngine::Engine::MemoryCopy( createesHashMapObject, &createesHashMapObjectOnStack, sizeof(demachword) ); // copy vpointer
+    createesHashMapMemoryObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryCreateesHashMap", Engine::GetGlobalUIID(), createesHashMapMemoryObject, this );
+    this->m_RegistryProp.m_Instances = createesHashMapObject;
+    this->m_RegistryProp.m_Instances->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
+    // Create allocation memory pool index hash map
+    MemoryObject* allocPoolIndexHashMapMemoryObject = Engine::Allocate(0, sizeof(HashMap));
+    HashMap allocPoolIndexObjectOnStack;
+    HashMap* allocPoolIndexMapObject = allocPoolIndexHashMapMemoryObject->Unwrap<HashMap*>();
+    DvigEngine::Engine::MemoryCopy( allocPoolIndexMapObject, &allocPoolIndexObjectOnStack, sizeof(demachword) ); // copy vpointer
+    allocPoolIndexHashMapMemoryObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryAllocPoolIndexHashMap", Engine::GetGlobalUIID(), allocPoolIndexHashMapMemoryObject, this );
+    this->m_RegistryProp.m_AllocPoolIndexMap = allocPoolIndexMapObject;
+    this->m_RegistryProp.m_AllocPoolIndexMap->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
 
-//     // Assign data for each memory pool in EngineData
-//     m_Instance->m_Data.m_MemoryPools = allocMemoryPools;
-//     for (deisize i = 0; i < memoryPoolsCount; ++i)
-//     {
-//         DvigEngine::MEMORY_POOL_DATA* curMemoryPoolData = (DvigEngine::MEMORY_POOL_DATA*)m_Instance->GetMemoryPoolByID(i)->GetData();
-//         DvigEngine::Engine::CopyMemory(curMemoryPoolData, &memoryPoolsData[i], sizeof(DvigEngine::MEMORY_POOL_DATA));
-//     }
+    // INode global root node
+    this->Create<DvigEngine::INode>( &DvigEngine::INode::m_RootNode, "_RootNode" );
+    DvigEngine::INode::m_RootNode->Init();
+
+    // Memory pool index for built-in types
+    this->m_RegistryProp.m_AllocPoolIndexMap->Insert( typeid(IComponent).name(), (void*)(demachword)engineInputProperty->m_ComponentStorageMemoryPoolIndex );
+
+    // Init GLFW
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+
+    // DvigEngine::MemoryPoolProperty* memoryPoolsData = engineInputProperty->m_MemoryPoolsData;
+    // deisize memoryPoolsCount = engineInputProperty->m_MemoryPoolsCount;
+
+    // // Count total memory occupancy for pools
+    // deusize totalPoolByteWidth = 0;
+    // for (deisize i = 0; i < memoryPoolsCount; ++i) { totalPoolByteWidth += memoryPoolsData[i].m_ByteWidth; }
+    // totalPoolByteWidth += sizeof(DvigEngine::MemoryPoolProperty); // for global pool info
+
+    // // Allocate extra global memory pool with malloc
+    // MemoryPoolProperty globalMemoryPoolProperty;
+    // const deint32 globalMemoryPoolIndex = 1 + memoryPoolsCount;
+    // globalMemoryPoolProperty.m_Address = malloc(totalPoolByteWidth);
+    // globalMemoryPoolProperty.m_AddressOffset = globalMemoryPoolProperty.m_Address;
+    // globalMemoryPoolProperty.m_ByteWidth = totalPoolByteWidth;
+    // memset(globalMemoryPoolProperty.m_Address, 0, globalMemoryPoolProperty.m_ByteWidth);
+    // // MemoryPool* globalMemoryPool = (MemoryPool*)globalMemoryPoolProperty.m_AddressOffset;
+    // // globalMemoryPoolProperty.m_AddressOffset = DvigEngine::Ptr<void>::Add( globalMemoryPoolProperty.m_AddressOffset, sizeof(MemoryPool) );
+
+    // // Allocate extra intermediate memory pool with malloc
+    // MemoryPoolProperty intermediateMemoryPoolProperty;
+    // const deint32 intermediateMemoryPoolIndex = memoryPoolsCount;
+    // intermediateMemoryPoolProperty.m_Address = malloc(224 * 65536);
+    // intermediateMemoryPoolProperty.m_AddressOffset = intermediateMemoryPoolProperty.m_Address;
+    // intermediateMemoryPoolProperty.m_ByteWidth = 224 * 65536;
+    // memset(intermediateMemoryPoolProperty.m_Address, 0, intermediateMemoryPoolProperty.m_ByteWidth);
+    // // MemoryPool* intermediateMemoryPool = (MemoryPool*)intermediateMemoryPoolProperty.m_AddressOffset;
+    // // intermediateMemoryPoolProperty.m_AddressOffset = DvigEngine::Ptr<void>::Add( intermediateMemoryPoolProperty.m_AddressOffset, sizeof(MemoryPool) );
+
+    // // Main memory pools constants
+    // const deint32 reservedMemoryPoolIndex = engineInputProperty->m_SystemMemoryPoolIndex;
+    // // const deint32 prototypeStorageMemoryPoolIndex = engineInputProperty->m_PrototypeStorageMemoryPoolIndex;
+    // const deint32 storageMemoryPoolIndex = engineInputProperty->m_StorageMemoryPoolIndex;
+
+    // // Update memory pools addresses based on global memory pool
+    // totalPoolByteWidth = 0;
+    // for (deisize i = 0; i < memoryPoolsCount; ++i)
+    // {
+    //     DvigEngine::MemoryPoolProperty* poolInfo = &memoryPoolsData[i];
+    //     poolInfo->m_Address = (void*)((deusize)globalMemoryPoolProperty.m_AddressOffset + totalPoolByteWidth);
+    //     poolInfo->m_AddressOffset = poolInfo->m_Address;
+    //     totalPoolByteWidth += poolInfo->m_ByteWidth;
+    // }
+
+    // // Memory allocation for memory pools classes (2 Extra pools)
+    // deusize allocClassByteWidth = (2 + memoryPoolsCount) * sizeof(DvigEngine::MemoryPool);
+    // DvigEngine::MemoryPool* allocMemoryPools = (DvigEngine::MemoryPool*)intermediateMemoryPoolProperty.m_AddressOffset;
+    // DvigEngine::Ptr<void*>::Add( &intermediateMemoryPoolProperty.m_AddressOffset, allocClassByteWidth );
+
+    // // Memory allocation for Engine
+    // m_Instance = (DvigEngine::Engine*)intermediateMemoryPoolProperty.m_AddressOffset;
+    // DvigEngine::Ptr<void*>::Add( &intermediateMemoryPoolProperty.m_AddressOffset, sizeof(DvigEngine::Engine) );
+    // m_Instance->m_Prop.m_MemoryPools = allocMemoryPools;
+
+    // // Copy all memory pools to Engine
+    // // Assign data for each memory pool in EngineData
+    // for (deisize i = 0; i < memoryPoolsCount; ++i)
+    // {
+    //     m_Instance->m_Prop.m_MemoryPools[ i ].m_Prop.m_AddressOffset = memoryPoolsData[ i ].m_AddressOffset;
+    //     m_Instance->m_Prop.m_MemoryPools[ i ].m_Prop.m_ByteWidth = memoryPoolsData[ i ].m_ByteWidth;
+    // }
+    // m_Instance->GetData()->m_MemoryPools[ intermediateMemoryPoolIndex ].m_Prop.m_Address = intermediateMemoryPoolProperty.m_Address;
+    // m_Instance->GetData()->m_MemoryPools[ intermediateMemoryPoolIndex ].m_Prop.m_AddressOffset = intermediateMemoryPoolProperty.m_AddressOffset;
+    // m_Instance->GetData()->m_MemoryPools[ intermediateMemoryPoolIndex ].m_Prop.m_ByteWidth = intermediateMemoryPoolProperty.m_ByteWidth;
+    // m_Instance->GetData()->m_MemoryPools[ globalMemoryPoolIndex ].m_Prop.m_Address = globalMemoryPoolProperty.m_Address;
+    // m_Instance->GetData()->m_MemoryPools[ globalMemoryPoolIndex ].m_Prop.m_AddressOffset = globalMemoryPoolProperty.m_AddressOffset;
+    // m_Instance->GetData()->m_MemoryPools[ globalMemoryPoolIndex ].m_Prop.m_ByteWidth = globalMemoryPoolProperty.m_ByteWidth;
+    // m_Instance->GetData()->m_MemoryPools[ reservedMemoryPoolIndex ].m_Prop.m_Address = memoryPoolsData[ reservedMemoryPoolIndex ].m_Address;
+    // m_Instance->GetData()->m_MemoryPools[ reservedMemoryPoolIndex ].m_Prop.m_AddressOffset = memoryPoolsData[ reservedMemoryPoolIndex ].m_AddressOffset;
+    // m_Instance->GetData()->m_MemoryPools[ reservedMemoryPoolIndex ].m_Prop.m_ByteWidth = memoryPoolsData[ reservedMemoryPoolIndex ].m_ByteWidth;
+    // m_Instance->GetData()->m_MemoryPools[ storageMemoryPoolIndex ].m_Prop.m_Address = memoryPoolsData[ storageMemoryPoolIndex ].m_Address;
+    // m_Instance->GetData()->m_MemoryPools[ storageMemoryPoolIndex ].m_Prop.m_AddressOffset = memoryPoolsData[ storageMemoryPoolIndex ].m_AddressOffset;
+    // m_Instance->GetData()->m_MemoryPools[ storageMemoryPoolIndex ].m_Prop.m_ByteWidth = memoryPoolsData[ storageMemoryPoolIndex ].m_ByteWidth;
+    // // DvigEngine::Engine::CopyMemory( &m_Instance->GetData()->m_MemoryPools[ intermediateMemoryPoolIndex ].m_Prop, &intermediateMemoryPoolProperty, sizeof(DvigEngine::MemoryPoolProperty) );
+    // // DvigEngine::Engine::CopyMemory( &m_Instance->GetData()->m_MemoryPools[ globalMemoryPoolIndex ].m_Prop, &globalMemoryPoolIndex, sizeof(DvigEngine::MemoryPoolProperty) );
+    // // DvigEngine::Engine::CopyMemory( &m_Instance->GetData()->m_MemoryPools[ reservedMemoryPoolIndex ].m_Prop, &memoryPoolsData[reservedMemoryPoolIndex], sizeof(DvigEngine::MemoryPoolProperty) );
+    // // DvigEngine::Engine::CopyMemory( &m_Instance->GetData()->m_MemoryPools[ storageMemoryPoolIndex ].m_Prop, &memoryPoolsData[storageMemoryPoolIndex], sizeof(DvigEngine::MemoryPoolProperty) );
+    // // DvigEngine::Engine::CopyMemory( &m_Instance->GetData()->m_MemoryPools[ prototypeStorageMemoryPoolIndex ].m_Prop, &memoryPoolsData[prototypeStorageMemoryPoolIndex], sizeof(DvigEngine::MemoryPoolProperty) );
+
+    // // Assign Engine data
+    // DvigEngine::EngineProperty* engineData = (DvigEngine::EngineProperty*)m_Instance->GetData();
+    // engineData->m_MaxThreadCount = std::thread::hardware_concurrency();
+    // if (engineInputProperty->m_RequestedThreadCount > 0 && engineInputProperty->m_RequestedThreadCount <= engineData->m_MaxThreadCount)
+    // {
+    //     engineData->m_RequestedThreadCount = engineInputProperty->m_RequestedThreadCount;
+    // }
+    // else
+    // {
+    //     engineData->m_RequestedThreadCount = 1;
+    // }
+
+    // // Memory allocation for Job Queues
+    // m_Instance->GetData()->m_JobQueues = (DvigEngine::JobQueue*)DvigEngine::Engine::Allocate(intermediateMemoryPoolIndex, engineData->m_RequestedThreadCount * sizeof(DvigEngine::JobQueue));
+
+    // // Instantiate Job Queues
+    // m_Instance->GetData()->m_CurrentJobQueueCursor = 0;
+    // for (deisize i = 0; i < (deisize)engineData->m_RequestedThreadCount; ++i)
+    // {
+    //     m_Instance->GetData()->m_JobQueues[i].m_Prop.m_JobCount = 0;
+    // }
+
+    // // Assign Storage memory pools (both Prototype and Component) for Engine
+    // // prototypeStorageMemoryPoolData->m_Index = prototypeStorageMemoryPoolID;
+    // // storageMemoryPoolData->m_Index = storageMemoryPoolID;
+    // // m_Instance->m_Data.m_MemoryPools[ prototypeStorageMemoryPoolID ].GetData()->m_Index = prototypeStorageMemoryPoolID;
+    // // m_Instance->m_Data.m_MemoryPools[ storageMemoryPoolID ].GetData()->m_Index = storageMemoryPoolID;
+
+    // // Copy user input data to Engine
+    // // DvigEngine::Engine::CopyMemory(&m_Instance->m_InputProp, engineInputProperty, sizeof(DvigEngine::EngineInputProperty));
+    // m_Instance->m_InputProp.m_MemoryPoolsCount += 2;
     
-//     // Assign Global memory pool for Engine
-//     const deint32 globalMemoryPoolID = memoryPoolsCount;
-//     DvigEngine::MEMORY_POOL_DATA globalMemoryPoolData;
-//     globalMemoryPoolData.m_Index = globalMemoryPoolID;
-//     globalMemoryPoolData.m_Address = globalMemoryPoolAddress;
-//     globalMemoryPoolData.m_AddressOffset = globalMemoryPoolData.m_Address;
-//     globalMemoryPoolData.m_ByteWidth = globalMemoryPoolByteWidth;
-//     DvigEngine::MemoryPool* globalMemoryPool = m_Instance->GetMemoryPoolByID(globalMemoryPoolID);
-//     DvigEngine::Engine::CopyMemory(globalMemoryPool->GetData(), &globalMemoryPoolData, sizeof(DvigEngine::MEMORY_POOL_DATA));
+    // Initialize registry hashmap for Engine
+    // m_Instance->m_RegistryData.m_StorageAddress = storageMemoryPoolData->m_AddressOffset;
+    // m_Instance->m_RegistryData.m_UniqueComponentCount = 0;
+    // m_Instance->m_RegistryData.m_UniqueSystemCount = 0;
+    // m_Instance->m_RegistryData.m_TypeAllocationPoolID.Init();
+    // m_Instance->m_RegistryData.m_Components.Init();
+    // m_Instance->m_RegistryData.m_Systems.Init();
 
-//     // Assign Storage memory pools (both Prototype and Component) for Engine
-//     prototypeStorageMemoryPoolData->m_Index = prototypeStorageMemoryPoolID;
-//     storageMemoryPoolData->m_Index = storageMemoryPoolID;
-//     m_Instance->m_Data.m_MemoryPools[ prototypeStorageMemoryPoolID ].GetData()->m_Index = prototypeStorageMemoryPoolID;
-//     m_Instance->m_Data.m_MemoryPools[ storageMemoryPoolID ].GetData()->m_Index = storageMemoryPoolID;
+    // Initialize allocation pool ID for basic types
+    // const deuchar* const typeName = (const deuchar* const)typeid(Prototype).name();
+    // m_Instance->m_RegistryData.m_TypeAllocationPoolID.Insert( (deuchar*)typeName, (void*)(demachword)prototypeStorageMemoryPoolID );
+}
 
-//     // Copy user input data to Engine
-//     DvigEngine::Engine::CopyMemory(&m_Instance->m_InputData, engineInputData, sizeof(ENGINE_INPUT_DATA));
-//     m_Instance->m_InputData.m_MemoryPoolsCount += 1;
+DvigEngine::MemoryObject* DvigEngine::Engine::Allocate(deint32 memoryPoolIndex, deusize byteWidth)
+{
+    /* Old fragmention-protected model */
+    // deusize allocByteWidth = sizeof(DvigEngine::MemoryObject) + byteWidth;
+
+    // DvigEngine::MemoryPool* memoryPool = (DvigEngine::MemoryPool*)m_Instance->GetMemoryPoolByIndex(memoryPoolIndex);
+    // void* prevPoolOffset = memoryPool->m_AddressOffset;
+    // memoryPool->m_AddressOffset = (void*)((deusize)memoryPool->m_AddressOffset + allocByteWidth);
+
+    // DvigEngine::MemoryObject* memoryObject = (DvigEngine::MemoryObject*)prevPoolOffset;
+    // memoryObject->m_Address = (void*)((deusize)prevPoolOffset + sizeof(DvigEngine::MemoryObject));
+    // memoryObject->m_ByteWidth = byteWidth;
+    // memoryObject->m_MemoryPoolIndex = memoryPoolIndex;
+
+    // const deusize allocByteWidth = sizeof(DvigEngine::MemoryObject) + byteWidth;
+
+    // DvigEngine::MemoryPool* memoryPool = (DvigEngine::MemoryPool*)m_EngineInstance->GetMemoryPoolByIndex(memoryPoolIndex);
+    // void* prevPoolOffset = memoryPool->m_AddressOffset;
+
+    // DvigEngine::deint32 allocationIndex = 0;
+    // DvigEngine::MemoryObject* memoryObject = (DvigEngine::MemoryObject*)prevPoolOffset;
+    // for (allocationIndex = 0; allocationIndex < memoryPool->m_AllocationCount; ++allocationIndex) {
+    //     if (memoryObject->m_FreeFlag == DV_TRUE && memoryObject->m_ByteWidth >= byteWidth) { break; }
+    //     memoryObject = Ptr<DvigEngine::MemoryObject*>::Add( &memoryObject, sizeof(DvigEngine::MemoryObject) + memoryObject->m_ByteWidth );
+    // }
+
+    // // Populate one
+    // memoryObject->m_MemoryObject = memoryObject;
+    // memoryObject->m_Address = (void*)((deusize)memoryObject + sizeof(DvigEngine::MemoryObject));
+    // memoryObject->m_ByteWidth = byteWidth;
+    // memoryObject->m_FreeFlag = DV_FALSE;
+    // memoryObject->m_MemoryPoolIndex = memoryPoolIndex;
     
-//     // Initialize registry hashmap for Engine
-//     m_Instance->m_RegistryData.m_StorageAddress = storageMemoryPoolData->m_AddressOffset;
-//     m_Instance->m_RegistryData.m_UniqueComponentCount = 0;
-//     m_Instance->m_RegistryData.m_UniqueSystemCount = 0;
-//     m_Instance->m_RegistryData.m_TypeAllocationPoolID.Init();
-//     m_Instance->m_RegistryData.m_Components.Init();
-//     m_Instance->m_RegistryData.m_Systems.Init();
+    // m_EngineInstance->GetData()->m_MemoryPools[memoryPoolIndex].m_OccupiedByteWidth += allocByteWidth;
 
-//     // Initialize allocation pool ID for basic types
-//     const deuchar* const typeName = (const deuchar* const)typeid(Prototype).name();
-//     m_Instance->m_RegistryData.m_TypeAllocationPoolID.Insert( (deuchar*)typeName, (void*)(demachword)prototypeStorageMemoryPoolID );
-// }
+    // // Create stub allocation if chosen
+    // // allocation index is last
+    // DvigEngine::MemoryObject* stubMemoryObject = Ptr<DvigEngine::MemoryObject*>::Add( &memoryObject, allocByteWidth );
+    // stubMemoryObject->m_Address = nullptr;
+    // stubMemoryObject->m_ByteWidth =     (demachword)m_EngineInstance->GetData()->m_MemoryPools[memoryPoolIndex].m_ByteWidth -
+    //                                     (demachword)m_EngineInstance->GetData()->m_MemoryPools[memoryPoolIndex].m_OccupiedByteWidth;
+    // stubMemoryObject->m_FreeFlag = DV_TRUE;
+    // stubMemoryObject->m_MemoryPoolIndex = memoryPoolIndex;
 
-// void DvigEngine::Engine::Free()
-// {
-//     DV_ASSERT_PTR(m_Instance)
-//     DV_ASSERT_PTR(((DvigEngine::ENGINE_DATA*)m_Instance->GetData())->m_MemoryPools)
+    // return memoryObject;
 
-//     MemoryPool* globalMemoryPool = (DvigEngine::MemoryPool*)&m_Instance->GetData()->m_MemoryPools[m_Instance->m_InputData.m_MemoryPoolsCount - 1];
-    
-//     // All engine memory gets freed here
-//     free(globalMemoryPool->GetData()->m_Address);
-// }
+    DvigEngine::MemoryPool* memoryPool = (DvigEngine::MemoryPool*)m_EngineInstance->GetMemoryPoolByIndex(memoryPoolIndex);
+    void* memoryPoolOffset = memoryPool->m_AddressOffset;
+    const deusize memoryPoolAllocationCount = memoryPool->m_AllocationCount;
 
-// // void* DvigEngine::Engine::Allocate(deusize memoryPoolID, deusize byteWidth)
-// // {
-// //     DV_ASSERT_PTR(m_Instance)
-// //     DV_ASSERT(byteWidth)
+    const deusize allocByteWidth = sizeof(DvigEngine::MemoryObject) + byteWidth;
 
-// //     const deusize allocByteWidth = byteWidth;
-// //     DvigEngine::MemoryPool* const memoryPool = m_Instance->GetMemoryPoolByID(memoryPoolID);
-// //     void* prevPoolOffset = ((DvigEngine::MEMORY_POOL_DATA*)memoryPool->GetData())->m_AddressOffset;
-// //     ((DvigEngine::MEMORY_POOL_DATA*)memoryPool->GetData())->m_AddressOffset = (void*)((deusize)((DvigEngine::MEMORY_POOL_DATA*)memoryPool->GetData())->m_AddressOffset + allocByteWidth);
-
-// //     return prevPoolOffset;
-// // }
-
-// DvigEngine::MemoryObject* DvigEngine::Engine::ObjectAllocate(deusize memoryPoolID, deusize byteWidth)
-// {
-//     DV_ASSERT_PTR(m_Instance)
-//     DV_ASSERT(byteWidth)
-
-//     deusize allocByteWidth = sizeof(DvigEngine::MemoryObject) + byteWidth;
-
-//     DvigEngine::MEMORY_POOL_DATA* memoryPoolInfo = (DvigEngine::MEMORY_POOL_DATA*)m_Instance->GetMemoryPoolByID(memoryPoolID)->GetData();
-//     void* prevPoolOffset = memoryPoolInfo->m_AddressOffset;
-//     memoryPoolInfo->m_AddressOffset = (void*)((deusize)memoryPoolInfo->m_AddressOffset + allocByteWidth);
-
-//     DvigEngine::MemoryObject* memoryObject = (DvigEngine::MemoryObject*)prevPoolOffset;
-//     DvigEngine::MEMORY_OBJECT_DATA* memoryObjectData = (DvigEngine::MEMORY_OBJECT_DATA*)memoryObject->GetData();
-//     memoryObjectData->m_Address = (void*)((deusize)prevPoolOffset + sizeof(DvigEngine::MemoryObject));
-//     memoryObjectData->m_ByteWidth = byteWidth;
-//     memoryObjectData->m_MemoryPoolIndex = memoryPoolID;
-
-//     return memoryObject;
-// }
-
-// void* DvigEngine::Engine::AllocateUsingData(MEMORY_POOL_DATA* memoryPool, deusize byteWidth)
-// {
-//     DV_ASSERT(byteWidth)
-//     DV_ASSERT_PTR(memoryPool)
-
-//     void* prevPoolOffset = memoryPool->m_AddressOffset;
-//     memoryPool->m_AddressOffset = (void*)((deusize)memoryPool->m_AddressOffset + byteWidth);
-
-//     return prevPoolOffset;
-// }
-
-// void DvigEngine::Engine::ObjectDelete(MemoryObject** ppMemoryObject)
-// {
-//     MemoryObject* memoryObject = *ppMemoryObject;
-//     const deint32 memoryPoolIndex = memoryObject->GetMemoryPoolIndex();
-//     MemoryPool* const memoryPool = &m_Instance->m_Data.m_MemoryPools[memoryPoolIndex];
-
-//     void* curAddress = (void*)memoryObject;
-//     deusize deletedObjectByteWidth = sizeof(MemoryObject) + memoryObject->GetByteWidth();
-//     void* nextAddress = (void*)((demachword)curAddress + deletedObjectByteWidth);
-
-//     MemoryObject* curMemoryObject = (MemoryObject*)curAddress;
-//     IObject* curObject = (IObject*)((demachword)curMemoryObject + sizeof(MemoryObject));
-//     MemoryObject** pCurMemoryObjectPointer = curObject->GetMemoryObject();
-//     IObject** pCurCreatee = curObject->GetCreatee();
-//     *pCurMemoryObjectPointer = nullptr;
-//     *pCurCreatee = nullptr;
-
-//     void* lastAddress = (void*)memoryPool->m_Data.m_AddressOffset;
-//     Engine::MoveMemory(curAddress, nextAddress, (deusize)lastAddress - (deusize)nextAddress);
-//     memoryPool->GetData()->m_AddressOffset = (void*)((demachword)memoryPool->GetData()->m_AddressOffset - deletedObjectByteWidth);
-
-//     while (curAddress < lastAddress)
-//     {
-//         MemoryObject* curMemoryObject = (MemoryObject*)curAddress;
-//         IObject* curObject = (IObject*)((demachword)curMemoryObject + sizeof(MemoryObject));
-//         MemoryObject** pCurMemoryObjectPointer = curObject->GetMemoryObject();
-//         IObject** pCurCreatee = curObject->GetCreatee();
-//         std::cout << (demachword)curAddress << " " << (demachword)lastAddress << std::endl;
-
-//         *pCurMemoryObjectPointer = (MemoryObject*)((demachword)curAddress);
-//         *pCurCreatee = (IObject*)((demachword)curAddress + sizeof(MemoryObject));
+    deint32 allocIndex = 0;
+    DvigEngine::MemoryObject* memoryObject = (DvigEngine::MemoryObject*)memoryPoolOffset;
+    for (allocIndex = 0; allocIndex < memoryPoolAllocationCount; ++allocIndex)
+    {
+        if ((memoryObject->m_FreeFlag & DV_TRUE) == DV_TRUE && memoryObject->m_ByteWidth > byteWidth + sizeof(DvigEngine::MemoryObject)) {
+            break;
+        }
         
-//         curAddress = (void*)((demachword)curAddress + sizeof(MemoryObject) + curMemoryObject->m_Data.m_ByteWidth);
-//     }
-// }
+        memoryObject = DvigEngine::Ptr<DvigEngine::MemoryObject*>::Add( &memoryObject, sizeof(DvigEngine::MemoryObject) + memoryObject->m_ByteWidth );
+    }
 
-// void DvigEngine::Engine::CopyMemory(void* dstAddress, const void* srcAddress, const deusize byteWidth)
-// {
-//     memcpy(dstAddress, srcAddress, byteWidth);
-// }
+    // Check if reached stub
+    // insert new one at the end
+    if (memoryObject->m_ByteWidth > byteWidth + sizeof(DvigEngine::MemoryObject))
+    {
+        memoryPool->m_AllocationCount += 1;
+        memoryPool->m_OccupiedByteWidth += allocByteWidth;
 
-// void DvigEngine::Engine::MoveMemory(void* dstAddress, const void* srcAddress, const deusize byteWidth)
-// {
-//     memmove(dstAddress, srcAddress, byteWidth);
-// }
+        DvigEngine::MemoryObject* nextStub = DvigEngine::Ptr<DvigEngine::MemoryObject*>::Add( &memoryObject, allocByteWidth );
+        nextStub->m_Address = nullptr;
+        nextStub->m_ByteWidth = memoryObject->m_ByteWidth - (byteWidth + sizeof(DvigEngine::MemoryObject));
+        nextStub->m_FreeFlag = DV_TRUE | DV_XMACRO_MEMORY_OBJECT_STUB;
+        nextStub->m_MemoryPoolIndex = memoryPoolIndex;
+    }
 
-// void DvigEngine::Engine::SetMemory(void* dstAddress, const demachword value, const deusize byteWidth)
-// {
-//     memset(dstAddress, value, byteWidth);
-// }
+    // Populate memory object fields
+    memoryObject->m_Address = DvigEngine::Ptr<void*>::Add( (void**)&memoryObject, sizeof(DvigEngine::MemoryObject) );
+    memoryObject->m_ByteWidth = byteWidth;
+    memoryObject->m_FreeFlag = DV_FALSE;
+    memoryObject->m_MemoryPoolIndex = memoryPoolIndex;
 
-// void DvigEngine::Engine::StartThreads()
-// {
-//     for (deisize i = 0; i < (deisize)m_Data.m_RequestedThreadCount; ++i)
-//     {
-//         m_Data.m_JobQueues[i].m_Data.m_Thread = std::thread(
-//             &DvigEngine::JobQueue::Start, &m_Data.m_JobQueues[i]
-//         );
-//     }
-// }
+    return memoryObject;
+}
 
-// void DvigEngine::Engine::StopThreads()
-// {
-//     for (deisize i = 0; i < (deisize)m_Data.m_RequestedThreadCount; ++i)
-//     {
-//         m_Data.m_JobQueues[i].Stop();
-//         m_Data.m_JobQueues[i].m_Data.m_Thread.join();
-//     }
-// }
+void DvigEngine::Engine::Delete(MemoryObject* memoryObject)
+{
+    /* Old fragmention-protected model */
+    // MemoryObject* curMemoryObject = *ppMemoryObject;
+    // const deint32 memoryPoolIndex = curMemoryObject->GetMemoryPoolIndex();
+    // MemoryPool* const memoryPool = &m_Instance->GetData()->m_MemoryPools[memoryPoolIndex];
 
-// void DvigEngine::Engine::UpdateSystems()
-// {
-//     // const deisize uniqueSystemCount = m_RegistryData.m_UniqueSystemCount;
-//     // HashMap* const systemList = (HashMap* const)&m_RegistryData.m_Systems;
-//     // MemoryObject* storageAddress = (MemoryObject*)m_RegistryData.m_StorageAddress; // array of all Entities means Entity Storage
-//     // const deisize entityCount = Entity::m_EntityCount;
+    // const deusize deletedMemoryObjectByteWidth = sizeof(DvigEngine::MemoryObject) + curMemoryObject->GetByteWidth();
 
-//     // // Run through each System
-//     // for (deisize i = 0; i < uniqueSystemCount; ++i)
-//     // {
-//     //     ISystem* system = (ISystem*)systemList->FindIndex( i );
-//     //     void* entityCursor = (void*)storageAddress->GetAddress();
-        
-//     //     // Run through each Entity
-//     //     for (deisize i = 0; i < entityCount; ++i)
-//     //     {
-//     //         Entity* entity = (Entity*)entityCursor;
+    // void* maxMemoryPoolAddress = memoryPool->m_AddressOffset;
+    // MemoryObject* nextMemoryObject = (MemoryObject*)DvigEngine::Ptr<void*>::Add( (void**)&curMemoryObject, deletedMemoryObjectByteWidth );
+    // const deusize moveByteWidth = (demachword)maxMemoryPoolAddress - (demachword)nextMemoryObject;
+    // DvigEngine::Engine::MoveMemory( curMemoryObject, nextMemoryObject, moveByteWidth );
+    
+    // memoryPool->m_AddressOffset = Ptr<void*>::Subtract( &memoryPool->m_AddressOffset, deletedMemoryObjectByteWidth );
+    // maxMemoryPoolAddress = memoryPool->m_AddressOffset;
 
-//     //         // Update derived system
-//     //         system->Update( m_Instance, entity );
-            
-//     //         entityCursor = (void*)((demachword)entityCursor + entity->m_Data.m_SubStorageByteWidth);
-//     //     }
-//     // }
-// }
+    // while (curMemoryObject < maxMemoryPoolAddress)
+    // {
+    //     ICommon* curObject = curMemoryObject->Unwrap<ICommon*>();
+
+    //     // Decrease all access pointers
+    //     deint32 cycle = 0;
+    //     while (curObject->m_AccessPointers[cycle] != nullptr && ++cycle < DV_MAX_ACCESS_POINTERS) {
+    //         *curObject->m_AccessPointers[cycle] = (ICommon*)DvigEngine::Ptr<void*>::Subtract( (void**)curObject->m_AccessPointers[cycle], deletedMemoryObjectByteWidth );
+    //     }
+
+    //     // Decrease memory object pointer
+    //     if (curMemoryObject->m_MemoryObject != nullptr) { *curMemoryObject->m_MemoryObject = (MemoryObject*)DvigEngine::Ptr<void*>::Subtract( (void**)curMemoryObject->m_MemoryObject, deletedMemoryObjectByteWidth ); }
+
+    //     curMemoryObject = DvigEngine::Ptr<MemoryObject*>::Add( &curMemoryObject, sizeof(MemoryObject) + curMemoryObject->GetByteWidth() );
+    // }
+
+    memoryObject->m_FreeFlag = DV_TRUE;
+    DvigEngine::Engine::MemorySet( memoryObject->m_Address, 0, memoryObject->m_ByteWidth );
+}
+
+void DvigEngine::Engine::MemoryCopy(void* dstAddress, const void* srcAddress, const deusize byteWidth)
+{
+    deuchar* const pDst = (deuchar* const)dstAddress;
+    deuchar* const pSrc = (deuchar* const)srcAddress;
+    for (deint32 i = 0; i < byteWidth; ++i) {
+        pDst[i] = pSrc[i];
+    }
+}
+
+void DvigEngine::Engine::MemoryMove(void* dstAddress, const void* srcAddress, const deusize byteWidth)
+{
+    deuchar* const pDst = (deuchar* const)dstAddress;
+    deuchar* const pSrc = (deuchar* const)srcAddress;
+    for (deint32 i = 0; i < byteWidth; ++i) {
+        pDst[i] = pSrc[i];
+    }
+}
+
+void DvigEngine::Engine::MemorySet(void* dstAddress, const demachword value, const deusize byteWidth)
+{
+    deuchar* const pDst = (deuchar* const)dstAddress;
+    for (deint32 i = 0; i < byteWidth; ++i) {
+        pDst[i] = (deuchar)value;
+    }
+}

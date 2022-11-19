@@ -4,13 +4,13 @@
 #include "DECore.hpp"
 #include "DEThirdPartyMath.hpp"
 
-namespace DvigEngine2
+namespace DvigEngine
 {
     class Application;
 
     class IWindow : public IHelperObject
     {
-        DV_MACRO_FRIENDS(DvigEngine2::Engine, DvigEngine2::Application)
+        DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::Application)
 
         public:
             void Init(Application* app, const char* caption, glm::uvec2& size);
@@ -33,7 +33,7 @@ namespace DvigEngine2
 
     class WindowStack
     {
-        DV_MACRO_FRIENDS(DvigEngine2::Application, DvigEngine2::IWindow)
+        DV_MACRO_FRIENDS(DvigEngine::Application, DvigEngine::IWindow)
 
         private:
             static void* m_GLFWWindows[DV_MAX_GUI_WINDOW_COUNT];

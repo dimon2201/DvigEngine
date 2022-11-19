@@ -1,7 +1,7 @@
 #include "DECore.hpp"
 #include "DEThirdPartyMath.hpp"
 
-namespace DvigEngine2
+namespace DvigEngine
 {
     class IWindow;
     class RenderingSystem;

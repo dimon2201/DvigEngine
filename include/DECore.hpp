@@ -12,7 +12,7 @@
 
 #include "DvigEngineMacros.hpp"
 
-namespace DvigEngine2
+namespace DvigEngine
 {
     class MemoryObject;
     class DynamicBuffer;
@@ -145,7 +145,7 @@ namespace DvigEngine2
 
     class String : public IHelperObject
     {
-        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+        DV_MACRO_FRIENDS(DvigEngine::Engine)
 
         public:
             static deusize CharactersCount(const destring op1);
@@ -180,7 +180,7 @@ namespace DvigEngine2
 
     class DynamicBuffer : public IHelperObject
     {
-        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+        DV_MACRO_FRIENDS(DvigEngine::Engine)
 
         public:
             DV_FUNCTION_INLINE deusize GetCapacity() { return m_Capacity; }
@@ -220,7 +220,7 @@ namespace DvigEngine2
 
     class FixedSet : public IHelperObject
     {
-        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+        DV_MACRO_FRIENDS(DvigEngine::Engine)
 
         public:
             DV_FUNCTION_INLINE deusize GetCapacity() { return m_Capacity; }
@@ -237,7 +237,7 @@ namespace DvigEngine2
             {
                 if (index >= (deint32)this->m_Capacity) { return (T)nullptr; }
                 void* dataAddress = this->m_DataObject->Unwrap<void*>();
-                void* entryAddress = DvigEngine2::Ptr<void*>::Add( &dataAddress, index * this->m_EntryByteWidth );
+                void* entryAddress = DvigEngine::Ptr<void*>::Add( &dataAddress, index * this->m_EntryByteWidth );
                 return (T)entryAddress;
             }
             deint32 FindValue(void* entry);
@@ -277,7 +277,7 @@ namespace DvigEngine2
 
     class HashMap : public IHelperObject
     {
-        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+        DV_MACRO_FRIENDS(DvigEngine::Engine)
 
         public:
             static deuint32 Hash(const destring input, const demachword bitMask);
@@ -287,7 +287,7 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE deusize GetEntryValueByteWidth() { return m_EntryValueByteWidth; }
             DV_FUNCTION_INLINE deusize GetHashTableSize() { return m_HashTableSize; }
             DV_FUNCTION_INLINE demachword* GetHashTable() { return &m_HashTable[0]; }
-            DV_FUNCTION_INLINE MemoryObject* GetHashTableMemoryObject() { return Ptr<MemoryObject*>::Subtract( (MemoryObject**)&m_HashTable, sizeof(DvigEngine2::MemoryObject) ); }
+            DV_FUNCTION_INLINE MemoryObject* GetHashTableMemoryObject() { return Ptr<MemoryObject*>::Subtract( (MemoryObject**)&m_HashTable, sizeof(DvigEngine::MemoryObject) ); }
 
             void Init(const deint32 memoryPoolIndex, const deusize reservedCapacity, const deusize entryValueByteWidth, const deusize hashTableSize);
             void Free() override final;
@@ -320,7 +320,7 @@ namespace DvigEngine2
 
     class MemoryPool : public IHelperObject
     {
-        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+        DV_MACRO_FRIENDS(DvigEngine::Engine)
 
         public:
             DV_FUNCTION_INLINE deuchar* GetLabel() { return &m_Label[0]; }
@@ -360,7 +360,7 @@ namespace DvigEngine2
 
     class ThreadPoolSystem : public ISystem
     {
-        DV_MACRO_FRIENDS(DvigEngine2::Engine)
+        DV_MACRO_FRIENDS(DvigEngine::Engine)
         DV_XMACRO_DECLARE_STATIC_CLASS(ThreadPoolSystem)
 
         public:
@@ -395,10 +395,10 @@ namespace DvigEngine2
                 deisize offset = 0;
                 for (deint32 i = 0; i < capacity; ++i)
                 {
-                    this->m_Components->Find(i * sizeof(DvigEngine2::demachword), &component, sizeof(DvigEngine2::demachword));
+                    this->m_Components->Find(i * sizeof(DvigEngine::demachword), &component, sizeof(DvigEngine::demachword));
                     const char* curTypeName = (const char*)&component->m_TypeName[0];
-                    if ((DvigEngine2::String::CompareCharacters( &requestedTypeName[0], &curTypeName[0], DvigEngine2::String::CharactersCount((const deuchar*)&requestedTypeName[0]) ) == DV_TRUE)) {//||
-                        //(DvigEngine2::String::CompareCharacters( &componentUSID[0], (const char*)component->GetUSID(), DvigEngine2::String::CharactersCount((const deuchar*)&componentUSID[0]) ) == DV_TRUE)) {
+                    if ((DvigEngine::String::CompareCharacters( &requestedTypeName[0], &curTypeName[0], DvigEngine::String::CharactersCount((const deuchar*)&requestedTypeName[0]) ) == DV_TRUE)) {//||
+                        //(DvigEngine::String::CompareCharacters( &componentUSID[0], (const char*)component->GetUSID(), DvigEngine::String::CharactersCount((const deuchar*)&componentUSID[0]) ) == DV_TRUE)) {
                         return (T*)component;
                     }
                 }
@@ -481,7 +481,7 @@ namespace DvigEngine2
             {
                 const char* typeName = typeid(T).name();
                 if (m_RegistryProp.m_RegisteredComponents->Find( typeName ) == nullptr) {
-                    m_RegistryProp.m_RegisteredComponents->Insert( typeName, (void*)(DvigEngine2::demachword)++DvigEngine2::Engine::m_GlobalComponentIndex );
+                    m_RegistryProp.m_RegisteredComponents->Insert( typeName, (void*)(DvigEngine::demachword)++DvigEngine::Engine::m_GlobalComponentIndex );
                 }
             }
 
@@ -533,14 +533,14 @@ namespace DvigEngine2
             DV_FUNCTION_INLINE void Create(T** result, const char* USID)
             {
                 deuchar* objectUSID = (deuchar*)&USID[0];
-                DvigEngine2::Engine* engineInstance = m_EngineInstance;
+                DvigEngine::Engine* engineInstance = m_EngineInstance;
                 void* pAllocationPoolIndex = engineInstance->m_RegistryProp.m_AllocPoolIndexMap->Find( typeid(T).name() );
                 deuint32 allocationPoolIndex = (deuint32)(demachword)pAllocationPoolIndex;
                 if (pAllocationPoolIndex == nullptr) { allocationPoolIndex = 0; }
                 MemoryObject* memoryObject = Engine::Allocate(allocationPoolIndex, sizeof(T));
                 T typedObjectOnStack;
                 T* typedObject = memoryObject->Unwrap<T*>();
-                DvigEngine2::Engine::MemoryCopy( typedObject, &typedObjectOnStack, sizeof(demachword) ); // copy vpointer
+                DvigEngine::Engine::MemoryCopy( typedObject, &typedObjectOnStack, sizeof(demachword) ); // copy vpointer
                 typedObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( objectUSID, Engine::GetGlobalUIID(), memoryObject, engineInstance );
                 if (dynamic_cast<INode*>(typedObject) != nullptr)
                 {
@@ -551,7 +551,7 @@ namespace DvigEngine2
                 {
                     const char* typeName = typeid(T).name();
                     ILayout* layout = (ILayout*)typedObject;
-                    DvigEngine2::Engine::MemoryCopy( &layout->m_TypeName[0], &typeName[0], DvigEngine2::String::CharactersCount((const deuchar*)&typeName[0]) );
+                    DvigEngine::Engine::MemoryCopy( &layout->m_TypeName[0], &typeName[0], DvigEngine::String::CharactersCount((const deuchar*)&typeName[0]) );
                     layout->m_LayoutByteWidth = sizeof(T);
                 }
                 *result = typedObject;

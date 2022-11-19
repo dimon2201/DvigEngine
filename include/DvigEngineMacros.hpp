@@ -135,7 +135,7 @@
         static T* m_Instance;
 
 #define DV_MACRO_DEFINE_SINGLETON(T) \
-    DvigEngine2::MemoryObject* T::m_MemoryObject = nullptr; \
+    DvigEngine::MemoryObject* T::m_MemoryObject = nullptr; \
     T* T::m_Instance = nullptr; \
     T* T::GetClassInstance() { \
         if (T::m_Instance == nullptr) { \
@@ -237,7 +237,7 @@
 #define DV_XMACRO_DEFINE_COMPONENT(T, ...) DV_XMACRO_XDEFINE_COMPONENT(T, __VA_ARGS__)
 
 #define DV_XMACRO_XDEF_COMPONENT_LAYOUT_ARGS_2(T, _0T, _0V) \
-    class T : public DvigEngine2::IComponent { \
+    class T : public DvigEngine::IComponent { \
         public: \
             _0T _0V; \
     }

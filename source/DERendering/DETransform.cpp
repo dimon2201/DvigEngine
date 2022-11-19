@@ -1,7 +1,7 @@
 #include "../../include/DECore.hpp"
 #include "../../include/DERendering.hpp"
 
-void DvigEngine2::TransformComponent::Init()
+void DvigEngine::TransformComponent::Init()
 {
     this->m_Position = glm::vec3(0.0f);
     this->m_RotationEuler = glm::vec3(0.0f);
@@ -13,33 +13,33 @@ void DvigEngine2::TransformComponent::Init()
     this->m_WorldSpaceMatrix = glm::mat4();
 }
 
-void DvigEngine2::TransformComponent::Free()
+void DvigEngine::TransformComponent::Free()
 {
     this->GetEngine()->Delete( this->GetMemoryObject() );
 }
 
-void DvigEngine2::TransformComponent::AddPositionX(demfloat value)
+void DvigEngine::TransformComponent::AddPositionX(demfloat value)
 {
     this->m_Position.x = value;
     this->m_WorldTranslationMatrix = glm::translate( this->m_Position );
     this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
 }
 
-void DvigEngine2::TransformComponent::AddPositionY(demfloat value)
+void DvigEngine::TransformComponent::AddPositionY(demfloat value)
 {
     this->m_Position.y = value;
     this->m_WorldTranslationMatrix = glm::translate( this->m_Position );
     this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
 }
 
-void DvigEngine2::TransformComponent::AddPositionZ(demfloat value)
+void DvigEngine::TransformComponent::AddPositionZ(demfloat value)
 {
     this->m_Position.z = value;
     this->m_WorldTranslationMatrix = glm::translate( this->m_Position );
     this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
 }
 
-void DvigEngine2::TransformComponent::AddRotationEulerX(demfloat value)
+void DvigEngine::TransformComponent::AddRotationEulerX(demfloat value)
 {
     this->m_RotationEuler.x += glm::radians(value);
     glm::quat tempQuatX = glm::angleAxis( this->m_RotationEuler.x, glm::vec3(1.0f, 0.0f, 0.0f) );
@@ -50,7 +50,7 @@ void DvigEngine2::TransformComponent::AddRotationEulerX(demfloat value)
     this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
 }
 
-void DvigEngine2::TransformComponent::AddRotationEulerY(demfloat value)
+void DvigEngine::TransformComponent::AddRotationEulerY(demfloat value)
 {
     this->m_RotationEuler.y += glm::radians(value);
     glm::quat tempQuatX = glm::angleAxis( this->m_RotationEuler.x, glm::vec3(1.0f, 0.0f, 0.0f) );
@@ -61,7 +61,7 @@ void DvigEngine2::TransformComponent::AddRotationEulerY(demfloat value)
     this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
 }
 
-void DvigEngine2::TransformComponent::AddRotationEulerZ(demfloat value)
+void DvigEngine::TransformComponent::AddRotationEulerZ(demfloat value)
 {
     this->m_RotationEuler.z += glm::radians(value);
     glm::quat tempQuatX = glm::angleAxis( this->m_RotationEuler.x, glm::vec3(1.0f, 0.0f, 0.0f) );
@@ -72,28 +72,28 @@ void DvigEngine2::TransformComponent::AddRotationEulerZ(demfloat value)
     this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
 }
 
-void DvigEngine2::TransformComponent::AddScaleX(demfloat value)
+void DvigEngine::TransformComponent::AddScaleX(demfloat value)
 {
     this->m_Scale.x = value;
     this->m_WorldScaleMatrix = glm::scale( this->m_Scale );
     this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
 }
 
-void DvigEngine2::TransformComponent::AddScaleY(demfloat value)
+void DvigEngine::TransformComponent::AddScaleY(demfloat value)
 {
     this->m_Scale.y = value;
     this->m_WorldScaleMatrix = glm::scale( this->m_Scale );
     this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
 }
 
-void DvigEngine2::TransformComponent::AddScaleZ(demfloat value)
+void DvigEngine::TransformComponent::AddScaleZ(demfloat value)
 {
     this->m_Scale.z = value;
     this->m_WorldScaleMatrix = glm::scale( this->m_Scale );
     this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
 }
 
-void DvigEngine2::TransformComponent::SetPosition(demfloat x, demfloat y, demfloat z)
+void DvigEngine::TransformComponent::SetPosition(demfloat x, demfloat y, demfloat z)
 {
     this->m_Position.x = x;
     this->m_Position.y = y;
@@ -102,7 +102,7 @@ void DvigEngine2::TransformComponent::SetPosition(demfloat x, demfloat y, demflo
     this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
 }
 
-void DvigEngine2::TransformComponent::SetRotationEuler(demfloat x, demfloat y, demfloat z)
+void DvigEngine::TransformComponent::SetRotationEuler(demfloat x, demfloat y, demfloat z)
 {
     this->m_RotationEuler.x = glm::radians(x);
     this->m_RotationEuler.y = glm::radians(y);
@@ -115,7 +115,7 @@ void DvigEngine2::TransformComponent::SetRotationEuler(demfloat x, demfloat y, d
     this->m_WorldSpaceMatrix = this->m_WorldTranslationMatrix * this->m_WorldRotationMatrix * this->m_WorldScaleMatrix;
 }
 
-void DvigEngine2::TransformComponent::SetScale(demfloat x, demfloat y, demfloat z)
+void DvigEngine::TransformComponent::SetScale(demfloat x, demfloat y, demfloat z)
 {
     this->m_Scale.x = x;
     this->m_Scale.y = y;
