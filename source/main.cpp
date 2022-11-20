@@ -153,6 +153,25 @@ int main()
             void MouseLook() {
                 double mouseX = this->GetMouseX();
                 double mouseY = this->GetMouseY();
+                std::cout << mouseX << " " << mouseY << std::endl;
+                if (mouseX >= this->GetWindowWidth()) {
+                    mouseX = 0;
+                    this->prevMouseX = 0;
+                    this->SetMousePositionX(0);
+                } else if (mouseX <= 0) {
+                    mouseX = this->GetWindowWidth();
+                    this->prevMouseX = this->GetWindowWidth();
+                    this->SetMousePositionX(this->GetWindowWidth());
+                }
+                if (mouseY >= this->GetWindowHeight()) {
+                    mouseY = 0;
+                    this->prevMouseY = 0;
+                    this->SetMousePositionY(0);
+                } else if (mouseY <= 0) {
+                    mouseY = this->GetWindowHeight();
+                    this->prevMouseY = this->GetWindowHeight();
+                    this->SetMousePositionY(this->GetWindowHeight());
+                }
                 if (this->prevMouseX != -1.0 && this->prevMouseY != -1.0)
                 {
                     double deltaX = mouseX - this->prevMouseX;
