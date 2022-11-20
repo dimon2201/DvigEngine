@@ -51,13 +51,17 @@ DvigEngine::deuint32 DvigEngine::RenderingSystem::m_GLVAO = DV_NULL;
 
 DvigEngine::deusize DvigEngine::UniformBatchInstanceData::m_GLAlignedByteWidth = sizeof(DvigEngine::UniformBatchInstanceData);
 
+#include <libloaderapi.h>
 void DvigEngine::GL4::Load()
 {
     // Load GL4 procedures
     if (DvigEngine::GL4::_Init == nullptr)
     {
         DvigEngine::GL4::_Init = (void (*)())DV_TRUE;
-        DvigEngine::GL4::Enable = (void (*)(DvigEngine::deuint32 cap))glfwGetProcAddress( "glEnable" );
+        HMODULE module = LoadLibraryA("opengl32.dll");
+        DvigEngine::GL4::CreateProgram = (DvigEngine::deuint32 (*)())glfwGetProcAddress( "glCreateProgram" );
+        DvigEngine::GL4::CreateProgram();
+        std::cout << DvigEngine::GL4::CreateProgram() << std::endl;
         DvigEngine::GL4::Disable = (void (*)(DvigEngine::deuint32 cap))glfwGetProcAddress( "glDisable" );
         DvigEngine::GL4::Viewport = (void (*)(DvigEngine::deint32 x, DvigEngine::deint32 y, DvigEngine::deisize width, DvigEngine::deisize height))glfwGetProcAddress( "glViewport" ); 
         DvigEngine::GL4::Clear = (void (*)(DvigEngine::deuint32 mask))glfwGetProcAddress( "glClear" );

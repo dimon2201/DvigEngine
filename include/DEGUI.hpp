@@ -36,6 +36,9 @@ namespace DvigEngine
             DV_FUNCTION_INLINE void SetMousePosition(double x, double y) { glfwSetCursorPos(this->m_GLFWWindow, x, y); }
 
         private:
+            static debool m_IsGLInitialized;
+
+        private:
             Application* m_App;
             deint32 m_WindowIndex;
             GLFWwindow* m_GLFWWindow;

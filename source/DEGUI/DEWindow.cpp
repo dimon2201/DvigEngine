@@ -1,6 +1,8 @@
 #include "../../include/DEGUI.hpp"
 #include "../../include/DERendering.hpp"
 
+DvigEngine::debool DvigEngine::IWindow::m_IsGLInitialized = DV_FALSE;
+
 void* DvigEngine::WindowStack::m_GLFWWindows[] = {};
 DvigEngine::IWindow* DvigEngine::WindowStack::m_WindowInstances[] = {};
 
@@ -14,8 +16,14 @@ void DvigEngine::IWindow::Init(Application* app, const char* caption, glm::uvec2
     glfwSetWindowUserPointer( window, this );
 
     // Init OpenGL procedures
-    DvigEngine::GL4::Load();
-    DvigEngine::RenderingSystem::Init();
+    if (DvigEngine::IWindow::m_IsGLInitialized == DV_FALSE) {
+        DvigEngine::GL4::Load();
+        // DvigEngine::RenderingSystem::Init();
+        const char* desc[1024];
+        glfwGetError(&desc[0]);
+        std::cout << desc[0] << std::endl;
+        DvigEngine::IWindow::m_IsGLInitialized = DV_TRUE;
+    }
 
     DV_ASSERT_PTR(window);
 

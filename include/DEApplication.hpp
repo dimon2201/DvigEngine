@@ -14,8 +14,8 @@ namespace DvigEngine
             template <typename T>
             IWindow* AddWindow(const char* USID, const char* caption, glm::uvec2& size)
             {
-                Engine* engine = this->GetEngine();
-                T* window;
+                Engine* engine = Engine::GetClassInstance();
+                T* window = nullptr;
                 engine->Create <T> ( &window, &USID[0] );
                 window->Init( this, &caption[0], size );
                 return window;

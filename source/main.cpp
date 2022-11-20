@@ -216,14 +216,8 @@ int main()
     pEngine->Create <DvigEngine::Application> ( &appSys, "MyApplication_0" );
     appSys->Init();
     appSys->AddWindow <AppWindow> ( "MyTestWindow_0", &windowCaption[0], windowSize );
-    appSys->WaitForWindows();
-
-    // DvigEngine::MemoryObject* mo = DvigEngine::Engine::Allocate( 0, 256 );
-    // std::cout << mo << std::endl;
-    // pEngine->Delete( mo );
-    // mo = DvigEngine::Engine::Allocate( 0, 256 );
-    // std::cout << mo->Unwrap<float*>()[0] << std::endl;
-
+    // appSys->WaitForWindows();
+    
     DvigEngine::ThreadPoolSystem::Terminate();
     DvigEngine::ThreadPoolSystem::WaitForJobs();
     

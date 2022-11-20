@@ -2,7 +2,7 @@ TARGET 				:= main.exe
 CXXFLAGS 			:= -std=c++11 -O3 #-Werror -Wpedantic -Wall -pedantic
 CXX					:= g++
 CXX_SOURCE    		= $(CXX) $(CXXFLAGS) -c $(1) -o $(2) &&
-CXX_OBJECT    		= $(CXX) $(CXXFLAGS) -o main.exe $(1) -lopengl32 libs/DvigEngine_v00_01.a thirdparty/glfw_win64/lib-mingw-w64/libglfw3dll.a
+CXX_OBJECT    		= $(CXX) $(CXXFLAGS) -o main.exe $(1) libs/DvigEngine_v00_01.a thirdparty/glfw_win64/lib-mingw-w64/libglfw3.a -lgdi32 -lopengl32
 MAKE_LIB			= ar -rcs $(1) $(call OBJECT_FILES, $(2))
 CLEAR_FOLDER		= @del $(subst /,\,$(call PARSE_DIR, $(1), $(LIB_EXTENSION)))
 CLEAR_OBJECTS		= @del $(subst /,\,$(call OBJECT_FILES, $(1)))
