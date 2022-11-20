@@ -140,6 +140,7 @@ namespace DvigEngine
             void AddRotationEulerZ(demfloat value);
             void Move(demfloat value);
             void Strafe(demfloat value);
+            void Lift(demfloat value);
 
             DV_FUNCTION_INLINE demfloat GetPositionX() { return (demfloat)this->m_Position.x; }
             DV_FUNCTION_INLINE demfloat GetPositionY() { return (demfloat)this->m_Position.y; }

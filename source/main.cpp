@@ -6,15 +6,15 @@
 #include "../include/DEThirdPartyWindow.hpp"
 
 void OnKey(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
-    DvigEngine::INode* viewer = (DvigEngine::INode*)engine->GetExistingInstance("Viewer_0");
-    DvigEngine::ViewerComponent* viewerViewer = viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr);
+    // DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
+    // DvigEngine::IWindow* curWindow = DvigEngine::IWindow::GetWindowInstance(window);
+    // DvigEngine::INode* viewer = (DvigEngine::INode*)engine->GetExistingInstance("Viewer_0");
+    // DvigEngine::ViewerComponent* viewerViewer = viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr);
 
-    if (key == 'W') {
-        viewerViewer->Move(0.1f);
-    } else if (key == 'S') {
-        viewerViewer->Move(-0.1f);
-    }
+    // curWindow->CaptureKeyState('W');
+    // curWindow->CaptureKeyState('S');
+    // curWindow->CaptureKeyState('A');
+    // curWindow->CaptureKeyState('D');
 }
 
 int main()
@@ -109,7 +109,7 @@ int main()
             void Update() override final {
                 static demfloat fRot = 0.0f;
                 if (fRot > 360.0f) { fRot = 0.0f; }
-                fRot += 0.1f;
+                // fRot += 0.1f;
                 DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
                 DvigEngine::Application* app = this->GetApplication();
                 DvigEngine::INode* myNode_0 = (DvigEngine::INode*)engine->GetExistingInstance( "MyNode_0" );
@@ -138,6 +138,24 @@ int main()
                 // DvigEngine::RenderingSystem::Draw( myNode_1 );
                 DvigEngine::RenderingSystem::EndBatch();
                 DvigEngine::RenderingSystem::EndRender();
+
+                myWindow->CaptureKeyState('W');
+                myWindow->CaptureKeyState('S');
+                myWindow->CaptureKeyState('A');
+                myWindow->CaptureKeyState('D');
+
+                if (myWindow->GetKeyState('W') == GLFW_PRESS) {
+                    viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->Move( 0.1f/60.0f );
+                }
+                if (myWindow->GetKeyState('S') == GLFW_PRESS) {
+                    viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->Move( -0.1f/60.0f );
+                }
+                if (myWindow->GetKeyState('A') == GLFW_PRESS) {
+                    viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->Strafe( 0.1f/60.0f );
+                }
+                if (myWindow->GetKeyState('D') == GLFW_PRESS) {
+                    viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->Strafe( -(0.1f/60.0f) );
+                }
             }
     };
 

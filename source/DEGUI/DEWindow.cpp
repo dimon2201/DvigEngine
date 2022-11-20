@@ -22,6 +22,9 @@ void DvigEngine::IWindow::Init(Application* app, const char* caption, glm::uvec2
     // Assign to member variables
     this->m_App = app;
     this->m_GLFWWindow = window;
+    for (deint32 i = 0; i < 256; ++i) {
+        this->m_GLFWKeyStates[i] = GLFW_RELEASE;
+    }
 
     // Add to global stack
     deint32 cycle = 0;
@@ -46,7 +49,8 @@ void DvigEngine::IWindow::Free()
         engine->Delete( this->m_UserData );
     }
 
-    glfwDestroyWindow( (GLFWwindow*)this->m_GLFWWindow );
+    glfwSetKeyCallback( this->m_GLFWWindow, nullptr );
+    glfwDestroyWindow(this->m_GLFWWindow);
     this->m_GLFWWindow = nullptr;
     this->m_WindowIndex = DV_NULL;
 
@@ -92,6 +96,11 @@ void DvigEngine::IWindow::Wait()
             presentWindowCount -= 1;
         }
     } while (presentWindowCount > 0);
+}
+
+void DvigEngine::IWindow::CaptureKeyState(int key)
+{
+    this->m_GLFWKeyStates[key] = glfwGetKey( this->m_GLFWWindow, key );
 }
 
 void DvigEngine::IWindow::SetOnKeyCallback(GLFWkeyfun callback)

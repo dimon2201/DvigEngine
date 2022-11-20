@@ -81,7 +81,14 @@ void DvigEngine::ViewerComponent::Strafe(demfloat value)
 {
     glm::vec3 dir3 = glm::vec3( this->m_Direction.x, this->m_Direction.y, this->m_Direction.z );
     glm::vec3 right = glm::cross( glm::vec3(0.0f, 1.0f, 0.0f), dir3 );
-    this->m_Position += value * dir3;
+    this->m_Position += value * right;
+    this->m_ViewSpaceMatrix = glm::lookAtRH( this->m_Position, this->m_Position + dir3, glm::vec3( 0.0f, 1.0f, 0.0f ) );
+}
+
+void DvigEngine::ViewerComponent::Lift(demfloat value)
+{
+    glm::vec3 dir3 = glm::vec3( this->m_Direction.x, this->m_Direction.y, this->m_Direction.z );
+    this->m_Position.y += value;
     this->m_ViewSpaceMatrix = glm::lookAtRH( this->m_Position, this->m_Position + dir3, glm::vec3( 0.0f, 1.0f, 0.0f ) );
 }
 
