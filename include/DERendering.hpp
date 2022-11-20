@@ -86,9 +86,9 @@ namespace DvigEngine
             DV_FUNCTION_INLINE demfloat GetPositionX() { return (demfloat)this->m_Position.x; }
             DV_FUNCTION_INLINE demfloat GetPositionY() { return (demfloat)this->m_Position.y; }
             DV_FUNCTION_INLINE demfloat GetPositionZ() { return (demfloat)this->m_Position.z; }
-            DV_FUNCTION_INLINE demfloat GetRotationX() { return (demfloat)this->m_RotationEuler.x; }
-            DV_FUNCTION_INLINE demfloat GetRotationY() { return (demfloat)this->m_RotationEuler.y; }
-            DV_FUNCTION_INLINE demfloat GetRotationZ() { return (demfloat)this->m_RotationEuler.z; }
+            DV_FUNCTION_INLINE demfloat GetRotationX() { return (demfloat)glm::degrees(this->m_RotationEuler.x); }
+            DV_FUNCTION_INLINE demfloat GetRotationY() { return (demfloat)glm::degrees(this->m_RotationEuler.y); }
+            DV_FUNCTION_INLINE demfloat GetRotationZ() { return (demfloat)glm::degrees(this->m_RotationEuler.z); }
             DV_FUNCTION_INLINE demfloat GetScaleX() { return (demfloat)this->m_Scale.x; }
             DV_FUNCTION_INLINE demfloat GetScaleY() { return (demfloat)this->m_Scale.y; }
             DV_FUNCTION_INLINE demfloat GetScaleZ() { return (demfloat)this->m_Scale.z; }
@@ -142,22 +142,25 @@ namespace DvigEngine
             void Strafe(demfloat value);
             void Lift(demfloat value);
 
-            DV_FUNCTION_INLINE demfloat GetPositionX() { return (demfloat)this->m_Position.x; }
-            DV_FUNCTION_INLINE demfloat GetPositionY() { return (demfloat)this->m_Position.y; }
-            DV_FUNCTION_INLINE demfloat GetPositionZ() { return (demfloat)this->m_Position.z; }
-            DV_FUNCTION_INLINE demfloat GetRotationX() { return (demfloat)this->m_RotationEuler.x; }
-            DV_FUNCTION_INLINE demfloat GetRotationY() { return (demfloat)this->m_RotationEuler.y; }
-            DV_FUNCTION_INLINE demfloat GetRotationZ() { return (demfloat)this->m_RotationEuler.z; }
+            DV_FUNCTION_INLINE demfloat GetPositionX() { return this->m_Position.x; }
+            DV_FUNCTION_INLINE demfloat GetPositionY() { return this->m_Position.y; }
+            DV_FUNCTION_INLINE demfloat GetPositionZ() { return this->m_Position.z; }
+            DV_FUNCTION_INLINE demfloat GetRotationX() { return glm::degrees(this->m_RotationEuler.x); }
+            DV_FUNCTION_INLINE demfloat GetRotationY() { return glm::degrees(this->m_RotationEuler.y); }
+            DV_FUNCTION_INLINE demfloat GetRotationZ() { return glm::degrees(this->m_RotationEuler.z); }
             void SetPosition(demfloat x, demfloat y, demfloat z);
+            void SetRotationX(demfloat value);
+            void SetRotationY(demfloat value);
+            void SetRotationZ(demfloat value);
             void SetRotationEuler(demfloat eulerX, demfloat eulerY, demfloat eulerZ);
             void SetOrthographicProjection(demfloat left, demfloat right, demfloat bottom, demfloat top);
             void SetPerspectiveProjection(demfloat fov, demfloat aspect, demfloat zNear, demfloat zFar);
 
         public:
             glm::vec3 m_Position;
-            glm::vec4 m_Direction;
+            glm::vec3 m_Direction;
             glm::vec3 m_RotationEuler;
-            glm::quat m_ViewRotationQuaternion;
+            glm::quat m_RotationQuaternion;
             glm::mat4 m_ViewSpaceMatrix;
             glm::mat4 m_ProjectionSpaceMatrix;
     };

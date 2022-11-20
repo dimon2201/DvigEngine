@@ -5,18 +5,6 @@
 #include "../include/DEThirdPartyMath.hpp"
 #include "../include/DEThirdPartyWindow.hpp"
 
-void OnKey(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    // DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
-    // DvigEngine::IWindow* curWindow = DvigEngine::IWindow::GetWindowInstance(window);
-    // DvigEngine::INode* viewer = (DvigEngine::INode*)engine->GetExistingInstance("Viewer_0");
-    // DvigEngine::ViewerComponent* viewerViewer = viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr);
-
-    // curWindow->CaptureKeyState('W');
-    // curWindow->CaptureKeyState('S');
-    // curWindow->CaptureKeyState('A');
-    // curWindow->CaptureKeyState('D');
-}
-
 int main()
 {
     DvigEngine::MemoryPoolProperty memoryPoolsData[2];
@@ -40,6 +28,9 @@ int main()
     class AppWindow : public DvigEngine::IWindow {
         public:
             void Start() override final {
+                this->prevMouseX = -1.0;
+                this->prevMouseY = -1.0;
+
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::GeometryComponent>();
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::TransformComponent>();
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::ShaderComponent>();
@@ -80,17 +71,17 @@ int main()
                 engine->Create <DvigEngine::INode> ( &node1, "MyNode_1" );
                 engine->Create <DvigEngine::INode> ( &viewer, "Viewer_0" );
 
-                geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\moai.obj" );
+                geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
                 transComp0->Init();
                 shaderComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
-                geomComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\moai.obj" );
+                geomComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
                 transComp1->Init();
                 shaderComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
                 viewerTransComp->Init();
                 viewerViewerComp->Init();
-                viewerViewerComp->SetPosition( 0.0f, 0.0f, 4.0f );
+                viewerViewerComp->SetPosition( 0.0f, 2.0f, 4.0f );
                 node0->Init();
                 node1->Init();
                 viewer->Init();
@@ -129,7 +120,7 @@ int main()
                 DvigEngine::GL4::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
                 DvigEngine::INode* viewer = (DvigEngine::INode*)engine->GetExistingInstance( "Viewer_0" );
-                viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetRotationEuler( 0.0f, 0.0f, 0.0f );
+                // viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetRotationEuler( 0.0f, 0.0f, 0.0f );
                 viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetPerspectiveProjection( 65.0f, 640.0f/480.0f, 0.1f, 100.0f );
 
                 DvigEngine::RenderingSystem::BeginRender(viewer);
@@ -156,7 +147,47 @@ int main()
                 if (myWindow->GetKeyState('D') == GLFW_PRESS) {
                     viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->Strafe( -(0.1f/60.0f) );
                 }
+
+                this->MouseLook();
             }
+            void MouseLook() {
+                double mouseX = this->GetMouseX();
+                double mouseY = this->GetMouseY();
+                if (this->prevMouseX != -1.0 && this->prevMouseY != -1.0)
+                {
+                    double deltaX = mouseX - this->prevMouseX;
+                    double deltaY = mouseY - this->prevMouseY;
+                    DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
+                    DvigEngine::INode* viewer = (DvigEngine::INode*)engine->GetExistingInstance( "Viewer_0" );
+                    DvigEngine::ViewerComponent* viewerViewer = viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr);
+                    
+                    demfloat rotX = viewerViewer->GetRotationX();
+                    demfloat rotY = viewerViewer->GetRotationY();
+                    rotX += -deltaY / 2.5f;
+                    rotY += -deltaX / 2.5f;
+                    if (rotX > 75.0f) {
+                        rotX = 75.0f;
+                    } else if (rotX < -75.0f) {
+                        rotX = -75.0f;
+                    }
+                    if (rotY < -360) {
+                        rotY = 360 + rotY;
+                    } else if (rotY > 360) {
+                        rotY = 360 - rotY;
+                    }
+                    viewerViewer->SetRotationX(rotX);
+                    viewerViewer->SetRotationY(rotY);
+                }
+
+                this->prevMouseX = mouseX;
+                this->prevMouseY = mouseY;
+
+                // this->SetMousePosition(640.0/2.0, 480.0/2.0);
+            }
+        
+        private:
+            double prevMouseX;
+            double prevMouseY;
     };
 
     const char* windowCaption = "DvigEngine Test";
@@ -165,8 +196,7 @@ int main()
     DvigEngine::Application* appSys;
     pEngine->Create <DvigEngine::Application> ( &appSys, "MyApplication_0" );
     appSys->Init();
-    DvigEngine::IWindow* window = appSys->AddWindow <AppWindow> ( "MyTestWindow_0", &windowCaption[0], windowSize );
-    window->SetOnKeyCallback((GLFWkeyfun)&OnKey);
+    appSys->AddWindow <AppWindow> ( "MyTestWindow_0", &windowCaption[0], windowSize );
     appSys->WaitForWindows();
 
     // DvigEngine::MemoryObject* mo = DvigEngine::Engine::Allocate( 0, 256 );

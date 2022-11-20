@@ -26,8 +26,10 @@ namespace DvigEngine
             DV_FUNCTION_INLINE deint32 GetWindowIndex() { return m_WindowIndex; }
             DV_FUNCTION_INLINE void* GetGLFWWindow() { return m_GLFWWindow; }
             DV_FUNCTION_INLINE int GetKeyState(int key) { return m_GLFWKeyStates[key]; }
+            DV_FUNCTION_INLINE double GetMouseX() { double x = -1.0, y = -1.0; glfwGetCursorPos(this->m_GLFWWindow, &x, &y); return x; }
+            DV_FUNCTION_INLINE double GetMouseY() { double x = -1.0, y = -1.0; glfwGetCursorPos(this->m_GLFWWindow, &x, &y); return y; }
             DV_FUNCTION_INLINE MemoryObject* GetUserData() { return m_UserData; }
-            void SetOnKeyCallback(GLFWkeyfun callback);
+            DV_FUNCTION_INLINE void SetMousePosition(double x, double y) { glfwSetCursorPos(this->m_GLFWWindow, x, y); }
 
         private:
             Application* m_App;

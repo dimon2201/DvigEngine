@@ -102,8 +102,3 @@ void DvigEngine::IWindow::CaptureKeyState(int key)
 {
     this->m_GLFWKeyStates[key] = glfwGetKey( this->m_GLFWWindow, key );
 }
-
-void DvigEngine::IWindow::SetOnKeyCallback(GLFWkeyfun callback)
-{
-    glfwSetKeyCallback( this->m_GLFWWindow, callback );
-} 
