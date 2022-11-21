@@ -18,11 +18,7 @@ void DvigEngine::IWindow::Init(Application* app, const char* caption, glm::uvec2
     // Init OpenGL procedures
     if (DvigEngine::IWindow::m_IsGLInitialized == DV_FALSE) {
         DvigEngine::GL4::Load();
-        // DvigEngine::RenderingSystem::Init();
-        const char* desc[1024];
-        glfwGetError(&desc[0]);
-        std::cout << desc[0] << std::endl;
-        DvigEngine::IWindow::m_IsGLInitialized = DV_TRUE;
+        DvigEngine::RenderingSystem::Init();
     }
 
     DV_ASSERT_PTR(window);

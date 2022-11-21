@@ -7,10 +7,10 @@ void DvigEngine::TransformComponent::Init()
     this->m_RotationEuler = glm::vec3(0.0f);
     this->m_Scale = glm::vec3(0.0f);
     this->m_WorldRotationQuaternion = glm::quat( glm::vec3(0.0f) );
-    this->m_WorldTranslationMatrix = glm::mat4();
-    this->m_WorldRotationMatrix = glm::mat4();
-    this->m_WorldScaleMatrix = glm::mat4();
-    this->m_WorldSpaceMatrix = glm::mat4();
+    this->m_WorldTranslationMatrix = glm::mat4(1.0f);
+    this->m_WorldRotationMatrix = glm::mat4(1.0f);
+    this->m_WorldScaleMatrix = glm::mat4(1.0f);
+    this->m_WorldSpaceMatrix = glm::mat4(1.0f);
 }
 
 void DvigEngine::TransformComponent::Free()

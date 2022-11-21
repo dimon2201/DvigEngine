@@ -195,12 +195,12 @@ void DvigEngine::GeometryComponent::Init(const char* meshPathOnDrive)
             long normal3 = std::strtoul( (const char*)&nValue[8], &end, 10 );
 
             // Insert vertex to buffer
-            meshIndexData[ meshIndexCount++ ] = position1 - 1;
-            meshIndexData[ meshIndexCount++ ] = normal1 - 1;
-            meshIndexData[ meshIndexCount++ ] = position2 - 1;
-            meshIndexData[ meshIndexCount++ ] = normal2 - 1;
-            meshIndexData[ meshIndexCount++ ] = position3 - 1;
-            meshIndexData[ meshIndexCount++ ] = normal3 - 1;
+            meshIndexData[ meshIndexCount++ ] = position1 > 0 ? position1 - 1 : 0;
+            meshIndexData[ meshIndexCount++ ] = normal1 > 0 ? normal1 - 1 : 0;
+            meshIndexData[ meshIndexCount++ ] = position2 > 0 ? position2 - 1 : 0;
+            meshIndexData[ meshIndexCount++ ] = normal2 > 0 ? normal2 - 1 : 0;
+            meshIndexData[ meshIndexCount++ ] = position3 > 0 ? position3 - 1 : 0;
+            meshIndexData[ meshIndexCount++ ] = normal3 > 0 ? normal3 - 1 : 0;
         }
         else
         {
@@ -210,14 +210,15 @@ void DvigEngine::GeometryComponent::Init(const char* meshPathOnDrive)
     }
 
     // Setup geometry buffer
-    const DvigEngine::deisize actualVertexCount = meshIndexCount / 2;
-    for (DvigEngine::deint32 i = 0; i < actualVertexCount; ++i)
+    meshVertexCount = 0;
+    const deisize actualVertexCount = meshIndexCount / 2;
+    for (deint32 i = 0; i < actualVertexCount; ++i)
     {
-        const DvigEngine::deint32 indexDataIndex = 2 * i;
-        const DvigEngine::deint32 indexPosition = meshIndexData[ indexDataIndex ];
-        const DvigEngine::deint32 indexNormal = meshIndexData[ 1 + indexDataIndex ];
-        const DvigEngine::deint32 positionDataIndex = 3 * indexPosition;
-        const DvigEngine::deint32 normalDataIndex = 3 * indexNormal;
+        const deint32 indexDataIndex = 2 * i;
+        const deint32 indexPosition = meshIndexData[ indexDataIndex ];
+        const deint32 indexNormal = meshIndexData[ 1 + indexDataIndex ];
+        const deint32 positionDataIndex = 3 * indexPosition;
+        const deint32 normalDataIndex = 3 * indexNormal;
         meshGeometryData[ meshVertexCount ].m_Position[ 0 ] = meshGeometryPositionData[ positionDataIndex ];
         meshGeometryData[ meshVertexCount ].m_Position[ 1 ] = meshGeometryPositionData[ 1 + positionDataIndex ];
         meshGeometryData[ meshVertexCount ].m_Position[ 2 ] = meshGeometryPositionData[ 2 + positionDataIndex ];        
@@ -247,7 +248,7 @@ void DvigEngine::GeometryComponent::Init(const char* meshPathOnDrive)
     DvigEngine::GL4::BufferSubData( GL_ELEMENT_ARRAY_BUFFER, this->m_IndexBufferOffset, meshIndexDataByteWidth, meshIndexData );
     DvigEngine::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 
-    // Delete temp memory object
+    // Delete temp memory objects
     engine->Delete( meshDataMemoryObject );
     engine->Delete( meshGeometryDataMemoryObject );
     engine->Delete( meshGeometryPositionDataMemoryObject );

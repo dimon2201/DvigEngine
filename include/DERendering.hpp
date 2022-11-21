@@ -4,6 +4,8 @@
 #include "DECore.hpp"
 #include "DEThirdPartyGL.hpp"
 #include "DEThirdPartyMath.hpp"
+#include "DEThirdPartyWindow.hpp"
+#include <libloaderapi.h>
 
 namespace DvigEngine
 {
@@ -13,6 +15,19 @@ namespace DvigEngine
 
         public:
             static void Load();
+
+            template <typename T>
+            static DV_FUNCTION_INLINE T GetGLProcAddress(HMODULE hModule, const char* name) {
+                void* proc = (void*)glfwGetProcAddress( &name[0] );
+                if( proc == nullptr ||
+                   (proc == (void*)0x1) || (proc == (void*)0x2) || (proc == (void*)0x3) ||
+                   (proc == (void*)-1) )
+                {
+                    proc = (void*)GetProcAddress(hModule, name);
+                }
+
+                return (T)proc;
+            }
 
         public:
             static void (*_Init)(void);

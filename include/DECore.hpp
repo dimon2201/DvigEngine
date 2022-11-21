@@ -110,30 +110,21 @@ namespace DvigEngine
             deint32 m_MemoryPoolIndex;
     };
     
-    class MemoryObject : public IHelperObject
+    class MemoryObject
     {
         DV_MACRO_FRIENDS(Engine)
 
         public:
-            void Init() {}
-            void Free() override final {}
-
-            DV_FUNCTION_INLINE void* GetAddress() { return m_Address; }
+            DV_FUNCTION_INLINE void* GetAddress() { return (void*)((demachword)this + (demachword)sizeof(MemoryObject)); }
             DV_FUNCTION_INLINE deusize GetByteWidth() { return m_ByteWidth; }
-            DV_FUNCTION_INLINE deint32 GetMemoryPoolIndex() { return m_MemoryPoolIndex; }
 
             template<typename T>
-            DV_FUNCTION_INLINE T Unwrap() { return (T)m_Address; }
-
-        // private:
-        //     DV_XMACRO_GETTER_PROPERTY(MemoryObjectProperty)
+            DV_FUNCTION_INLINE T Unwrap() { return (T)((demachword)this + (demachword)sizeof(MemoryObject)); }
 
         private:
-            // MemoryObjectProperty m_Prop;
-            void* m_Address;
-            deusize m_ByteWidth;
             demachword m_FreeFlag;
-            deint32 m_MemoryPoolIndex;
+            deusize m_ByteWidth;
+            deusize m_AllocatedByteWidth;
     };
 
     class StringProperty : public IProperty

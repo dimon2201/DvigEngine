@@ -8,7 +8,7 @@
 int main()
 {
     DvigEngine::MemoryPoolProperty memoryPoolsData[2];
-    memoryPoolsData[0].m_ByteWidth = 128 * DV_MEMORY_MiB;
+    memoryPoolsData[0].m_ByteWidth = 256 * DV_MEMORY_MiB;
     memoryPoolsData[1].m_ByteWidth = 24 * DV_MEMORY_KiB;
 
     DvigEngine::EngineInputProperty engineInputData;
@@ -81,6 +81,7 @@ int main()
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
                 viewerTransComp->Init();
                 viewerViewerComp->Init();
+                transComp1->SetPosition( 7.0f, 0.0f, 0.0f );
                 viewerViewerComp->SetPosition( 0.0f, 2.0f, 4.0f );
                 node0->Init();
                 node1->Init();
@@ -126,7 +127,7 @@ int main()
                 DvigEngine::RenderingSystem::BeginRender(viewer);
                 DvigEngine::RenderingSystem::BeginBatch();
                 DvigEngine::RenderingSystem::Draw( myNode_0 );
-                // DvigEngine::RenderingSystem::Draw( myNode_1 );
+                DvigEngine::RenderingSystem::Draw( myNode_1 );
                 DvigEngine::RenderingSystem::EndBatch();
                 DvigEngine::RenderingSystem::EndRender();
 
@@ -153,7 +154,6 @@ int main()
             void MouseLook() {
                 double mouseX = this->GetMouseX();
                 double mouseY = this->GetMouseY();
-                std::cout << mouseX << " " << mouseY << std::endl;
                 if (mouseX >= this->GetWindowWidth()) {
                     mouseX = 0;
                     this->prevMouseX = 0;
@@ -200,8 +200,6 @@ int main()
 
                 this->prevMouseX = mouseX;
                 this->prevMouseY = mouseY;
-
-                // this->SetMousePosition(640.0/2.0, 480.0/2.0);
             }
         
         private:
@@ -216,7 +214,7 @@ int main()
     pEngine->Create <DvigEngine::Application> ( &appSys, "MyApplication_0" );
     appSys->Init();
     appSys->AddWindow <AppWindow> ( "MyTestWindow_0", &windowCaption[0], windowSize );
-    // appSys->WaitForWindows();
+    appSys->WaitForWindows();
     
     DvigEngine::ThreadPoolSystem::Terminate();
     DvigEngine::ThreadPoolSystem::WaitForJobs();

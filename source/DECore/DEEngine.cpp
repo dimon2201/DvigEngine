@@ -59,12 +59,12 @@ DvigEngine::Engine::Engine(DvigEngine::EngineInputProperty* engineInputProperty)
         this->GetData()->m_MemoryPools[i].m_OccupiedByteWidth = 0;
 
         // Put stub memory object
-        MemoryObject* memoryObject = (MemoryObject*)this->GetData()->m_MemoryPools[i].m_AddressOffset;
-        memoryObject->m_Address = nullptr;
-        memoryObject->m_ByteWidth =    (demachword)this->GetData()->m_MemoryPools[i].m_ByteWidth -
-                                        (demachword)this->GetData()->m_MemoryPools[i].m_OccupiedByteWidth;
-        memoryObject->m_FreeFlag = DV_TRUE | DV_XMACRO_MEMORY_OBJECT_STUB;
-        memoryObject->m_MemoryPoolIndex = i;
+        this->GetData()->m_MemoryPools[i].m_OccupiedByteWidth += sizeof(MemoryObject) +
+                                                            ((demachword)this->GetData()->m_MemoryPools[i].m_AddressOffset - (demachword)this->GetData()->m_MemoryPools[i].m_Address);
+        MemoryObject* stubAfter = (MemoryObject*)this->GetData()->m_MemoryPools[i].m_AddressOffset;
+        stubAfter->m_FreeFlag = DV_TRUE | DV_XMACRO_MEMORY_OBJECT_STUB;
+        stubAfter->m_AllocatedByteWidth = this->GetData()->m_MemoryPools[i].m_ByteWidth -
+                                          this->GetData()->m_MemoryPools[i].m_OccupiedByteWidth;
     }
     
     this->GetData()->m_Version = engineInputProperty->m_Version;
@@ -90,7 +90,7 @@ DvigEngine::Engine::Engine(DvigEngine::EngineInputProperty* engineInputProperty)
     HashMap createesHashMapObjectOnStack;
     HashMap* createesHashMapObject = createesHashMapMemoryObject->Unwrap<HashMap*>();
     DvigEngine::Engine::MemoryCopy( createesHashMapObject, &createesHashMapObjectOnStack, sizeof(demachword) ); // copy vpointer
-    createesHashMapMemoryObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryCreateesHashMap", Engine::GetGlobalUIID(), createesHashMapMemoryObject, this );
+    createesHashMapObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryCreateesHashMap", Engine::GetGlobalUIID(), createesHashMapMemoryObject, this );
     this->m_RegistryProp.m_Instances = createesHashMapObject;
     this->m_RegistryProp.m_Instances->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
     // Create allocation memory pool index hash map
@@ -98,7 +98,7 @@ DvigEngine::Engine::Engine(DvigEngine::EngineInputProperty* engineInputProperty)
     HashMap allocPoolIndexObjectOnStack;
     HashMap* allocPoolIndexMapObject = allocPoolIndexHashMapMemoryObject->Unwrap<HashMap*>();
     DvigEngine::Engine::MemoryCopy( allocPoolIndexMapObject, &allocPoolIndexObjectOnStack, sizeof(demachword) ); // copy vpointer
-    allocPoolIndexHashMapMemoryObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryAllocPoolIndexHashMap", Engine::GetGlobalUIID(), allocPoolIndexHashMapMemoryObject, this );
+    allocPoolIndexMapObject->SetUSIDAndUIIDAndMemoryObjectAndEngine( (deuchar*)"_RegistryAllocPoolIndexHashMap", Engine::GetGlobalUIID(), allocPoolIndexHashMapMemoryObject, this );
     this->m_RegistryProp.m_AllocPoolIndexMap = allocPoolIndexMapObject;
     this->m_RegistryProp.m_AllocPoolIndexMap->Init(0, 128, sizeof(HashMapKeyValuePair), 1024);
 
@@ -284,44 +284,38 @@ DvigEngine::MemoryObject* DvigEngine::Engine::Allocate(deint32 memoryPoolIndex, 
 
     // return memoryObject;
 
-    DvigEngine::MemoryPool* memoryPool = (DvigEngine::MemoryPool*)m_EngineInstance->GetMemoryPoolByIndex(memoryPoolIndex);
-    void* memoryPoolOffset = memoryPool->m_AddressOffset;
-    const deusize memoryPoolAllocationCount = memoryPool->m_AllocationCount;
+    MemoryPool* memoryPool = (MemoryPool*)m_EngineInstance->GetMemoryPoolByIndex(memoryPoolIndex);
+	void* memoryPoolOffset = memoryPool->m_AddressOffset;
+	const deusize memoryPoolAllocationCount = memoryPool->m_AllocationCount;
 
-    const deusize allocByteWidth = sizeof(DvigEngine::MemoryObject) + byteWidth;
+	MemoryObject* memoryObject = (MemoryObject*)memoryPoolOffset;
+	deint32 cursor;
+	for (cursor = 0; cursor < memoryPool->m_AllocationCount; ++cursor)
+	{
+		if ((memoryObject->m_FreeFlag & DV_TRUE) == DV_TRUE && memoryObject->m_AllocatedByteWidth > sizeof(MemoryObject) + byteWidth) {
+			break;
+		}
 
-    deint32 allocIndex = 0;
-    DvigEngine::MemoryObject* memoryObject = (DvigEngine::MemoryObject*)memoryPoolOffset;
-    for (allocIndex = 0; allocIndex < memoryPoolAllocationCount; ++allocIndex)
-    {
-        if ((memoryObject->m_FreeFlag & DV_TRUE) == DV_TRUE && memoryObject->m_ByteWidth > byteWidth + sizeof(DvigEngine::MemoryObject)) {
-            break;
-        }
-        
-        memoryObject = DvigEngine::Ptr<DvigEngine::MemoryObject*>::Add( &memoryObject, sizeof(DvigEngine::MemoryObject) + memoryObject->m_ByteWidth );
-    }
+		memoryObject = Ptr<MemoryObject*>::Add(&memoryObject, sizeof(MemoryObject) + memoryObject->m_AllocatedByteWidth);
+	}
 
-    // Check if reached stub
-    // insert new one at the end
-    if (memoryObject->m_ByteWidth > byteWidth + sizeof(DvigEngine::MemoryObject))
-    {
-        memoryPool->m_AllocationCount += 1;
-        memoryPool->m_OccupiedByteWidth += allocByteWidth;
+	memoryPool->m_OccupiedByteWidth += byteWidth;
 
-        DvigEngine::MemoryObject* nextStub = DvigEngine::Ptr<DvigEngine::MemoryObject*>::Add( &memoryObject, allocByteWidth );
-        nextStub->m_Address = nullptr;
-        nextStub->m_ByteWidth = memoryObject->m_ByteWidth - (byteWidth + sizeof(DvigEngine::MemoryObject));
-        nextStub->m_FreeFlag = DV_TRUE | DV_XMACRO_MEMORY_OBJECT_STUB;
-        nextStub->m_MemoryPoolIndex = memoryPoolIndex;
-    }
+	memoryObject->m_ByteWidth = byteWidth;
+	if ((memoryObject->m_FreeFlag & DV_XMACRO_MEMORY_OBJECT_STUB) == DV_XMACRO_MEMORY_OBJECT_STUB) {
+		memoryObject->m_AllocatedByteWidth = memoryObject->m_ByteWidth;
+	}
+	memoryObject->m_FreeFlag = DV_FALSE;
 
-    // Populate memory object fields
-    memoryObject->m_Address = DvigEngine::Ptr<void*>::Add( (void**)&memoryObject, sizeof(DvigEngine::MemoryObject) );
-    memoryObject->m_ByteWidth = byteWidth;
-    memoryObject->m_FreeFlag = DV_FALSE;
-    memoryObject->m_MemoryPoolIndex = memoryPoolIndex;
+	if (cursor == memoryPool->m_AllocationCount - 1) {
+		memoryPool->m_AllocationCount += 1;
+		memoryPool->m_OccupiedByteWidth += sizeof(MemoryObject);
+		MemoryObject* stubOffset = Ptr<MemoryObject*>::Add(&memoryObject, sizeof(MemoryObject) + memoryObject->m_ByteWidth);
+		stubOffset->m_FreeFlag = DV_TRUE | DV_XMACRO_MEMORY_OBJECT_STUB;
+		stubOffset->m_AllocatedByteWidth = memoryPool->m_ByteWidth - memoryPool->m_OccupiedByteWidth;
+	}
 
-    return memoryObject;
+	return memoryObject;
 }
 
 void DvigEngine::Engine::Delete(MemoryObject* memoryObject)
@@ -358,7 +352,6 @@ void DvigEngine::Engine::Delete(MemoryObject* memoryObject)
     // }
 
     memoryObject->m_FreeFlag = DV_TRUE;
-    DvigEngine::Engine::MemorySet( memoryObject->m_Address, 0, memoryObject->m_ByteWidth );
 }
 
 void DvigEngine::Engine::MemoryCopy(void* dstAddress, const void* srcAddress, const deusize byteWidth)
