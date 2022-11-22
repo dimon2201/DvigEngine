@@ -127,15 +127,18 @@ int main()
                 DvigEngine::RenderingSystem::PaintBackground( 0.0f, 0.0f, 0.0f, 1.0f );
 
                 DvigEngine::INode* viewer = (DvigEngine::INode*)engine->GetExistingInstance( "Viewer_0" );
-                // viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetRotationEuler( 0.0f, 0.0f, 0.0f );
                 viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetPerspectiveProjection( 65.0f, 640.0f/480.0f, 0.1f, 100.0f );
 
-                DvigEngine::RenderingSystem::BeginRenderPass(viewer);
+                DvigEngine::RenderPassInfo renderPass;
+                renderPass.Viewer = viewer;
+                renderPass.Framebuffer = myWindow->GetFramebuffer();
+
+                DvigEngine::RenderingSystem::BeginRenderPass(&renderPass);
                 DvigEngine::RenderingSystem::BeginBatch();
                 DvigEngine::RenderingSystem::Draw( myNode_0 );
                 // DvigEngine::RenderingSystem::Draw( myNode_1 );
                 DvigEngine::RenderingSystem::EndBatch();
-                DvigEngine::RenderingSystem::EndRender();
+                DvigEngine::RenderingSystem::EndRenderPass();
 
                 myWindow->CaptureKeyState('W');
                 myWindow->CaptureKeyState('S');

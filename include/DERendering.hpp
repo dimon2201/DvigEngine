@@ -123,7 +123,9 @@ namespace DvigEngine
 
     class RenderPassInfo
     {
-
+        public:
+            INode* Viewer;
+            deuint32 Framebuffer;
     };
 
     class UniformViewerData
@@ -161,9 +163,9 @@ namespace DvigEngine
             static void Init();
             static void Viewport(deint32 x, deint32 y, deisize width, deisize height);
             static void PaintBackground(demfloat red, demfloat green, demfloat blue, demfloat alpha);
-            static void BeginRenderPass(INode* const viewer);
+            static void BeginRenderPass(RenderPassInfo* renderPassInfo);
             static void BeginBatch();
-            static void EndRender();
+            static void EndRenderPass();
             static void EndBatch();
             static void Draw(INode* const node);
             static void ClearGeometryAndIndexBuffers();
@@ -176,7 +178,7 @@ namespace DvigEngine
             static deuint32 m_GLVAO;
 
         private:
-            static INode* m_Viewer;
+            static RenderPassInfo* m_CurRenderPass;
             static FixedSet* m_Batches;
             static debool m_IsBatchRecording;
             static deint32 m_NextBatchUniformBufferOffset;

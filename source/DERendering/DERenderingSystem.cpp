@@ -1,7 +1,7 @@
 #include "../../include/DERendering.hpp"
 #include "../../include/DEOpenGL4.hpp"
 
-DvigEngine::INode* DvigEngine::RenderingSystem::m_Viewer = nullptr;
+DvigEngine::RenderPassInfo* DvigEngine::RenderingSystem::m_CurRenderPass = nullptr;
 DvigEngine::FixedSet* DvigEngine::RenderingSystem::m_Batches = nullptr;
 DvigEngine::debool DvigEngine::RenderingSystem::m_IsBatchRecording = DV_FALSE;
 DvigEngine::deint32 DvigEngine::RenderingSystem::m_NextBatchUniformBufferOffset = 0;
@@ -20,7 +20,7 @@ void DvigEngine::RenderingSystem::Init()
     DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
 
     // Create global geometry and index buffers
-    // And VAO only if needed
+    // VAO, Frame buffer only if needed
     if (DvigEngine::RenderingSystem::m_GlobalGeometryBuffer == nullptr)
     {
         engine->Create<DvigEngine::DynamicBuffer>( &RenderingSystem::m_GlobalGeometryBuffer, "_GlobalGeometryBuffer" );
@@ -89,16 +89,18 @@ void DvigEngine::RenderingSystem::PaintBackground(demfloat red, demfloat green, 
     GL4::ClearColor( red, green, blue, alpha );
 }
 
-void DvigEngine::RenderingSystem::BeginRenderPass(INode* const viewer)
+void DvigEngine::RenderingSystem::BeginRenderPass(RenderPassInfo* renderPassInfo)
 {
-    // Bind viewer
-    m_Viewer = viewer;
+    RenderingSystem::m_CurRenderPass = renderPassInfo;
+
+    // Bind framebuffer
+    GL4::BindFramebuffer( GL_FRAMEBUFFER, RenderingSystem::m_CurRenderPass->Framebuffer );
 
     // Clear uniform buffer
-    m_NextBatchUniformBufferOffset = 0;
+    RenderingSystem::m_NextBatchUniformBufferOffset = 0;
 
     // Clear batch set
-    m_Batches->Clear();
+    RenderingSystem::m_Batches->Clear();
 
     // Map uniform buffer here
 }
@@ -131,14 +133,20 @@ void DvigEngine::RenderingSystem::EndBatch()
     DvigEngine::GL4::DrawElementsInstanced( GL_TRIANGLES, geometryIndexCount, GL_UNSIGNED_INT, nullptr, lastBatch->m_InstanceCount );
 }
 
-void DvigEngine::RenderingSystem::EndRender()
+void DvigEngine::RenderingSystem::EndRenderPass()
 {
+    RenderingSystem::m_CurRenderPass = nullptr;
+
+    // Unbind framebuffer
+    GL4::BindFramebuffer( GL_FRAMEBUFFER, 0 );
+
     // Unmap uniform buffer here
 }
 
 void DvigEngine::RenderingSystem::Draw(INode* const node)
 {
-    DvigEngine::INode* viewer = DvigEngine::RenderingSystem::m_Viewer;
+    if (RenderingSystem::m_CurRenderPass == nullptr) { return; }
+    DvigEngine::INode* viewer = RenderingSystem::m_CurRenderPass->m_Viewer;
     if (viewer == nullptr) { return; }
     DvigEngine::TransformComponent* viewerTransform = viewer->GetComponent<DvigEngine::TransformComponent>(nullptr);
     DvigEngine::ViewerComponent* viewerViewer = viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr);

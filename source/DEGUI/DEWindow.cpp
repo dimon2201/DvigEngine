@@ -3,6 +3,8 @@
 #include "../../include/DERendering.hpp"
 
 DvigEngine::debool DvigEngine::IWindow::m_IsGLInitialized = DV_FALSE;
+DvigEngine::deuint32 DvigEngine::IWindow::m_GLFramebuffer = DV_NULL;
+DvigEngine::deuint32 DvigEngine::IWindow::m_GLFramebufferRenderTargets[] = { {}, {} };
 
 void* DvigEngine::WindowStack::m_GLFWWindows[] = {};
 DvigEngine::IWindow* DvigEngine::WindowStack::m_WindowInstances[] = {};
@@ -17,9 +19,24 @@ void DvigEngine::IWindow::Init(Application* app, const char* caption, glm::uvec2
     glfwSetWindowUserPointer( window, this );
 
     // Init OpenGL procedures
-    if (DvigEngine::IWindow::m_IsGLInitialized == DV_FALSE) {
+    // Create Framebuffer
+    if (DvigEngine::IWindow::m_IsGLInitialized == DV_FALSE)
+    {
         DvigEngine::GL4::Load();
         DvigEngine::RenderingSystem::Init();
+
+        // Framebuffer
+        GL4::GenTextures( 2, &IWindow::m_GLFramebufferRenderTargets[0] );
+        GL4::BindTexture( GL_TEXTURE_2D, this->m_GLFramebufferRenderTargets[0] ); // color
+        GL4::TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, (deisize)size.x, (deisize)size.y, 0, GL_RGBA, GL_FLOAT, nullptr );
+        GL4::BindTexture( GL_TEXTURE_2D, this->m_GLFramebufferRenderTargets[1] ); // depth
+        GL4::TexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, (deisize)size.x, (deisize)size.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr );
+        GL4::BindTexture( GL_TEXTURE_2D, 0 );
+        GL4::GenFramebuffers( 1, &this->m_GLFramebuffer );
+        GL4::BindFramebuffer( GL_FRAMEBUFFER, this->m_GLFramebuffer );
+        GL4::FramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->m_GLFramebufferRenderTargets[0], 0 );
+        GL4::FramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->m_GLFramebufferRenderTargets[1], 0 );
+        GL4::BindFramebuffer( GL_FRAMEBUFFER, 0 );
     }
 
     DV_ASSERT_PTR(window);
