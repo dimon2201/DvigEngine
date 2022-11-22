@@ -121,6 +121,11 @@ namespace DvigEngine
             glm::mat4 m_ProjectionSpaceMatrix;
     };
 
+    class RenderPassInfo
+    {
+
+    };
+
     class UniformViewerData
     {
         public:
@@ -154,7 +159,9 @@ namespace DvigEngine
 
         public:
             static void Init();
-            static void BeginRender(INode* const viewer);
+            static void Viewport(deint32 x, deint32 y, deisize width, deisize height);
+            static void PaintBackground(demfloat red, demfloat green, demfloat blue, demfloat alpha);
+            static void BeginRenderPass(INode* const viewer);
             static void BeginBatch();
             static void EndRender();
             static void EndBatch();

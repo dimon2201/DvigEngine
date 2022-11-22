@@ -38,13 +38,17 @@ namespace DvigEngine
             static void (*GenBuffers)(deisize n, deuint32* buffers);
             static void (*GenVertexArrays)(deisize n, deuint32* arrays);
             static void (*GenFramebuffers)(deisize n, deuint32* ids);
+            static void (*GenTextures)(deisize n, deuint32* textures);
             static void (*BindBuffer)(deuint32 target, deuint32 buffer);
             static void (*BindBufferBase)(deuint32 target, deuint32 index, deuint32 buffer);
             static void (*BindVertexArray)(deuint32 buffer);
             static void (*BindFramebuffer)(deuint32 target, deuint32 framebuffer);
+            static void (*BindTexture)(deuint32 target, deuint32 texture);
             static void (*BufferData)(deuint32 target, demachword size, const void* data, deuint32 usage);
             static void (*BufferSubData)(deuint32 target, demachword offset, demachword size, const void* data);
             static void (*FramebufferTexture2D)(deuint32 target, deuint32 attachment, deuint32 textarget, deuint32 texture, deuint32 level);
+            static void (*TexImage2D)(deuint32 target, deuint32 level, deuint32 internalformat, deisize width, deisize height, deint32 border, deuint32 format, deuint32 type, const void* data);
+            static void (*TexParameteri)(deuint32 target, deuint32 pname, deint32 param);
             static deuint32 (*CreateShader)(deuint32 shaderType);
             static void (*ShaderSource)(deuint32 shader, deisize count, const deuchar** string, const deint32* length);
             static void (*CompileShader)(deuint32 shader);
@@ -66,7 +70,8 @@ namespace DvigEngine
             static void (*DrawElements)(deuint32 mode, deisize count, deuint32 type, void* indices);
             static void (*DrawElementsInstanced)(deuint32 mode, deisize count, deuint32 type, void* indices, deisize instancecount);
             static void (*DrawElementsBaseVertex)(deuint32 mode, deisize count, deuint32 type, void* indices, deint32 baseVertex);
-            static void (*DeleteFramebuffers)(deint32 n, deuint32* framebuffers);
+            static void (*DeleteFramebuffers)(deint32 n, const deuint32* framebuffers);
+            static void (*DeleteTextures)(deint32 n, const deuint32* textures);
             static deuint32 (*GetError)();
     };
 }

@@ -78,7 +78,18 @@ void DvigEngine::RenderingSystem::Init()
     // Bind vertex and index buffer
 }
 
-void DvigEngine::RenderingSystem::BeginRender(INode* const viewer)
+void DvigEngine::RenderingSystem::Viewport(deint32 x, deint32 y, deisize width, deisize height)
+{
+    GL4::Viewport( x, y, width, height );
+}
+
+void DvigEngine::RenderingSystem::PaintBackground(demfloat red, demfloat green, demfloat blue, demfloat alpha)
+{
+    GL4::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    GL4::ClearColor( red, green, blue, alpha );
+}
+
+void DvigEngine::RenderingSystem::BeginRenderPass(INode* const viewer)
 {
     // Bind viewer
     m_Viewer = viewer;

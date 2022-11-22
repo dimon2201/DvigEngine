@@ -9,13 +9,17 @@ void (*DvigEngine::GL4::ClearColor)(defloat32 red, defloat32 green, defloat32 bl
 void (*DvigEngine::GL4::GenBuffers)(deisize n, deuint32* buffers) = nullptr;
 void (*DvigEngine::GL4::GenVertexArrays)(deisize n, deuint32* arrays) = nullptr;
 void (*DvigEngine::GL4::GenFramebuffers)(deisize n, deuint32* ids) = nullptr;
+void (*DvigEngine::GL4::GenTextures)(deisize n, deuint32* textures) = nullptr;
 void (*DvigEngine::GL4::BindBuffer)(deuint32 target, deuint32 buffer) = nullptr;
 void (*DvigEngine::GL4::BindBufferBase)(deuint32 target, deuint32 index, deuint32 buffer) = nullptr;
 void (*DvigEngine::GL4::BindVertexArray)(deuint32 buffer) = nullptr;
 void (*DvigEngine::GL4::BindFramebuffer)(deuint32 target, deuint32 framebuffer) = nullptr;
+void (*DvigEngine::GL4::BindTexture)(deuint32 target, deuint32 texture) = nullptr;
 void (*DvigEngine::GL4::BufferData)(deuint32 target, demachword size, const void* data, deuint32 usage) = nullptr;
 void (*DvigEngine::GL4::BufferSubData)(deuint32 target, demachword offset, demachword size, const void* data) = nullptr;
 void (*DvigEngine::GL4::FramebufferTexture2D)(deuint32 target, deuint32 attachment, deuint32 textarget, deuint32 texture, deuint32 level) = nullptr;
+void (*DvigEngine::GL4::TexImage2D)(deuint32 target, deuint32 level, deuint32 internalformat, deisize width, deisize height, deint32 border, deuint32 format, deuint32 type, const void* data) = nullptr;
+void (*DvigEngine::GL4::TexParameteri)(deuint32 target, deuint32 pname, deint32 param) = nullptr;
 DvigEngine::deuint32 (*DvigEngine::GL4::CreateShader)(deuint32 shaderType) = nullptr;
 void (*DvigEngine::GL4::ShaderSource)(deuint32 shader, deisize count, const deuchar** string, const deint32* length) = nullptr;
 void (*DvigEngine::GL4::CompileShader)(deuint32 shader) = nullptr;
@@ -36,8 +40,9 @@ void (*DvigEngine::GL4::UseProgram)(deuint32 program) = nullptr;
 void (*DvigEngine::GL4::DrawArrays)(deuint32 mode, deint32 first, deisize count) = nullptr;
 void (*DvigEngine::GL4::DrawElements)(deuint32 mode, deisize count, deuint32 type, void* indices) = nullptr;
 void (*DvigEngine::GL4::DrawElementsInstanced)(deuint32 mode, deisize count, deuint32 type, void* indices, deisize instancecount) = nullptr;
-void (*DvigEngine::GL4::DeleteFramebuffers)(deint32 n, deuint32* framebuffers) = nullptr;
 void (*DvigEngine::GL4::DrawElementsBaseVertex)(deuint32 mode, deisize count, deuint32 type, void* indices, deint32 baseVertex) = nullptr;
+void (*DvigEngine::GL4::DeleteFramebuffers)(deint32 n, const deuint32* framebuffers) = nullptr;
+void (*DvigEngine::GL4::DeleteTextures)(deint32 n, const deuint32* textures) = nullptr;
 DvigEngine::deuint32 (*DvigEngine::GL4::GetError)(void) = nullptr;
 
 void DvigEngine::GL4::Load()
@@ -54,13 +59,17 @@ void DvigEngine::GL4::Load()
         DvigEngine::GL4::GenBuffers = (void (*)(deisize n, deuint32* buffers))GL4::GetFunc<void*>("glGenBuffers");
         DvigEngine::GL4::GenVertexArrays = (void (*)(deisize n, deuint32* arrays))GL4::GetFunc<void*>("glGenVertexArrays");
         DvigEngine::GL4::GenFramebuffers = (void (*)(deisize n, deuint32* ids))GL4::GetFunc<void*>("glGenFramebuffers");
+        DvigEngine::GL4::GenTextures = (void (*)(deisize n, deuint32* textures))GL4::GetFunc<void*>("glGenTextures");
         DvigEngine::GL4::BindBuffer = (void (*)(deuint32 target, deuint32 buffer))GL4::GetFunc<void*>("glBindBuffer");
         DvigEngine::GL4::BindBufferBase = (void (*)(deuint32 target, deuint32 index, deuint32 buffer))GL4::GetFunc<void*>("glBindBufferBase");
         DvigEngine::GL4::BindVertexArray = (void (*)(deuint32 array))GL4::GetFunc<void*>("glBindVertexArray");
         DvigEngine::GL4::BindFramebuffer = (void (*)(deuint32 target, deuint32 framebuffer))GL4::GetFunc<void*>("glBindFramebuffer");
+        DvigEngine::GL4::BindTexture = (void (*)(deuint32 target, deuint32 texture))GL4::GetFunc<void*>("glBindTexture");
         DvigEngine::GL4::BufferData = (void (*)(deuint32 target, demachword size, const void* data, deuint32 usage))GL4::GetFunc<void*>("glBufferData");
         DvigEngine::GL4::BufferSubData = (void (*)(deuint32 target, demachword offset, demachword size, const void* data))GL4::GetFunc<void*>("glBufferSubData");
         DvigEngine::GL4::FramebufferTexture2D = (void (*)(deuint32 target, deuint32 attachment, deuint32 textarget, deuint32 texture, deuint32 level))GL4::GetFunc<void*>("glFramebufferTexture2D");
+        DvigEngine::GL4::TexImage2D = (void (*)(deuint32 target, deuint32 level, deuint32 internalformat, deisize width, deisize height, deint32 border, deuint32 format, deuint32 type, const void* data))GL4::GetFunc<void*>("glTexImage2D");
+        DvigEngine::GL4::TexParameteri = (void (*)(deuint32 target, deuint32 pname, deint32 param))GL4::GetFunc<void*>("glTexParameteri");
         DvigEngine::GL4::CreateShader = (DvigEngine::deuint32 (*)(deuint32 shaderType))GL4::GetFunc<void*>("glCreateShader");
         DvigEngine::GL4::ShaderSource = (void (*)(deuint32 shader, deisize count, const deuchar** string, const deint32* length))GL4::GetFunc<void*>("glShaderSource");
         DvigEngine::GL4::CompileShader = (void (*)(deuint32 shader))GL4::GetFunc<void*>("glCompileShader");
@@ -82,7 +91,8 @@ void DvigEngine::GL4::Load()
         DvigEngine::GL4::DrawElements = (void (*)(deuint32 mode, deisize count, deuint32 type, void* indices))GL4::GetFunc<void*>("glDrawElements");
         DvigEngine::GL4::DrawElementsInstanced = (void (*)(deuint32 mode, deisize count, deuint32 type, void* indices, deisize instancecount))GL4::GetFunc<void*>("glDrawElementsInstanced");
         DvigEngine::GL4::DrawElementsBaseVertex = (void (*)(deuint32 mode, deisize count, deuint32 type, void* indices, deint32 baseVertex))GL4::GetFunc<void*>("glDrawElementsBaseVertex");
-        DvigEngine::GL4::DeleteFramebuffers = (void (*)(deint32 n, deuint32* framebuffers))GL4::GetFunc<void*>("glDeleteFramebuffers");
+        DvigEngine::GL4::DeleteFramebuffers = (void (*)(deint32 n, const deuint32* framebuffers))GL4::GetFunc<void*>("glDeleteFramebuffers");
+        DvigEngine::GL4::DeleteTextures = (void (*)(deint32 n, const deuint32* textures))GL4::GetFunc<void*>("glDeleteTextures");
         DvigEngine::GL4::GetError = (deuint32 (*)())GL4::GetFunc<void*>("glGetError");
     }
 }

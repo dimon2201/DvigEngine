@@ -81,9 +81,6 @@ namespace DvigEngine
             Engine* m_Engine;
     };
 
-    class IProperty
-    { };
-
     class ILayout : public ICommon
     {
         public:
@@ -102,14 +99,6 @@ namespace DvigEngine
         DV_MACRO_FRIENDS(Engine)
     };
 
-    class MemoryObjectProperty : public IProperty
-    {
-        public:
-            void* m_Address;
-            deusize m_ByteWidth;
-            deint32 m_MemoryPoolIndex;
-    };
-    
     class MemoryObject
     {
         DV_MACRO_FRIENDS(Engine)
@@ -125,13 +114,6 @@ namespace DvigEngine
             demachword m_FreeFlag;
             deusize m_ByteWidth;
             deusize m_AllocatedByteWidth;
-    };
-
-    class StringProperty : public IProperty
-    {
-        public:
-            destring m_Chars;
-            deusize m_ByteWidth;
     };
 
     class String : public IHelperObject
@@ -159,16 +141,6 @@ namespace DvigEngine
             deusize m_ByteWidth;
     };
 
-    class DynamicBufferProperty : public IProperty
-    {
-        public:
-            deusize m_Capacity;
-            MemoryObject* m_DataObject;
-            deusize m_AllocatedDataByteWidth;
-            deusize m_DataByteWidth;
-            deint32 m_MemoryPoolIndex;
-    };
-
     class DynamicBuffer : public IHelperObject
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine)
@@ -192,18 +164,6 @@ namespace DvigEngine
             // DynamicBufferProperty m_Prop;
             deusize m_Capacity;
             MemoryObject* m_DataObject;
-            deusize m_AllocatedDataByteWidth;
-            deusize m_DataByteWidth;
-            deint32 m_MemoryPoolIndex;
-    };
-
-    class FixedSetProperty : public IProperty
-    {
-        public:
-            deusize m_Capacity;
-            deusize m_EntryByteWidth;
-            MemoryObject* m_DataObject;
-            deusize m_ReservedDataByteWidth;
             deusize m_AllocatedDataByteWidth;
             deusize m_DataByteWidth;
             deint32 m_MemoryPoolIndex;
@@ -255,17 +215,6 @@ namespace DvigEngine
             void* m_Value;
     };
 
-    class HashMapProperty : public IProperty
-    {
-        public:
-            deusize m_Capacity;
-            deusize m_EntryValueByteWidth;
-            FixedSet m_Entries;
-            deusize m_HashTableSize;
-            demachword* m_HashTable;
-            deint32 m_MemoryPoolIndex;
-    };
-
     class HashMap : public IHelperObject
     {
         DV_MACRO_FRIENDS(DvigEngine::Engine)
@@ -299,7 +248,7 @@ namespace DvigEngine
             deint32 m_MemoryPoolIndex;
     };
 
-    class MemoryPoolProperty : public IProperty
+    class MemoryPoolInfo
     {
         public:
             deint32 m_Index;
@@ -368,13 +317,46 @@ namespace DvigEngine
             static ThreadPoolThreadData m_ThreadQueueData[ DV_MAX_JOB_QUEUE_THREAD_COUNT ];
     };
 
+    class Registry
+    {
+        DV_MACRO_FRIENDS(Engine)
+        DV_XMACRO_DECLARE_STATIC_CLASS(Registry)
+
+        public:
+            DV_FUNCTION_INLINE static HashMap* GetInstances() { return m_Instances; }
+            DV_FUNCTION_INLINE static HashMap* GetComponents() { return m_Components; }
+            DV_FUNCTION_INLINE static HashMap* GetAllocPoolIndices() { return m_AllocPoolIndices; }
+
+        public:
+            static HashMap* m_Instances;
+            static HashMap* m_Components;
+            static HashMap* m_AllocPoolIndices;
+    };
+
     class INode : public ICommon
     {
         DV_MACRO_FRIENDS(Engine)
 
         public:
-            DV_FUNCTION_INLINE static INode* GetRootNode() { return m_RootNode; }
-            INode* GetChildNode(const char* USID);
+            void Init();
+            void Free() override final;
+            template <typename T>
+            void AddComponent(IComponent* const component)
+            {
+                const char* typeName = typeid(T).name();
+                const deint32 registryIndex = (const deint32)(demachword)Registry::GetComponents()->Find( &typeName[0] );
+                const deint32 bitSetIndex = (const deint32)((dedword)registryIndex >> 5u);
+                const dedword bitSetBit = 1u << ((dedword)registryIndex & 31u);
+                if (registryIndex == 0 || ((this->m_ComponentBitSet[bitSetIndex] >> bitSetBit) & 1u) == 1u) { return; }
+                this->m_ComponentBitSet[bitSetIndex] |= 1u << bitSetBit;
+
+                this->m_Components->Insert( DV_NULL, &component, sizeof(void*) );
+            }
+            void AddChildNode(INode* const node);
+            void AddHelperObject(IHelperObject* const helperObject);
+            void RemoveChildNode(const char* USID);
+            void RemoveComponent(const char* USID);
+            void RemoveHelperObject(const char* USID);
             template <typename T>
             T* GetComponent(const char* USID)
             {
@@ -389,22 +371,16 @@ namespace DvigEngine
                     this->m_Components->Find(i * sizeof(DvigEngine::demachword), &component, sizeof(DvigEngine::demachword));
                     const char* curTypeName = (const char*)&component->m_TypeName[0];
                     if ((DvigEngine::String::CompareCharacters( &requestedTypeName[0], &curTypeName[0], DvigEngine::String::CharactersCount((const deuchar*)&requestedTypeName[0]) ) == DV_TRUE)) {//||
-                        //(DvigEngine::String::CompareCharacters( &componentUSID[0], (const char*)component->GetUSID(), DvigEngine::String::CharactersCount((const deuchar*)&componentUSID[0]) ) == DV_TRUE)) {
                         return (T*)component;
                     }
                 }
 
                 return nullptr;
             }
-            IHelperObject* GetHelperObject(const char* USID);
 
-            void Init();
-            void Free() override final;
-            void AddChildNode(INode* const node);
-            void AddHelperObject(IHelperObject* const helperObject);
-            void RemoveChildNode(const char* USID);
-            void RemoveComponent(const char* USID);
-            void RemoveHelperObject(const char* USID);
+            DV_FUNCTION_INLINE static INode* GetRootNode() { return m_RootNode; }
+            INode* GetChildNode(const char* USID);
+            IHelperObject* GetHelperObject(const char* USID);
 
         private:
             static INode* m_RootNode;
@@ -415,31 +391,23 @@ namespace DvigEngine
             dedword m_ComponentBitSet[DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT];
     };
 
-    class EngineRegistryProperty : public IProperty
-    {
-        public:
-            HashMap* m_RegisteredComponents;
-            HashMap* m_Instances;
-            HashMap* m_AllocPoolIndexMap;
-    };
-
-    class EngineInputProperty : public IProperty
+    class EngineInputInfo
     {
         public:
             dedword m_Version;
             deuint32 m_MemoryPoolsCount;
-            MemoryPoolProperty* m_MemoryPoolsData;
+            MemoryPoolInfo* m_MemoryPoolsData;
             deint32 m_SystemMemoryPoolIndex;
             deint32 m_ComponentStorageMemoryPoolIndex;
             deusize m_RequestedThreadCount;
     };
 
-    class EngineProperty : public IProperty
+    class EngineInfo
     {
         public:
             dedword m_Version;
             deuint32 m_MemoryPoolsCount;
-            MemoryPoolProperty* m_MemoryPoolsData;
+            MemoryPoolInfo* m_MemoryPoolsData;
             deint32 m_SystemMemoryPoolIndex;
             deint32 m_ComponentStorageMemoryPoolIndex;
             deusize m_MaxThreadCount;
@@ -452,43 +420,21 @@ namespace DvigEngine
     class Engine
     {
         public:
-            Engine(EngineInputProperty* engineInputProperty);
+            Engine(EngineInputInfo* engineInputInfo);
             void Free();
             static MemoryObject* Allocate(deint32 memoryPoolIndex, deusize byteWidth);
             static void MemoryCopy(void* destAddress, const void* srcAddress, const deusize byteWidth);
             static void MemoryMove(void* destAddress, const void* srcAddress, const deusize byteWidth);
             static void MemorySet(void* destAddress, const demachword value, const deusize byteWidth);
-            static Engine* GetClassInstance() { return m_EngineInstance; }
             void Delete(MemoryObject* memoryObject);
-
-            DV_FUNCTION_INLINE EngineRegistryProperty* GetRegistryData() { return &m_RegistryProp; }
-            DV_FUNCTION_INLINE MemoryPool* GetMemoryPoolByIndex(const deint32 memoryPoolIndex) { return &(this->m_Prop.m_MemoryPools[memoryPoolIndex]); }
-            DV_FUNCTION_INLINE void* GetUserData() { return m_Prop.m_UserData; }
-            DV_FUNCTION_INLINE ICommon* GetExistingInstance(const char* USID) { ICommon* instance = (ICommon*)m_RegistryProp.m_Instances->Find( &USID[0] ); return instance; }
-            static DV_FUNCTION_INLINE demachint GetGlobalUIID() { static demachint globalUIID = 0; return globalUIID++; }
 
             template <typename T>
             DV_FUNCTION_INLINE void RegisterComponent()
             {
                 const char* typeName = typeid(T).name();
-                if (m_RegistryProp.m_RegisteredComponents->Find( typeName ) == nullptr) {
-                    m_RegistryProp.m_RegisteredComponents->Insert( typeName, (void*)(DvigEngine::demachword)++DvigEngine::Engine::m_GlobalComponentIndex );
+                if (Registry::GetComponents()->Find( typeName ) == nullptr) {
+                    Registry::GetComponents()->Insert( typeName, (void*)(DvigEngine::demachword)++DvigEngine::Engine::m_GlobalComponentIndex );
                 }
-            }
-
-            template <typename T>
-            void AddComponent(INode** const node, IComponent* const component)
-            {
-                const char* typeName = typeid(T).name();
-                const deint32 registryIndex = (const deint32)(demachword)m_RegistryProp.m_RegisteredComponents->Find( &typeName[0] );
-                const deint32 bitSetIndex = (const deint32)((dedword)registryIndex >> 5u);
-                const dedword bitSetBit = 1u << ((dedword)registryIndex & 31u);
-                if (registryIndex == 0 || (((*node)->m_ComponentBitSet[bitSetIndex] >> bitSetBit) & 1u) == 1u) { return; }
-                (*node)->m_ComponentBitSet[bitSetIndex] |= 1u << bitSetBit;
-
-                // (*node)->m_Components->Insert( DV_NULL, component, component->m_LayoutByteWidth );
-                // *component->GetCreatee() = (*node)->GetComponent( (const char*)component->GetUSID() );
-                (*node)->m_Components->Insert( DV_NULL, &component, sizeof(void*) );
             }
 
             void AddHelperObject(INode** const node, IHelperObject* const helperObject)
@@ -504,7 +450,7 @@ namespace DvigEngine
             void RemoveComponent(INode** const node, const char* USID)
             {
                 const char* typeName = typeid(T).name();
-                const deint32 registryIndex = (const deint32)(demachword)m_RegistryProp.m_RegisteredComponents->Find( typeName );
+                const deint32 registryIndex = (const deint32)(demachword)Registry::GetComponents()->Find( typeName );
                 const deint32 bitSetIndex = (const deint32)((dedword)registryIndex >> 5u);
                 const dedword bitSetBit = 1u << ((dedword)registryIndex & 31u);
                 if((((*node)->m_ComponentBitSet[bitSetIndex] >> bitSetBit) & 1u) == 0u) { return; }
@@ -525,7 +471,7 @@ namespace DvigEngine
             {
                 deuchar* objectUSID = (deuchar*)&USID[0];
                 DvigEngine::Engine* engineInstance = m_EngineInstance;
-                void* pAllocationPoolIndex = engineInstance->m_RegistryProp.m_AllocPoolIndexMap->Find( typeid(T).name() );
+                void* pAllocationPoolIndex = Registry::GetAllocPoolIndices()->Find( typeid(T).name() );
                 deuint32 allocationPoolIndex = (deuint32)(demachword)pAllocationPoolIndex;
                 if (pAllocationPoolIndex == nullptr) { allocationPoolIndex = 0; }
                 MemoryObject* memoryObject = Engine::Allocate(allocationPoolIndex, sizeof(T));
@@ -545,21 +491,26 @@ namespace DvigEngine
                     DvigEngine::Engine::MemoryCopy( &layout->m_TypeName[0], &typeName[0], DvigEngine::String::CharactersCount((const deuchar*)&typeName[0]) );
                     layout->m_LayoutByteWidth = sizeof(T);
                 }
+
                 *result = typedObject;
-                engineInstance->m_RegistryProp.m_Instances->Insert( (const char*)&objectUSID[0], (void*)*result );
+                Registry::GetInstances()->Insert( (const char*)&objectUSID[0], (void*)*result );
             }
 
+            DV_FUNCTION_INLINE static Engine* GetClassInstance() { return m_EngineInstance; }
+            DV_FUNCTION_INLINE static demachint GetGlobalUIID() { static demachint globalUIID = 0; return globalUIID++; }
+            DV_FUNCTION_INLINE MemoryPool* GetMemoryPoolByIndex(const deint32 memoryPoolIndex) { return &(this->m_Info.m_MemoryPools[memoryPoolIndex]); }
+            DV_FUNCTION_INLINE ICommon* GetExistingInstance(const char* USID) { ICommon* instance = (ICommon*)Registry::GetInstances()->Find( &USID[0] ); return instance; }
+            DV_FUNCTION_INLINE void* GetUserData() { return m_Info.m_UserData; }
+
         public:
-            DV_XMACRO_GETTER_PROPERTY(EngineProperty)
+            DV_FUNCTION_INLINE EngineInfo* GetData() { return &m_Info; }
 
         private:
             static Engine* m_EngineInstance;
             static deint32 m_GlobalComponentIndex;
 
         private:
-            EngineRegistryProperty m_RegistryProp;
-            // EngineInputProperty m_InputProp;
-            EngineProperty m_Prop;
+            EngineInfo m_Info;
     };
 }
 

@@ -8,11 +8,11 @@
 
 int main()
 {
-    DvigEngine::MemoryPoolProperty memoryPoolsData[2];
+    DvigEngine::MemoryPoolInfo memoryPoolsData[2];
     memoryPoolsData[0].m_ByteWidth = 128 * DV_MEMORY_MiB;
     memoryPoolsData[1].m_ByteWidth = 24 * DV_MEMORY_KiB;
 
-    DvigEngine::EngineInputProperty engineInputData;
+    DvigEngine::EngineInputInfo engineInputData;
     engineInputData.m_Version = DV_ENGINE_VERSION_NUMBER;
     engineInputData.m_MemoryPoolsCount = 2u;
     engineInputData.m_MemoryPoolsData = memoryPoolsData;
@@ -93,15 +93,15 @@ int main()
                 node1->Init();
                 viewer->Init();
                 
-                engine->AddComponent <DvigEngine::GeometryComponent> ( &node0, geomComp0 );
-                engine->AddComponent <DvigEngine::TransformComponent> ( &node0, transComp0 );
-                engine->AddComponent <DvigEngine::ShaderComponent> ( &node0, shaderComp0 );
-                engine->AddComponent <DvigEngine::GeometryComponent> ( &node1, geomComp1 );
-                engine->AddComponent <DvigEngine::TransformComponent> ( &node1, transComp1 );
-                engine->AddComponent <DvigEngine::ShaderComponent> ( &node1, shaderComp0 );
-                engine->AddComponent <DvigEngine::GeometryComponent> ( &node2, geomComp2 );
-                engine->AddComponent <DvigEngine::TransformComponent> ( &viewer, viewerTransComp );
-                engine->AddComponent <DvigEngine::ViewerComponent> ( &viewer, viewerViewerComp );
+                node0->AddComponent <DvigEngine::GeometryComponent> ( geomComp0 );
+                node0->AddComponent <DvigEngine::TransformComponent> ( transComp0 );
+                node0->AddComponent <DvigEngine::ShaderComponent> ( shaderComp0 );
+                node1->AddComponent <DvigEngine::GeometryComponent> ( geomComp1 );
+                node1->AddComponent <DvigEngine::TransformComponent> ( transComp1 );
+                node1->AddComponent <DvigEngine::ShaderComponent> ( shaderComp0 );
+                node2->AddComponent <DvigEngine::GeometryComponent> ( geomComp2 );
+                viewer->AddComponent <DvigEngine::TransformComponent> ( viewerTransComp );
+                viewer->AddComponent <DvigEngine::ViewerComponent> ( viewerViewerComp );
 
                 DvigEngine::GL4::Enable( GL_DEPTH_TEST );
             }
@@ -123,15 +123,14 @@ int main()
                 int windowHeight = 0;
                 glfwGetFramebufferSize( (GLFWwindow*)myWindow->GetGLFWWindow(), &windowWidth, &windowHeight );
 
-                DvigEngine::GL4::Viewport( 0, 0, windowWidth, windowHeight );
-                DvigEngine::GL4::ClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-                DvigEngine::GL4::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+                DvigEngine::RenderingSystem::Viewport( 0, 0, windowWidth, windowHeight );
+                DvigEngine::RenderingSystem::PaintBackground( 0.0f, 0.0f, 0.0f, 1.0f );
 
                 DvigEngine::INode* viewer = (DvigEngine::INode*)engine->GetExistingInstance( "Viewer_0" );
                 // viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetRotationEuler( 0.0f, 0.0f, 0.0f );
                 viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetPerspectiveProjection( 65.0f, 640.0f/480.0f, 0.1f, 100.0f );
 
-                DvigEngine::RenderingSystem::BeginRender(viewer);
+                DvigEngine::RenderingSystem::BeginRenderPass(viewer);
                 DvigEngine::RenderingSystem::BeginBatch();
                 DvigEngine::RenderingSystem::Draw( myNode_0 );
                 // DvigEngine::RenderingSystem::Draw( myNode_1 );
@@ -142,6 +141,7 @@ int main()
                 myWindow->CaptureKeyState('S');
                 myWindow->CaptureKeyState('A');
                 myWindow->CaptureKeyState('D');
+                myWindow->CaptureKeyState('C');
 
                 if (myWindow->GetKeyState('W') == GLFW_PRESS) {
                     viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->Move( 0.1f/60.0f );
@@ -154,6 +154,9 @@ int main()
                 }
                 if (myWindow->GetKeyState('D') == GLFW_PRESS) {
                     viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->Strafe( -(0.1f/60.0f) );
+                }
+                if (myWindow->GetKeyState('C') == GLFW_PRESS) {
+                    exit(0);
                 }
 
                 this->MouseLook();
