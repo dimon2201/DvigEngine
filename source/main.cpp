@@ -36,6 +36,7 @@ int main()
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::TransformComponent>();
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::ShaderComponent>();
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::ViewerComponent>();
+                DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::PostProcessorComponent>();
 
                 DvigEngine::defloat32 vertices[9] = {
                     -1.0f, -1.0f, -1.0f,
@@ -57,10 +58,13 @@ int main()
                 DvigEngine::GeometryComponent* geomComp2;
                 DvigEngine::TransformComponent* viewerTransComp;
                 DvigEngine::ViewerComponent* viewerViewerComp;
+                DvigEngine::PostProcessorComponent* postProcessComp;
+                DvigEngine::ShaderComponent* postProcessShaderComp;
                 DvigEngine::INode* node0;
                 DvigEngine::INode* node1;
                 DvigEngine::INode* node2;
                 DvigEngine::INode* viewer;
+                DvigEngine::INode* nodePostProcess;
 
                 engine->Create <DvigEngine::GeometryComponent> ( &geomComp0, "MyGeometryComponent_0" );
                 engine->Create <DvigEngine::TransformComponent> ( &transComp0, "MyTransformComponent_0" );
@@ -71,10 +75,13 @@ int main()
                 engine->Create <DvigEngine::TransformComponent> ( &viewerTransComp, "ViewerTransformComponent_1" );
                 engine->Create <DvigEngine::GeometryComponent> ( &geomComp2, "MyGeometryComponent_2" );
                 engine->Create <DvigEngine::ViewerComponent> ( &viewerViewerComp, "ViewerComponent_0" );
+                engine->Create <DvigEngine::ShaderComponent> ( &postProcessShaderComp, "MyPostProcessShaderComponent_0" );
+                engine->Create <DvigEngine::PostProcessorComponent> ( &postProcessComp, "MyPostProcessComponent_0" );
                 engine->Create <DvigEngine::INode> ( &node0, "MyNode_0" );
                 engine->Create <DvigEngine::INode> ( &node1, "MyNode_1" );
                 engine->Create <DvigEngine::INode> ( &node2, "MyNode_2" );
                 engine->Create <DvigEngine::INode> ( &viewer, "Viewer_0" );
+                engine->Create <DvigEngine::INode> ( &nodePostProcess, "PostProcess_0" );
 
                 geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
                 transComp0->Init();
@@ -87,6 +94,9 @@ int main()
                 geomComp2->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
                 viewerTransComp->Init();
                 viewerViewerComp->Init();
+                postProcessShaderComp->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\postprocess.vert",
+                                  "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\postprocess.frag" );
+                postProcessComp->Init();
                 transComp1->SetPosition( 7.0f, 0.0f, 0.0f );
                 viewerViewerComp->SetPosition( 0.0f, 2.0f, 4.0f );
                 node0->Init();
@@ -102,6 +112,8 @@ int main()
                 node2->AddComponent <DvigEngine::GeometryComponent> ( geomComp2 );
                 viewer->AddComponent <DvigEngine::TransformComponent> ( viewerTransComp );
                 viewer->AddComponent <DvigEngine::ViewerComponent> ( viewerViewerComp );
+                nodePostProcess->AddComponent <DvigEngine::ShaderComponent> ( postProcessShaderComp );
+                nodePostProcess->AddComponent <DvigEngine::PostProcessorComponent> ( postProcessComp );
 
                 DvigEngine::GL4::Enable( GL_DEPTH_TEST );
             }
@@ -123,21 +135,31 @@ int main()
                 int windowHeight = 0;
                 glfwGetFramebufferSize( (GLFWwindow*)myWindow->GetGLFWWindow(), &windowWidth, &windowHeight );
 
-                DvigEngine::RenderingSystem::Viewport( 0, 0, windowWidth, windowHeight );
-                DvigEngine::RenderingSystem::PaintBackground( 0.0f, 0.0f, 0.0f, 1.0f );
-
                 DvigEngine::INode* viewer = (DvigEngine::INode*)engine->GetExistingInstance( "Viewer_0" );
                 viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetPerspectiveProjection( 65.0f, 640.0f/480.0f, 0.1f, 100.0f );
 
                 DvigEngine::RenderPassInfo renderPass;
                 renderPass.Viewer = viewer;
                 renderPass.Framebuffer = myWindow->GetFramebuffer();
-
                 DvigEngine::RenderingSystem::BeginRenderPass(&renderPass);
+                DvigEngine::RenderingSystem::Viewport( 0, 0, windowWidth, windowHeight );
+                DvigEngine::RenderingSystem::PaintBackground( 0.0f, 0.0f, 0.0f, 1.0f );
                 DvigEngine::RenderingSystem::BeginBatch();
                 DvigEngine::RenderingSystem::Draw( myNode_0 );
                 // DvigEngine::RenderingSystem::Draw( myNode_1 );
                 DvigEngine::RenderingSystem::EndBatch();
+                DvigEngine::RenderingSystem::EndRenderPass();
+
+                DvigEngine::INode* nodePostProcess = (DvigEngine::INode*)engine->GetExistingInstance( "PostProcess_0" );
+                DvigEngine::RenderPassInfo postProcessPass;
+                postProcessPass.Viewer = viewer;
+                postProcessPass.PostProcessor = nodePostProcess;
+                postProcessPass.Framebuffer = DV_NULL;
+                postProcessPass.ColorRenderTarget = myWindow->GetColorRenderTarget();
+                postProcessPass.DepthRenderTarget = myWindow->GetDepthRenderTarget();
+                DvigEngine::RenderingSystem::BeginRenderPass(&postProcessPass);
+                DvigEngine::RenderingSystem::Viewport( 0, 0, windowWidth, windowHeight );
+                DvigEngine::RenderingSystem::PaintBackground( 0.0f, 0.0f, 0.0f, 1.0f );
                 DvigEngine::RenderingSystem::EndRenderPass();
 
                 myWindow->CaptureKeyState('W');

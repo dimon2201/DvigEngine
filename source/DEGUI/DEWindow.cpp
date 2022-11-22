@@ -26,7 +26,7 @@ void DvigEngine::IWindow::Init(Application* app, const char* caption, glm::uvec2
         // Framebuffer
         GL4::GenTextures( 2, &IWindow::m_GLFramebufferRenderTargets[0] );
         GL4::BindTexture( GL_TEXTURE_2D, this->m_GLFramebufferRenderTargets[0] ); // color
-        GL4::TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, (deisize)size.x, (deisize)size.y, 0, GL_RGBA, GL_FLOAT, nullptr );
+        GL4::TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, (deisize)size.x, (deisize)size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr );
         GL4::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
         GL4::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
         GL4::BindTexture( GL_TEXTURE_2D, this->m_GLFramebufferRenderTargets[1] ); // depth

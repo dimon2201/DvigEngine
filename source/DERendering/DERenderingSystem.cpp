@@ -161,7 +161,7 @@ void DvigEngine::RenderingSystem::EndRenderPass()
 
         // Issue draw call
         GL4::BindFramebuffer( GL_FRAMEBUFFER, 0 );
-        GL4::DrawArrays( GL_QUADS, 0, 4 );
+        GL4::DrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
     }
 
     // Unbind framebuffer
