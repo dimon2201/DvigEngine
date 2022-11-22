@@ -5,6 +5,11 @@ layout (location = 1) in vec3 vsIn_Normal;
 layout (location = 0) out vec3 vsOut_Position;
 layout (location = 1) out vec3 vsOut_Normal;
 
+struct UPostProcessor {
+    sampler2D m_ColorRenderTarget;
+    sampler2D m_DepthRenderTarget;
+};
+
 struct UViewer {
     mat4 m_WorldSpaceMatrix;
     mat4 m_ViewSpaceMatrix;
@@ -14,6 +19,8 @@ struct UViewer {
 struct UInstanceData {
     mat4 m_WorldSpaceMatrix;
 };
+
+uniform UPostProcessor u_PostProcessor;
 
 layout (std140, binding = 0) uniform UBuffer {
     UViewer m_Viewer;

@@ -49,6 +49,7 @@ namespace DvigEngine
             static void (*FramebufferTexture2D)(deuint32 target, deuint32 attachment, deuint32 textarget, deuint32 texture, deuint32 level);
             static void (*TexImage2D)(deuint32 target, deuint32 level, deuint32 internalformat, deisize width, deisize height, deint32 border, deuint32 format, deuint32 type, const void* data);
             static void (*TexParameteri)(deuint32 target, deuint32 pname, deint32 param);
+            static void (*ActiveTexture)(deuint32 texture);
             static deuint32 (*CreateShader)(deuint32 shaderType);
             static void (*ShaderSource)(deuint32 shader, deisize count, const deuchar** string, const deint32* length);
             static void (*CompileShader)(deuint32 shader);
@@ -66,6 +67,8 @@ namespace DvigEngine
             static deuint32 (*GetUniformBlockIndex)(deuint32 program, const char* uniformBlockName);
             static void (*UniformBlockBinding)(deuint32 program, deuint32 uniformBlockIndex, deuint32 uniformBlockBinding);
             static void (*UseProgram)(deuint32 program);
+            static deint32 (*GetUniformLocation)(deuint32 program, const char* name);
+            static void (*Uniform1i)(deint32 location, deint32 v0);
             static void (*DrawArrays)(deuint32 mode, deint32 first, deisize count);
             static void (*DrawElements)(deuint32 mode, deisize count, deuint32 type, void* indices);
             static void (*DrawElementsInstanced)(deuint32 mode, deisize count, deuint32 type, void* indices, deisize instancecount);

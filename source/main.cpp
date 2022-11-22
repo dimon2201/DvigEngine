@@ -78,12 +78,12 @@ int main()
 
                 geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
                 transComp0->Init();
-                shaderComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
-                                  "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
+                shaderComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.vert",
+                                  "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.frag" );
                 geomComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
                 transComp1->Init();
-                shaderComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
-                                  "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
+                shaderComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.vert",
+                                  "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.frag" );
                 geomComp2->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
                 viewerTransComp->Init();
                 viewerViewerComp->Init();

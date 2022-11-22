@@ -94,7 +94,11 @@ void DvigEngine::RenderingSystem::BeginRenderPass(RenderPassInfo* renderPassInfo
     RenderingSystem::m_CurRenderPass = renderPassInfo;
 
     // Bind framebuffer
-    GL4::BindFramebuffer( GL_FRAMEBUFFER, RenderingSystem::m_CurRenderPass->Framebuffer );
+    if (RenderingSystem::m_CurRenderPass->Framebuffer != DV_NULL) {
+        GL4::BindFramebuffer( GL_FRAMEBUFFER, RenderingSystem::m_CurRenderPass->Framebuffer );
+    } else {
+        GL4::BindFramebuffer( GL_FRAMEBUFFER, 0 );
+    }
 
     // Clear uniform buffer
     RenderingSystem::m_NextBatchUniformBufferOffset = 0;
@@ -135,18 +139,41 @@ void DvigEngine::RenderingSystem::EndBatch()
 
 void DvigEngine::RenderingSystem::EndRenderPass()
 {
-    RenderingSystem::m_CurRenderPass = nullptr;
+    if (RenderingSystem::m_CurRenderPass->Framebuffer == DV_NULL)
+    {
+        // Render full-screen quad
+        INode* postp = RenderingSystem::m_CurRenderPass->PostProcessor;
+        if (postp == nullptr) { return; }
+        
+        PostProcessorComponent* postProcessor = postp->GetComponent<PostProcessorComponent>(nullptr);
+        if (postProcessor == nullptr) { return; }
+        ShaderComponent* postShader = postp->GetComponent<ShaderComponent>(nullptr);
+        if (postShader == nullptr) { return; }
+
+        // Populate shader uniforms
+        GL4::UseProgram( postShader->m_GLProgram );
+        GL4::ActiveTexture( GL_TEXTURE0 );
+        GL4::BindTexture( GL_TEXTURE_2D, RenderingSystem::m_CurRenderPass->ColorRenderTarget );
+        GL4::ActiveTexture( GL_TEXTURE1 );
+        GL4::BindTexture( GL_TEXTURE_2D, RenderingSystem::m_CurRenderPass->DepthRenderTarget );
+        GL4::Uniform1i( GL4::GetUniformLocation( postShader->m_GLProgram, "u_PostProcessor.m_ColorRenderTarget" ), 0 );
+        GL4::Uniform1i( GL4::GetUniformLocation( postShader->m_GLProgram, "u_PostProcessor.m_DepthRenderTarget" ), 1 );
+
+        // Issue draw call
+        GL4::BindFramebuffer( GL_FRAMEBUFFER, 0 );
+        GL4::DrawArrays( GL_QUADS, 0, 4 );
+    }
 
     // Unbind framebuffer
     GL4::BindFramebuffer( GL_FRAMEBUFFER, 0 );
 
-    // Unmap uniform buffer here
+    RenderingSystem::m_CurRenderPass = nullptr;
 }
 
 void DvigEngine::RenderingSystem::Draw(INode* const node)
 {
     if (RenderingSystem::m_CurRenderPass == nullptr) { return; }
-    DvigEngine::INode* viewer = RenderingSystem::m_CurRenderPass->m_Viewer;
+    DvigEngine::INode* viewer = RenderingSystem::m_CurRenderPass->Viewer;
     if (viewer == nullptr) { return; }
     DvigEngine::TransformComponent* viewerTransform = viewer->GetComponent<DvigEngine::TransformComponent>(nullptr);
     DvigEngine::ViewerComponent* viewerViewer = viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr);
@@ -180,7 +207,8 @@ void DvigEngine::RenderingSystem::Draw(INode* const node)
     }
 
     // Populate uniform buffer
-    const deint32 actualUniformDataOffset = sizeof(DvigEngine::UniformViewerData) + m_NextBatchUniformBufferOffset;
+    const deisize nodesDataUniformByteWidth = sizeof(UniformViewerData);
+    const deint32 actualUniformDataOffset = nodesDataUniformByteWidth + RenderingSystem::m_NextBatchUniformBufferOffset;
     void* uniformBufferMemory = m_UniformBufferMemoryObject->Unwrap<void*>();
     DvigEngine::UniformViewerData uniformViewerData;
     DvigEngine::Engine::MemoryCopy( &uniformViewerData.m_WorldSpaceMatrix, &viewerTransform->m_WorldTranslationMatrix, sizeof(glm::mat4) );

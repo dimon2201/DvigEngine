@@ -20,6 +20,7 @@ void (*DvigEngine::GL4::BufferSubData)(deuint32 target, demachword offset, demac
 void (*DvigEngine::GL4::FramebufferTexture2D)(deuint32 target, deuint32 attachment, deuint32 textarget, deuint32 texture, deuint32 level) = nullptr;
 void (*DvigEngine::GL4::TexImage2D)(deuint32 target, deuint32 level, deuint32 internalformat, deisize width, deisize height, deint32 border, deuint32 format, deuint32 type, const void* data) = nullptr;
 void (*DvigEngine::GL4::TexParameteri)(deuint32 target, deuint32 pname, deint32 param) = nullptr;
+void (*DvigEngine::GL4::ActiveTexture)(deuint32 texture) = nullptr;
 DvigEngine::deuint32 (*DvigEngine::GL4::CreateShader)(deuint32 shaderType) = nullptr;
 void (*DvigEngine::GL4::ShaderSource)(deuint32 shader, deisize count, const deuchar** string, const deint32* length) = nullptr;
 void (*DvigEngine::GL4::CompileShader)(deuint32 shader) = nullptr;
@@ -37,6 +38,8 @@ void (*DvigEngine::GL4::VertexAttribPointer)(deuint32 index, deint32 size, deuin
 DvigEngine::deuint32 (*DvigEngine::GL4::GetUniformBlockIndex)(deuint32 program, const char* uniformBlockName) = nullptr;
 void (*DvigEngine::GL4::UniformBlockBinding)(deuint32 program, deuint32 uniformBlockIndex, deuint32 uniformBlockBinding) = nullptr;
 void (*DvigEngine::GL4::UseProgram)(deuint32 program) = nullptr;
+DvigEngine::deint32 (*DvigEngine::GL4::GetUniformLocation)(deuint32 program, const char* name) = nullptr;
+void (*DvigEngine::GL4::Uniform1i)(deint32 location, deint32 v0) = nullptr;
 void (*DvigEngine::GL4::DrawArrays)(deuint32 mode, deint32 first, deisize count) = nullptr;
 void (*DvigEngine::GL4::DrawElements)(deuint32 mode, deisize count, deuint32 type, void* indices) = nullptr;
 void (*DvigEngine::GL4::DrawElementsInstanced)(deuint32 mode, deisize count, deuint32 type, void* indices, deisize instancecount) = nullptr;
@@ -70,6 +73,7 @@ void DvigEngine::GL4::Load()
         DvigEngine::GL4::FramebufferTexture2D = (void (*)(deuint32 target, deuint32 attachment, deuint32 textarget, deuint32 texture, deuint32 level))GL4::GetFunc<void*>("glFramebufferTexture2D");
         DvigEngine::GL4::TexImage2D = (void (*)(deuint32 target, deuint32 level, deuint32 internalformat, deisize width, deisize height, deint32 border, deuint32 format, deuint32 type, const void* data))GL4::GetFunc<void*>("glTexImage2D");
         DvigEngine::GL4::TexParameteri = (void (*)(deuint32 target, deuint32 pname, deint32 param))GL4::GetFunc<void*>("glTexParameteri");
+        DvigEngine::GL4::ActiveTexture = (void (*)(deuint32 texture))GL4::GetFunc<void*>("glActiveTexture");
         DvigEngine::GL4::CreateShader = (DvigEngine::deuint32 (*)(deuint32 shaderType))GL4::GetFunc<void*>("glCreateShader");
         DvigEngine::GL4::ShaderSource = (void (*)(deuint32 shader, deisize count, const deuchar** string, const deint32* length))GL4::GetFunc<void*>("glShaderSource");
         DvigEngine::GL4::CompileShader = (void (*)(deuint32 shader))GL4::GetFunc<void*>("glCompileShader");
@@ -87,6 +91,8 @@ void DvigEngine::GL4::Load()
         DvigEngine::GL4::GetUniformBlockIndex = (DvigEngine::deuint32 (*)(deuint32 program, const char* uniformBlockName))GL4::GetFunc<void*>("glGetUniformBlockIndex");
         DvigEngine::GL4::UniformBlockBinding = (void (*)(deuint32 program, deuint32 uniformBlockIndex, deuint32 uniformBlockBinding))GL4::GetFunc<void*>("glUniformBlockBinding");
         DvigEngine::GL4::UseProgram = (void (*)(deuint32 program))GL4::GetFunc<void*>("glUseProgram");
+        DvigEngine::GL4::GetUniformLocation = (deint32 (*)(deuint32 program, const char* name))GL4::GetFunc<void*>("glGetUniformLocation");
+        DvigEngine::GL4::Uniform1i = (void (*)(deint32 location, deint32 v0))GL4::GetFunc<void*>("glUniform1i");
         DvigEngine::GL4::DrawArrays = (void (*)(deuint32 mode, deint32 first, deisize count))GL4::GetFunc<void*>("glDrawArrays");
         DvigEngine::GL4::DrawElements = (void (*)(deuint32 mode, deisize count, deuint32 type, void* indices))GL4::GetFunc<void*>("glDrawElements");
         DvigEngine::GL4::DrawElementsInstanced = (void (*)(deuint32 mode, deisize count, deuint32 type, void* indices, deisize instancecount))GL4::GetFunc<void*>("glDrawElementsInstanced");

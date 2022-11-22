@@ -121,11 +121,23 @@ namespace DvigEngine
             glm::mat4 m_ProjectionSpaceMatrix;
     };
 
+    class PostProcessorComponent : public IComponent
+    {
+        public:
+            void Init();
+            void Free() override final;
+
+        public:
+    };
+
     class RenderPassInfo
     {
         public:
-            INode* Viewer;
             deuint32 Framebuffer;
+            deuint32 ColorRenderTarget;
+            deuint32 DepthRenderTarget;
+            INode* Viewer;
+            INode* PostProcessor;
     };
 
     class UniformViewerData
