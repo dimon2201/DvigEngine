@@ -1,6 +1,7 @@
 #include "../include/DEApplication.hpp"
 #include "../include/DECore.hpp"
 #include "../include/DEGUI.hpp"
+#include "../include/DEOpenGL4.hpp"
 #include "../include/DERendering.hpp"
 #include "../include/DEThirdPartyMath.hpp"
 #include "../include/DEThirdPartyWindow.hpp"
@@ -8,7 +9,7 @@
 int main()
 {
     DvigEngine::MemoryPoolProperty memoryPoolsData[2];
-    memoryPoolsData[0].m_ByteWidth = 256 * DV_MEMORY_MiB;
+    memoryPoolsData[0].m_ByteWidth = 128 * DV_MEMORY_MiB;
     memoryPoolsData[1].m_ByteWidth = 24 * DV_MEMORY_KiB;
 
     DvigEngine::EngineInputProperty engineInputData;
@@ -53,10 +54,12 @@ int main()
                 DvigEngine::GeometryComponent* geomComp1;
                 DvigEngine::TransformComponent* transComp1;
                 DvigEngine::ShaderComponent* shaderComp1;
+                DvigEngine::GeometryComponent* geomComp2;
                 DvigEngine::TransformComponent* viewerTransComp;
                 DvigEngine::ViewerComponent* viewerViewerComp;
                 DvigEngine::INode* node0;
                 DvigEngine::INode* node1;
+                DvigEngine::INode* node2;
                 DvigEngine::INode* viewer;
 
                 engine->Create <DvigEngine::GeometryComponent> ( &geomComp0, "MyGeometryComponent_0" );
@@ -66,9 +69,11 @@ int main()
                 engine->Create <DvigEngine::TransformComponent> ( &transComp1, "MyTransformComponent_1" );
                 engine->Create <DvigEngine::ShaderComponent> ( &shaderComp1, "MyShaderComponent_1" );
                 engine->Create <DvigEngine::TransformComponent> ( &viewerTransComp, "ViewerTransformComponent_1" );
+                engine->Create <DvigEngine::GeometryComponent> ( &geomComp2, "MyGeometryComponent_2" );
                 engine->Create <DvigEngine::ViewerComponent> ( &viewerViewerComp, "ViewerComponent_0" );
                 engine->Create <DvigEngine::INode> ( &node0, "MyNode_0" );
                 engine->Create <DvigEngine::INode> ( &node1, "MyNode_1" );
+                engine->Create <DvigEngine::INode> ( &node2, "MyNode_2" );
                 engine->Create <DvigEngine::INode> ( &viewer, "Viewer_0" );
 
                 geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
@@ -79,6 +84,7 @@ int main()
                 transComp1->Init();
                 shaderComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shader.frag" );
+                geomComp2->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
                 viewerTransComp->Init();
                 viewerViewerComp->Init();
                 transComp1->SetPosition( 7.0f, 0.0f, 0.0f );
@@ -90,9 +96,10 @@ int main()
                 engine->AddComponent <DvigEngine::GeometryComponent> ( &node0, geomComp0 );
                 engine->AddComponent <DvigEngine::TransformComponent> ( &node0, transComp0 );
                 engine->AddComponent <DvigEngine::ShaderComponent> ( &node0, shaderComp0 );
-                engine->AddComponent <DvigEngine::GeometryComponent> ( &node1, geomComp0 );
+                engine->AddComponent <DvigEngine::GeometryComponent> ( &node1, geomComp1 );
                 engine->AddComponent <DvigEngine::TransformComponent> ( &node1, transComp1 );
-                engine->AddComponent <DvigEngine::ShaderComponent> ( &node1, shaderComp1 );
+                engine->AddComponent <DvigEngine::ShaderComponent> ( &node1, shaderComp0 );
+                engine->AddComponent <DvigEngine::GeometryComponent> ( &node2, geomComp2 );
                 engine->AddComponent <DvigEngine::TransformComponent> ( &viewer, viewerTransComp );
                 engine->AddComponent <DvigEngine::ViewerComponent> ( &viewer, viewerViewerComp );
 
@@ -127,7 +134,7 @@ int main()
                 DvigEngine::RenderingSystem::BeginRender(viewer);
                 DvigEngine::RenderingSystem::BeginBatch();
                 DvigEngine::RenderingSystem::Draw( myNode_0 );
-                DvigEngine::RenderingSystem::Draw( myNode_1 );
+                // DvigEngine::RenderingSystem::Draw( myNode_1 );
                 DvigEngine::RenderingSystem::EndBatch();
                 DvigEngine::RenderingSystem::EndRender();
 

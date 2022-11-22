@@ -1,6 +1,6 @@
 #include "../../include/DECore.hpp"
+#include "../../include/DEOpenGL4.hpp"
 #include "../../include/DERendering.hpp"
-
 #include <fstream>
 
 void DvigEngine::ShaderComponent::Init(const char* vertexShaderPathOnDrive, const char* fragmentShaderPathOnDrive)

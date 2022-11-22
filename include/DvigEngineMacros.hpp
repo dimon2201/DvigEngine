@@ -1,5 +1,5 @@
-#ifndef _DV_H_MACROS
-#define _DV_H_MACROS
+#ifndef _DE_H_MACROS
+#define _DE_H_MACROS
 
 #ifndef _DV_EOF
 #define _DV_EOF
@@ -72,7 +72,7 @@
 #define DV_MAX_JOB_QUEUE_THREAD_JOB_ARGUMENT_COUNT      4
 #define DV_MAX_JOB_QUEUE_THREAD_JOB_COUNT               12
 #define DV_MAX_GUI_WINDOW_COUNT                         4
-#define DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH             32 * DV_MEMORY_MiB
+#define DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH             7 * DV_MEMORY_MiB
 
 #define DV_COMPONENT_DWORD_COUNT_PER_COMPONENT_COUNT    (DV_MAX_REGISTERED_COMPONENT_COUNT >> 5)
 

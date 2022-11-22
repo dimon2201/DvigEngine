@@ -1,4 +1,5 @@
 #include "../../include/DEGUI.hpp"
+#include "../../include/DEOpenGL4.hpp"
 #include "../../include/DERendering.hpp"
 
 DvigEngine::debool DvigEngine::IWindow::m_IsGLInitialized = DV_FALSE;

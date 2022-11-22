@@ -1,4 +1,5 @@
 #include "../../include/DECore.hpp"
+#include "../../include/DEOpenGL4.hpp"
 #include "../../include/DERendering.hpp"
 #include <fstream>
 

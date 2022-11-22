@@ -1,3 +1,6 @@
+#ifndef _DE_LIB_APPLICATION_H_
+#define _DE_LIB_APPLICATION_H_
+
 #include "DECore.hpp"
 #include "DEThirdPartyMath.hpp"
 
@@ -28,3 +31,5 @@ namespace DvigEngine
         private:
     };
 }
+
+#endif

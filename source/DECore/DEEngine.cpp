@@ -283,7 +283,7 @@ DvigEngine::MemoryObject* DvigEngine::Engine::Allocate(deint32 memoryPoolIndex, 
     // stubMemoryObject->m_MemoryPoolIndex = memoryPoolIndex;
 
     // return memoryObject;
-
+    
     MemoryPool* memoryPool = (MemoryPool*)m_EngineInstance->GetMemoryPoolByIndex(memoryPoolIndex);
 	void* memoryPoolOffset = memoryPool->m_AddressOffset;
 	const deusize memoryPoolAllocationCount = memoryPool->m_AllocationCount;
