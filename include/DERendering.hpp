@@ -130,14 +130,37 @@ namespace DvigEngine
         public:
     };
 
+    class RenderTargetGroup : public IHelperObject
+    {
+        public:
+            void Init(glm::uvec2& size);
+            void Free() override final;
+
+            DV_FUNCTION_INLINE deuint32 GetGLColorRenderTarget() { return m_RenderTargets[0]; }
+            DV_FUNCTION_INLINE deuint32 GetGLDepthRenderTarget() { return m_RenderTargets[1]; }
+
+        private:
+            deuint32 m_RenderTargets[2];
+    };
+
+    enum class RenderPassType
+    {
+        FRAMEBUFFER = 0,
+        SCREEN_FINAL = 1
+    };
+
     class RenderPassInfo
     {
         public:
+            RenderPassType Type;
             deuint32 Framebuffer;
             deuint32 ColorRenderTarget;
             deuint32 DepthRenderTarget;
             INode* Viewer;
             INode* PostProcessor;
+
+        private:
+            static deint32 m_TargetPingPongIndex;
     };
 
     class UniformViewerData

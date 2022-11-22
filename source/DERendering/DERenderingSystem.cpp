@@ -139,7 +139,7 @@ void DvigEngine::RenderingSystem::EndBatch()
 
 void DvigEngine::RenderingSystem::EndRenderPass()
 {
-    if (RenderingSystem::m_CurRenderPass->Framebuffer == DV_NULL)
+    if (RenderingSystem::m_CurRenderPass->Type == RenderPassType::SCREEN_FINAL)
     {
         // Render full-screen quad
         INode* postp = RenderingSystem::m_CurRenderPass->PostProcessor;

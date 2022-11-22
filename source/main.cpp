@@ -139,8 +139,9 @@ int main()
                 viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetPerspectiveProjection( 65.0f, 640.0f/480.0f, 0.1f, 100.0f );
 
                 DvigEngine::RenderPassInfo renderPass;
+                renderPass.Type = DvigEngine::RenderPassType::FRAMEBUFFER;
                 renderPass.Viewer = viewer;
-                renderPass.Framebuffer = myWindow->GetFramebuffer();
+                renderPass.Framebuffer = myWindow->GetGLFramebuffer();
                 DvigEngine::RenderingSystem::BeginRenderPass(&renderPass);
                 DvigEngine::RenderingSystem::Viewport( 0, 0, windowWidth, windowHeight );
                 DvigEngine::RenderingSystem::PaintBackground( 0.0f, 0.0f, 0.0f, 1.0f );
@@ -152,11 +153,12 @@ int main()
 
                 DvigEngine::INode* nodePostProcess = (DvigEngine::INode*)engine->GetExistingInstance( "PostProcess_0" );
                 DvigEngine::RenderPassInfo postProcessPass;
+                postProcessPass.Type = DvigEngine::RenderPassType::SCREEN_FINAL;
                 postProcessPass.Viewer = viewer;
                 postProcessPass.PostProcessor = nodePostProcess;
                 postProcessPass.Framebuffer = DV_NULL;
-                postProcessPass.ColorRenderTarget = myWindow->GetColorRenderTarget();
-                postProcessPass.DepthRenderTarget = myWindow->GetDepthRenderTarget();
+                postProcessPass.ColorRenderTarget = myWindow->GetRenderTargetGroup()->GetGLColorRenderTarget();
+                postProcessPass.DepthRenderTarget = myWindow->GetRenderTargetGroup()->GetGLDepthRenderTarget();
                 DvigEngine::RenderingSystem::BeginRenderPass(&postProcessPass);
                 DvigEngine::RenderingSystem::Viewport( 0, 0, windowWidth, windowHeight );
                 DvigEngine::RenderingSystem::PaintBackground( 0.0f, 0.0f, 0.0f, 1.0f );

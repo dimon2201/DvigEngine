@@ -23,21 +23,16 @@ void DvigEngine::IWindow::Init(Application* app, const char* caption, glm::uvec2
         DvigEngine::GL4::Load();
         DvigEngine::RenderingSystem::Init();
 
+        // Create Render target group
+        Engine* engine = Engine::GetClassInstance();
+        engine->Create( &this->m_RenderTargetGroup, "_RenderTargetGroup" );
+        this->m_RenderTargetGroup->Init(size);
+
         // Framebuffer
-        GL4::GenTextures( 2, &IWindow::m_GLFramebufferRenderTargets[0] );
-        GL4::BindTexture( GL_TEXTURE_2D, this->m_GLFramebufferRenderTargets[0] ); // color
-        GL4::TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, (deisize)size.x, (deisize)size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr );
-        GL4::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-        GL4::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-        GL4::BindTexture( GL_TEXTURE_2D, this->m_GLFramebufferRenderTargets[1] ); // depth
-        GL4::TexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, (deisize)size.x, (deisize)size.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr );
-        GL4::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-        GL4::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-        GL4::BindTexture( GL_TEXTURE_2D, 0 );
         GL4::GenFramebuffers( 1, &this->m_GLFramebuffer );
         GL4::BindFramebuffer( GL_FRAMEBUFFER, this->m_GLFramebuffer );
-        GL4::FramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->m_GLFramebufferRenderTargets[0], 0 );
-        GL4::FramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->m_GLFramebufferRenderTargets[1], 0 );
+        GL4::FramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->m_RenderTargetGroup->GetGLColorRenderTarget(), 0 );
+        GL4::FramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->m_RenderTargetGroup->GetGLDepthRenderTarget(), 0 );
         GL4::BindFramebuffer( GL_FRAMEBUFFER, 0 );
     }
 
@@ -78,6 +73,7 @@ void DvigEngine::IWindow::Free()
     this->m_GLFWWindow = nullptr;
     this->m_WindowIndex = DV_NULL;
 
+    engine->Delete( this->m_RenderTargetGroup->GetMemoryObject() );
     engine->Delete( this->GetMemoryObject() );
 }
 
