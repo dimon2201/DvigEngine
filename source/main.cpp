@@ -9,7 +9,7 @@
 int main()
 {
     DvigEngine::MemoryPoolInfo memoryPoolsData[2];
-    memoryPoolsData[0].m_ByteWidth = 196 * DV_MEMORY_MiB;
+    memoryPoolsData[0].m_ByteWidth = 256 * DV_MEMORY_MiB;
     memoryPoolsData[1].m_ByteWidth = 24 * DV_MEMORY_KiB;
 
     DvigEngine::EngineInputInfo engineInputData;
@@ -29,21 +29,13 @@ int main()
     class AppWindow : public DvigEngine::IWindow {
         public:
             void Start() override final {
-                DvigEngine::deuchar texels[32] = 
-                {
-                    255, 255, 255, 255,
-                    255, 255, 255, 255,
-                    255, 255, 255, 255,
-                    255, 255, 255, 255,
-                };
-                auto idx1 = DvigEngine::TextureMergerSystem::AddTexture( 2, 2, (const void*)&texels[0] );
-
                 this->prevMouseX = -1.0;
                 this->prevMouseY = -1.0;
 
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::GeometryComponent>();
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::TransformComponent>();
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::ShaderComponent>();
+                DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::MaterialComponent>();
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::ViewerComponent>();
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::PostProcessorComponent>();
 
@@ -61,9 +53,11 @@ int main()
                 DvigEngine::GeometryComponent* geomComp0;
                 DvigEngine::TransformComponent* transComp0;
                 DvigEngine::ShaderComponent* shaderComp0;
+                DvigEngine::MaterialComponent* matComp0;
                 DvigEngine::GeometryComponent* geomComp1;
                 DvigEngine::TransformComponent* transComp1;
                 DvigEngine::ShaderComponent* shaderComp1;
+                DvigEngine::MaterialComponent* matComp1;
                 DvigEngine::GeometryComponent* geomComp2;
                 DvigEngine::TransformComponent* viewerTransComp;
                 DvigEngine::ViewerComponent* viewerViewerComp;
@@ -78,9 +72,11 @@ int main()
                 engine->Create <DvigEngine::GeometryComponent> ( &geomComp0, "MyGeometryComponent_0" );
                 engine->Create <DvigEngine::TransformComponent> ( &transComp0, "MyTransformComponent_0" );
                 engine->Create <DvigEngine::ShaderComponent> ( &shaderComp0, "MyShaderComponent_0" );
+                engine->Create <DvigEngine::MaterialComponent> ( &matComp0, "MyMaterialComponent_0" );
                 engine->Create <DvigEngine::GeometryComponent> ( &geomComp1, "MyGeometryComponent_1" );
                 engine->Create <DvigEngine::TransformComponent> ( &transComp1, "MyTransformComponent_1" );
                 engine->Create <DvigEngine::ShaderComponent> ( &shaderComp1, "MyShaderComponent_1" );
+                engine->Create <DvigEngine::MaterialComponent> ( &matComp1, "MyMaterialComponent_1" );
                 engine->Create <DvigEngine::TransformComponent> ( &viewerTransComp, "ViewerTransformComponent_1" );
                 engine->Create <DvigEngine::GeometryComponent> ( &geomComp2, "MyGeometryComponent_2" );
                 engine->Create <DvigEngine::ViewerComponent> ( &viewerViewerComp, "ViewerComponent_0" );
@@ -96,10 +92,13 @@ int main()
                 transComp0->Init();
                 shaderComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.frag" );
+                
+                matComp0->Init();
                 geomComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
                 transComp1->Init();
                 shaderComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.frag" );
+                matComp1->Init();
                 geomComp2->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
                 viewerTransComp->Init();
                 viewerViewerComp->Init();
@@ -115,9 +114,11 @@ int main()
                 node0->AddComponent <DvigEngine::GeometryComponent> ( geomComp0 );
                 node0->AddComponent <DvigEngine::TransformComponent> ( transComp0 );
                 node0->AddComponent <DvigEngine::ShaderComponent> ( shaderComp0 );
+                node0->AddComponent <DvigEngine::MaterialComponent> ( matComp0 );
                 node1->AddComponent <DvigEngine::GeometryComponent> ( geomComp1 );
                 node1->AddComponent <DvigEngine::TransformComponent> ( transComp1 );
                 node1->AddComponent <DvigEngine::ShaderComponent> ( shaderComp0 );
+                node2->AddComponent <DvigEngine::MaterialComponent> ( matComp1 );
                 node2->AddComponent <DvigEngine::GeometryComponent> ( geomComp2 );
                 viewer->AddComponent <DvigEngine::TransformComponent> ( viewerTransComp );
                 viewer->AddComponent <DvigEngine::ViewerComponent> ( viewerViewerComp );

@@ -2,15 +2,16 @@
 
 void DvigEngine::MaterialComponent::Init()
 {
-    // DvigEngine::deuchar texels[32] = 
-    // {
-    //     0,   0,   0,   255,
-    //     255, 0,   0,   255,
-    //     0,   255, 0,   255,
-    //     0,   0,   255, 255,
-    // };
+    deuchar texels[32] = 
+    {
+        255, 255, 255, 255,
+        0, 0, 0, 255,
+        255, 255, 255, 255,
+        0, 0, 0, 255,
+    };
 
-    // auto idx1 = DvigEngine::TextureMergerSystem::AddTexture( 2, 2, (const void*)&texels[0] );
+    deint32 textureIndex = TextureMergerSystem::AddTexture( 2, 2, (const void*)&texels[0] );
+    this->m_DiffuseTexture = TextureMergerSystem::GetAtlasTexture( textureIndex );
 }
 
 void DvigEngine::MaterialComponent::Free()

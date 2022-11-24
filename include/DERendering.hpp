@@ -192,6 +192,7 @@ namespace DvigEngine
 
         public:
             glm::mat4 m_TransformMatrix;
+            glm::uvec4 m_DiffuseTextureInfo;
     };
 
     class BatchData

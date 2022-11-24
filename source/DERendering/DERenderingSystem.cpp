@@ -224,7 +224,8 @@ void DvigEngine::RenderingSystem::Draw(INode* const node)
     DvigEngine::GeometryComponent* nodeGeometry = node->GetComponent<DvigEngine::GeometryComponent>(nullptr);
     DvigEngine::TransformComponent* nodeTransform = node->GetComponent<DvigEngine::TransformComponent>(nullptr);
     DvigEngine::ShaderComponent* nodeShader = node->GetComponent<DvigEngine::ShaderComponent>(nullptr);
-    if (nodeGeometry == nullptr || nodeTransform == nullptr || nodeShader == nullptr) { return; }
+    DvigEngine::MaterialComponent* nodeMaterial = node->GetComponent<DvigEngine::MaterialComponent>(nullptr);
+    if (nodeGeometry == nullptr || nodeTransform == nullptr || nodeShader == nullptr || nodeMaterial == nullptr) { return; }
 
     // Create new batch if needed
     if (m_IsBatchRecording == DV_TRUE)
@@ -256,6 +257,9 @@ void DvigEngine::RenderingSystem::Draw(INode* const node)
     DvigEngine::Engine::MemoryCopy( &uniformViewerData.m_ProjectionSpaceMatrix, &viewerViewer->m_ProjectionSpaceMatrix, sizeof(glm::mat4) );
     DvigEngine::Engine::MemoryCopy( viewerMemoryAddress, &uniformViewerData, sizeof(DvigEngine::UniformViewerData) );
     DvigEngine::UniformBatchInstanceData uniformBatchInstance;
+    uniformBatchInstance.m_DiffuseTextureInfo.x = nodeMaterial->m_DiffuseTexture->m_X | (nodeMaterial->m_DiffuseTexture->m_Y << 16);
+    uniformBatchInstance.m_DiffuseTextureInfo.y = nodeMaterial->m_DiffuseTexture->m_Z | (nodeMaterial->m_DiffuseTexture->m_Width << 16);
+    uniformBatchInstance.m_DiffuseTextureInfo.z = nodeMaterial->m_DiffuseTexture->m_Height;
     void* instancesMemoryAddress = DvigEngine::Ptr<void*>::Add( &viewerMemoryAddress, sizeof(UniformViewerData) + RenderingSystem::m_NextBatchUniformBufferOffset );
     DvigEngine::Engine::MemoryCopy( &uniformBatchInstance.m_TransformMatrix, &nodeTransform->m_WorldSpaceMatrix, sizeof(glm::mat4) );
     DvigEngine::Engine::MemoryCopy( instancesMemoryAddress, &uniformBatchInstance, sizeof(DvigEngine::UniformBatchInstanceData) );

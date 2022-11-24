@@ -15,6 +15,7 @@ struct UViewer {
 
 struct UInstanceData {
     mat4 m_WorldSpaceMatrix;
+    uvec4 m_DiffuseTextureInfo;
 };
 
 struct UInputRenderTargets {
