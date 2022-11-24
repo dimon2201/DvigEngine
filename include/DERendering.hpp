@@ -8,6 +8,8 @@
 
 namespace DvigEngine
 {
+    class TextureMergerTexture;
+
     class GeometryVertex
     {
         public:
@@ -81,6 +83,16 @@ namespace DvigEngine
 
         public:
             deuint32 m_GLProgram;
+    };
+
+    class MaterialComponent : public IComponent
+    {
+        public:
+            void Init();
+            void Free() override final;
+
+        public:
+            TextureMergerTexture* m_DiffuseTexture;
     };
 
     class ViewerComponent : public IComponent
@@ -244,6 +256,7 @@ namespace DvigEngine
             static deint32 AddTexture(const deusize width, const deusize height, const void* pixels);
             static void RemoveTexture(const deint32 index);
 
+            DV_FUNCTION_INLINE static deuint32 GetGLAtlas() { return m_Atlas; }
             DV_FUNCTION_INLINE static TextureMergerTexture* GetAtlasTexture(const deint32 index) { return TextureMergerSystem::m_Textures->Find<TextureMergerTexture*>( index ); }
             DV_FUNCTION_INLINE static deusize GetAtlasWidth() { return TextureMergerSystem::m_AtlasWidth; }
             DV_FUNCTION_INLINE static deusize GetAtlasHeight() { return TextureMergerSystem::m_AtlasHeight; }

@@ -147,6 +147,11 @@ void DvigEngine::RenderingSystem::EndBatch()
     // Bind VAO here
     DvigEngine::GL4::BindVertexArray( DvigEngine::RenderingSystem::m_GLVAO );
     DvigEngine::GL4::UseProgram( shaderProgram );
+
+    // Uniform texture atlas
+    GL4::ActiveTexture( GL_TEXTURE2 );
+    GL4::BindTexture( GL_TEXTURE_2D, TextureMergerSystem::GetGLAtlas() );
+    GL4::Uniform1i( GL4::GetUniformLocation( shaderProgram, "u_TextureAtlas" ), 2 );
     
     // Uniform buffer
     DvigEngine::deuint32 ubufferIndex = DvigEngine::GL4::GetUniformBlockIndex( shaderProgram, "UBuffer" );
@@ -240,24 +245,21 @@ void DvigEngine::RenderingSystem::Draw(INode* const node)
     }
 
     // Populate uniform buffer
-    const deisize nodesDataUniformByteWidth = sizeof(UniformViewerData);
-    const deint32 actualUniformDataOffset = nodesDataUniformByteWidth + RenderingSystem::m_NextBatchUniformBufferOffset;
-    void* uniformBufferMemory = m_UniformBufferMemoryObject->Unwrap<void*>();
     DvigEngine::UniformViewerData uniformViewerData;
+    void* viewerMemoryAddress = m_UniformBufferMemoryObject->Unwrap<void*>();
     DvigEngine::Engine::MemoryCopy( &uniformViewerData.m_WorldSpaceMatrix, &viewerTransform->m_WorldTranslationMatrix, sizeof(glm::mat4) );
     DvigEngine::Engine::MemoryCopy( &uniformViewerData.m_ViewSpaceMatrix, &viewerViewer->m_ViewSpaceMatrix, sizeof(glm::mat4) );
     DvigEngine::Engine::MemoryCopy( &uniformViewerData.m_ProjectionSpaceMatrix, &viewerViewer->m_ProjectionSpaceMatrix, sizeof(glm::mat4) );
-    DvigEngine::Engine::MemoryCopy( uniformBufferMemory, &uniformViewerData, sizeof(DvigEngine::UniformViewerData) );
-    uniformBufferMemory = DvigEngine::Ptr<void*>::Add( &uniformBufferMemory, actualUniformDataOffset );
+    DvigEngine::Engine::MemoryCopy( viewerMemoryAddress, &uniformViewerData, sizeof(DvigEngine::UniformViewerData) );
     DvigEngine::UniformBatchInstanceData uniformBatchInstance;
+    void* instancesMemoryAddress = DvigEngine::Ptr<void*>::Add( &viewerMemoryAddress, sizeof(UniformViewerData) + RenderingSystem::m_NextBatchUniformBufferOffset );
     DvigEngine::Engine::MemoryCopy( &uniformBatchInstance.m_TransformMatrix, &nodeTransform->m_WorldSpaceMatrix, sizeof(glm::mat4) );
-    
-    DvigEngine::Engine::MemoryCopy( uniformBufferMemory, &uniformBatchInstance, sizeof(DvigEngine::UniformBatchInstanceData) );
+    DvigEngine::Engine::MemoryCopy( instancesMemoryAddress, &uniformBatchInstance, sizeof(DvigEngine::UniformBatchInstanceData) );
 
     // Send uniform buffer to GPU
     DvigEngine::GL4::BindBuffer( GL_UNIFORM_BUFFER, DvigEngine::RenderingSystem::m_GLUniformBuffer );
     DvigEngine::GL4::BufferSubData( GL_UNIFORM_BUFFER, 0, sizeof(DvigEngine::UniformViewerData), (const void*)&uniformViewerData );
-    DvigEngine::GL4::BufferSubData( GL_UNIFORM_BUFFER, actualUniformDataOffset, sizeof(DvigEngine::UniformBatchInstanceData), (const void*)uniformBufferMemory );
+    DvigEngine::GL4::BufferSubData( GL_UNIFORM_BUFFER, sizeof(UniformViewerData) + RenderingSystem::m_NextBatchUniformBufferOffset, sizeof(DvigEngine::UniformBatchInstanceData), (const void*)instancesMemoryAddress );
     DvigEngine::GL4::BindBuffer( GL_UNIFORM_BUFFER, 0 );
 
     // Increase uniform buffer offset

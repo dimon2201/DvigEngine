@@ -15,6 +15,14 @@ struct UInstanceData {
     mat4 m_WorldSpaceMatrix;
 };
 
+struct UInputRenderTargets {
+    sampler2D m_Color;
+    sampler2D m_Depth;
+};
+
+uniform UInputRenderTargets u_InputRenderTargets;
+uniform sampler2DArray u_TextureAtlas;
+
 layout (std140, binding = 0) uniform UBuffer {
     UViewer m_Viewer;
     UInstanceData m_Instances[256];
