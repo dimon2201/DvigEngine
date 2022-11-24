@@ -16,24 +16,19 @@ void DvigEngine::IWindow::Init(Application* app, const char* caption, glm::uvec2
     // Set user data
     glfwSetWindowUserPointer( window, this );
 
-    // Init OpenGL procedures
+    // Init OpenGL procedures and Engine systems
     // Create Framebuffer
     if (DvigEngine::IWindow::m_IsGLInitialized == DV_FALSE)
     {
+        // Init OpenGL and systems
         DvigEngine::GL4::Load();
         DvigEngine::RenderingSystem::Init();
+        DvigEngine::TextureMergerSystem::Init( DV_NULL, DV_NULL, DV_NULL );
 
-        // Create Render target group
+        // Create Render target group for window
         Engine* engine = Engine::GetClassInstance();
         engine->Create( &this->m_RenderTargetGroup, "_RenderTargetGroup" );
         this->m_RenderTargetGroup->Init(size);
-
-        // Framebuffer
-        GL4::GenFramebuffers( 1, &this->m_GLFramebuffer );
-        GL4::BindFramebuffer( GL_FRAMEBUFFER, this->m_GLFramebuffer );
-        GL4::FramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->m_RenderTargetGroup->GetGLColorRenderTarget(), 0 );
-        GL4::FramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->m_RenderTargetGroup->GetGLDepthRenderTarget(), 0 );
-        GL4::BindFramebuffer( GL_FRAMEBUFFER, 0 );
     }
 
     DV_ASSERT_PTR(window);

@@ -29,6 +29,20 @@ int main()
     class AppWindow : public DvigEngine::IWindow {
         public:
             void Start() override final {
+                
+                DvigEngine::deuchar texels[32] = 
+                {
+                    0,   0,   0,   255,
+                    255, 0,   0,   255,
+                    0,   255, 0,   255,
+                    0,   0,   255, 255,
+                };
+                auto idx1 = DvigEngine::TextureMergerSystem::AddTexture( 2, 2, (const void*)&texels[0] );
+                auto idx2 = DvigEngine::TextureMergerSystem::AddTexture( 2, 2, (const void*)&texels[0] );
+                auto texture2 = DvigEngine::TextureMergerSystem::GetAtlasTexture( idx2 );
+                std::cout << texture2->m_X << " " << texture2->m_Y << std::endl;
+
+
                 this->prevMouseX = -1.0;
                 this->prevMouseY = -1.0;
 
@@ -141,7 +155,8 @@ int main()
                 DvigEngine::RenderPassInfo renderPass;
                 renderPass.Type = DvigEngine::RenderPassType::FRAMEBUFFER;
                 renderPass.Viewer = viewer;
-                renderPass.Framebuffer = myWindow->GetGLFramebuffer();
+                renderPass.InputRenderTargets = nullptr;
+                renderPass.OutputRenderTargets = myWindow->GetRenderTargetGroup();
                 DvigEngine::RenderingSystem::BeginRenderPass(&renderPass);
                 DvigEngine::RenderingSystem::Viewport( 0, 0, windowWidth, windowHeight );
                 DvigEngine::RenderingSystem::PaintBackground( 0.0f, 0.0f, 0.0f, 1.0f );
@@ -156,9 +171,8 @@ int main()
                 postProcessPass.Type = DvigEngine::RenderPassType::SCREEN_FINAL;
                 postProcessPass.Viewer = viewer;
                 postProcessPass.PostProcessor = nodePostProcess;
-                postProcessPass.Framebuffer = DV_NULL;
-                postProcessPass.ColorRenderTarget = myWindow->GetRenderTargetGroup()->GetGLColorRenderTarget();
-                postProcessPass.DepthRenderTarget = myWindow->GetRenderTargetGroup()->GetGLDepthRenderTarget();
+                postProcessPass.InputRenderTargets = myWindow->GetRenderTargetGroup();
+                postProcessPass.OutputRenderTargets = nullptr;
                 DvigEngine::RenderingSystem::BeginRenderPass(&postProcessPass);
                 DvigEngine::RenderingSystem::Viewport( 0, 0, windowWidth, windowHeight );
                 DvigEngine::RenderingSystem::PaintBackground( 0.0f, 0.0f, 0.0f, 1.0f );

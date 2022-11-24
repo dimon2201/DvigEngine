@@ -78,6 +78,18 @@ void DvigEngine::RenderingSystem::Init()
     // Bind vertex and index buffer
 }
 
+void DvigEngine::RenderingSystem::Free()
+{
+    Engine* engine = Engine::GetClassInstance();
+
+    engine->Delete(RenderingSystem::m_GlobalGeometryBuffer->GetMemoryObject());
+    engine->Delete(RenderingSystem::m_GlobalIndexBuffer->GetMemoryObject());
+    GL4::DeleteBuffers( 1, &RenderingSystem::m_GLGlobalGeometryBuffer );
+    GL4::DeleteBuffers( 1, &RenderingSystem::m_GLGlobalIndexBuffer );
+    engine->Delete( RenderingSystem::m_Batches->GetMemoryObject() );
+    GL4::DeleteBuffers( 1, &RenderingSystem::m_GLUniformBuffer );
+}
+
 void DvigEngine::RenderingSystem::Viewport(deint32 x, deint32 y, deisize width, deisize height)
 {
     GL4::Viewport( x, y, width, height );
@@ -94,9 +106,13 @@ void DvigEngine::RenderingSystem::BeginRenderPass(RenderPassInfo* renderPassInfo
     RenderingSystem::m_CurRenderPass = renderPassInfo;
 
     // Bind framebuffer
-    if (RenderingSystem::m_CurRenderPass->Framebuffer != DV_NULL) {
-        GL4::BindFramebuffer( GL_FRAMEBUFFER, RenderingSystem::m_CurRenderPass->Framebuffer );
-    } else {
+    if (RenderingSystem::m_CurRenderPass->OutputRenderTargets != nullptr)
+    {
+        // Bind output attachments
+        GL4::BindFramebuffer( GL_FRAMEBUFFER, RenderingSystem::m_CurRenderPass->OutputRenderTargets->GetGLFramebuffer() );
+    }
+    else
+    {
         GL4::BindFramebuffer( GL_FRAMEBUFFER, 0 );
     }
 
@@ -130,10 +146,25 @@ void DvigEngine::RenderingSystem::EndBatch()
     // Make a draw call
     // Bind VAO here
     DvigEngine::GL4::BindVertexArray( DvigEngine::RenderingSystem::m_GLVAO );
+    DvigEngine::GL4::UseProgram( shaderProgram );
+    
+    // Uniform buffer
     DvigEngine::deuint32 ubufferIndex = DvigEngine::GL4::GetUniformBlockIndex( shaderProgram, "UBuffer" );
     DvigEngine::GL4::UniformBlockBinding( shaderProgram, ubufferIndex, 0 );
     DvigEngine::GL4::BindBufferBase( GL_UNIFORM_BUFFER, 0, DvigEngine::RenderingSystem::m_GLUniformBuffer );
-    DvigEngine::GL4::UseProgram( shaderProgram );
+    
+    // Input render targets
+    if (RenderingSystem::m_CurRenderPass->InputRenderTargets != nullptr)
+    {
+        GL4::ActiveTexture( GL_TEXTURE0 );
+        GL4::BindTexture( GL_TEXTURE_2D, RenderingSystem::m_CurRenderPass->InputRenderTargets->GetGLColorRenderTarget() );
+        GL4::ActiveTexture( GL_TEXTURE1 );
+        GL4::BindTexture( GL_TEXTURE_2D, RenderingSystem::m_CurRenderPass->InputRenderTargets->GetGLDepthRenderTarget() );
+        GL4::Uniform1i( GL4::GetUniformLocation( shaderProgram, "u_InputRenderTargets.m_Color" ), 0 );
+        GL4::Uniform1i( GL4::GetUniformLocation( shaderProgram, "u_InputRenderTargets.m_Depth" ), 1 );
+    }
+
+    // Draw
     DvigEngine::GL4::DrawElementsInstanced( GL_TRIANGLES, geometryIndexCount, GL_UNSIGNED_INT, nullptr, lastBatch->m_InstanceCount );
 }
 
@@ -144,20 +175,22 @@ void DvigEngine::RenderingSystem::EndRenderPass()
         // Render full-screen quad
         INode* postp = RenderingSystem::m_CurRenderPass->PostProcessor;
         if (postp == nullptr) { return; }
-        
-        PostProcessorComponent* postProcessor = postp->GetComponent<PostProcessorComponent>(nullptr);
-        if (postProcessor == nullptr) { return; }
         ShaderComponent* postShader = postp->GetComponent<ShaderComponent>(nullptr);
         if (postShader == nullptr) { return; }
-
-        // Populate shader uniforms
+        deuint32 shaderProgram = postShader->m_GLProgram;
+        
         GL4::UseProgram( postShader->m_GLProgram );
-        GL4::ActiveTexture( GL_TEXTURE0 );
-        GL4::BindTexture( GL_TEXTURE_2D, RenderingSystem::m_CurRenderPass->ColorRenderTarget );
-        GL4::ActiveTexture( GL_TEXTURE1 );
-        GL4::BindTexture( GL_TEXTURE_2D, RenderingSystem::m_CurRenderPass->DepthRenderTarget );
-        GL4::Uniform1i( GL4::GetUniformLocation( postShader->m_GLProgram, "u_PostProcessor.m_ColorRenderTarget" ), 0 );
-        GL4::Uniform1i( GL4::GetUniformLocation( postShader->m_GLProgram, "u_PostProcessor.m_DepthRenderTarget" ), 1 );
+
+        // Input render targets
+        if (RenderingSystem::m_CurRenderPass->InputRenderTargets != nullptr)
+        {
+            GL4::ActiveTexture( GL_TEXTURE0 );
+            GL4::BindTexture( GL_TEXTURE_2D, RenderingSystem::m_CurRenderPass->InputRenderTargets->GetGLColorRenderTarget() );
+            GL4::ActiveTexture( GL_TEXTURE1 );
+            GL4::BindTexture( GL_TEXTURE_2D, RenderingSystem::m_CurRenderPass->InputRenderTargets->GetGLDepthRenderTarget() );
+            GL4::Uniform1i( GL4::GetUniformLocation( shaderProgram, "u_InputRenderTargets.m_Color" ), 0 );
+            GL4::Uniform1i( GL4::GetUniformLocation( shaderProgram, "u_InputRenderTargets.m_Depth" ), 1 );
+        }
 
         // Issue draw call
         GL4::BindFramebuffer( GL_FRAMEBUFFER, 0 );

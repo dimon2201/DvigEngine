@@ -31,7 +31,6 @@ namespace DvigEngine
             DV_FUNCTION_INLINE double GetMouseY() { double x = -1.0, y = -1.0; glfwGetCursorPos(this->m_GLFWWindow, &x, &y); return y; }
             DV_FUNCTION_INLINE int GetWindowWidth() { int width = 0, height = 0; glfwGetFramebufferSize(this->m_GLFWWindow, &width, &height); return width; }
             DV_FUNCTION_INLINE int GetWindowHeight() { int width = 0, height = 0; glfwGetFramebufferSize(this->m_GLFWWindow, &width, &height); return height; }
-            DV_FUNCTION_INLINE deuint32 GetGLFramebuffer() { return m_GLFramebuffer; }
             DV_FUNCTION_INLINE RenderTargetGroup* GetRenderTargetGroup() { return m_RenderTargetGroup; }
             DV_FUNCTION_INLINE MemoryObject* GetUserData() { return m_UserData; }
             DV_FUNCTION_INLINE void SetMousePositionX(double value) { glfwSetCursorPos(this->m_GLFWWindow, value, this->GetMouseY()); }
@@ -47,7 +46,6 @@ namespace DvigEngine
             GLFWwindow* m_GLFWWindow;
             debool m_GLFWKeyStates[256];
             RenderTargetGroup* m_RenderTargetGroup;
-            deuint32 m_GLFramebuffer;
             MemoryObject* m_UserData = nullptr;
     };
 

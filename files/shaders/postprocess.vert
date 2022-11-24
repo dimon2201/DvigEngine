@@ -2,12 +2,12 @@
 
 layout (location = 0) out vec3 vsOut_Position;
 
-struct UPostProcessor {
-    sampler2D m_ColorRenderTarget;
-    sampler2D m_DepthRenderTarget;
+struct UInputRenderTargets {
+    sampler2D m_Color;
+    sampler2D m_Depth;
 };
 
-uniform UPostProcessor u_PostProcessor;
+uniform UInputRenderTargets u_InputRenderTargets;
 
 void main()
 {

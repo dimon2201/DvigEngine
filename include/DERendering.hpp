@@ -136,10 +136,12 @@ namespace DvigEngine
             void Init(glm::uvec2& size);
             void Free() override final;
 
+            DV_FUNCTION_INLINE deuint32 GetGLFramebuffer() { return m_Framebuffer; }
             DV_FUNCTION_INLINE deuint32 GetGLColorRenderTarget() { return m_RenderTargets[0]; }
             DV_FUNCTION_INLINE deuint32 GetGLDepthRenderTarget() { return m_RenderTargets[1]; }
 
         private:
+            deuint32 m_Framebuffer;
             deuint32 m_RenderTargets[2];
     };
 
@@ -153,9 +155,8 @@ namespace DvigEngine
     {
         public:
             RenderPassType Type;
-            deuint32 Framebuffer;
-            deuint32 ColorRenderTarget;
-            deuint32 DepthRenderTarget;
+            RenderTargetGroup* InputRenderTargets;
+            RenderTargetGroup* OutputRenderTargets;
             INode* Viewer;
             INode* PostProcessor;
 
@@ -191,11 +192,12 @@ namespace DvigEngine
 
     class RenderingSystem : public ISystem
     {
-        DV_MACRO_FRIENDS(DvigEngine::Engine)
+        DV_MACRO_FRIENDS(Engine)
         DV_XMACRO_DECLARE_STATIC_CLASS(RenderingSystem)
 
         public:
             static void Init();
+            static void Free();
             static void Viewport(deint32 x, deint32 y, deisize width, deisize height);
             static void PaintBackground(demfloat red, demfloat green, demfloat blue, demfloat alpha);
             static void BeginRenderPass(RenderPassInfo* renderPassInfo);
@@ -219,6 +221,40 @@ namespace DvigEngine
             static deint32 m_NextBatchUniformBufferOffset;
             static MemoryObject* m_UniformBufferMemoryObject;
             static deuint32 m_GLUniformBuffer;
+    };
+
+    class TextureMergerTexture
+    {
+        public:
+            deint32 m_X;
+            deint32 m_Y;
+            deint32 m_Z;
+            deusize m_Width;
+            deusize m_Height;
+    };
+
+    class TextureMergerSystem : public ISystem
+    {
+        DV_MACRO_FRIENDS(Engine)
+        DV_XMACRO_DECLARE_STATIC_CLASS(TextureMergerSystem)
+
+        public:
+            static void Init(deusize atlasWidth, deusize atlasHeight, deusize atlasDepth);
+            static void Free();
+            static deint32 AddTexture(const deusize width, const deusize height, const void* pixels);
+            static void RemoveTexture(const deint32 index);
+
+            DV_FUNCTION_INLINE static TextureMergerTexture* GetAtlasTexture(const deint32 index) { return TextureMergerSystem::m_Textures->Find<TextureMergerTexture*>( index ); }
+            DV_FUNCTION_INLINE static deusize GetAtlasWidth() { return TextureMergerSystem::m_AtlasWidth; }
+            DV_FUNCTION_INLINE static deusize GetAtlasHeight() { return TextureMergerSystem::m_AtlasHeight; }
+            DV_FUNCTION_INLINE static deusize GetAtlasDepth() { return TextureMergerSystem::m_AtlasDepth; }
+
+        private:
+            static deusize m_AtlasWidth;
+            static deusize m_AtlasHeight;
+            static deusize m_AtlasDepth;
+            static deuint32 m_Atlas;
+            static FixedSet* m_Textures;
     };
 }
 
