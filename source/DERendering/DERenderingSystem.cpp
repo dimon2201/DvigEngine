@@ -152,6 +152,7 @@ void DvigEngine::RenderingSystem::EndBatch()
     GL4::ActiveTexture( GL_TEXTURE2 );
     GL4::BindTexture( GL_TEXTURE_2D_ARRAY, TextureMergerSystem::GetGLAtlas() );
     GL4::Uniform1i( GL4::GetUniformLocation( shaderProgram, "u_TextureAtlas" ), 2 );
+    GL4::ActiveTexture( GL_TEXTURE0 );
     
     // Uniform buffer
     DvigEngine::deuint32 ubufferIndex = DvigEngine::GL4::GetUniformBlockIndex( shaderProgram, "UBuffer" );
@@ -165,6 +166,7 @@ void DvigEngine::RenderingSystem::EndBatch()
         GL4::BindTexture( GL_TEXTURE_2D, RenderingSystem::m_CurRenderPass->InputRenderTargets->GetGLColorRenderTarget() );
         GL4::ActiveTexture( GL_TEXTURE1 );
         GL4::BindTexture( GL_TEXTURE_2D, RenderingSystem::m_CurRenderPass->InputRenderTargets->GetGLDepthRenderTarget() );
+        GL4::ActiveTexture( GL_TEXTURE0 );
         GL4::Uniform1i( GL4::GetUniformLocation( shaderProgram, "u_InputRenderTargets.m_Color" ), 0 );
         GL4::Uniform1i( GL4::GetUniformLocation( shaderProgram, "u_InputRenderTargets.m_Depth" ), 1 );
     }

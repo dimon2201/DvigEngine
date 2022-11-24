@@ -8,7 +8,7 @@ struct UInputRenderTargets {
 };
 
 uniform UInputRenderTargets u_InputRenderTargets;
-uniform sampler2DArray u_TextureAtlas;
+// uniform sampler2DArray u_TextureAtlas;
 
 void main()
 {

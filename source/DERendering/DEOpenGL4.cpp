@@ -19,6 +19,7 @@ void (*DvigEngine::GL4::BufferData)(deuint32 target, demachword size, const void
 void (*DvigEngine::GL4::BufferSubData)(deuint32 target, demachword offset, demachword size, const void* data) = nullptr;
 void (*DvigEngine::GL4::FramebufferTexture2D)(deuint32 target, deuint32 attachment, deuint32 textarget, deuint32 texture, deuint32 level) = nullptr;
 void (*DvigEngine::GL4::TexImage2D)(deuint32 target, deuint32 level, deuint32 internalformat, deisize width, deisize height, deint32 border, deuint32 format, deuint32 type, const void* data) = nullptr;
+void (*DvigEngine::GL4::TexImage3D)(deuint32 target, deuint32 level, deuint32 internalformat, deisize width, deisize height, deisize depth, deint32 border, deuint32 format, deuint32 type, const void* data) = nullptr;
 void (*DvigEngine::GL4::TexStorage3D)(deuint32 target, deisize levels, deuint32 internalformat, deisize width, deisize height, deisize depth) = nullptr;
 void (*DvigEngine::GL4::TexParameteri)(deuint32 target, deuint32 pname, deint32 param) = nullptr;
 void (*DvigEngine::GL4::TexSubImage3D)(deuint32 target, deint32 level, deint32 xoffset, deint32 yoffset, deint32 zoffset, deisize width, deisize height, deisize depth, deuint32 format, deuint32 type, const void* pixels) = nullptr;
@@ -75,6 +76,7 @@ void DvigEngine::GL4::Load()
         DvigEngine::GL4::BufferSubData = (void (*)(deuint32 target, demachword offset, demachword size, const void* data))GL4::GetFunc<void*>("glBufferSubData");
         DvigEngine::GL4::FramebufferTexture2D = (void (*)(deuint32 target, deuint32 attachment, deuint32 textarget, deuint32 texture, deuint32 level))GL4::GetFunc<void*>("glFramebufferTexture2D");
         DvigEngine::GL4::TexImage2D = (void (*)(deuint32 target, deuint32 level, deuint32 internalformat, deisize width, deisize height, deint32 border, deuint32 format, deuint32 type, const void* data))GL4::GetFunc<void*>("glTexImage2D");
+        DvigEngine::GL4::TexImage3D = (void (*)(deuint32 target, deuint32 level, deuint32 internalformat, deisize width, deisize height, deisize depth, deint32 border, deuint32 format, deuint32 type, const void* data))GL4::GetFunc<void*>("glTexImage3D");
         DvigEngine::GL4::TexStorage3D = (void (*)(deuint32 target, deisize levels, deuint32 internalformat, deisize width, deisize height, deisize depth))GL4::GetFunc<void*>("glTexStorage3D");
         DvigEngine::GL4::TexParameteri = (void (*)(deuint32 target, deuint32 pname, deint32 param))GL4::GetFunc<void*>("glTexParameteri");
         DvigEngine::GL4::TexSubImage3D = (void (*)(deuint32 target, deint32 level, deint32 xoffset, deint32 yoffset, deint32 zoffset, deisize width, deisize height, deisize depth, deuint32 format, deuint32 type, const void* pixels))GL4::GetFunc<void*>("glTexSubImage3D");

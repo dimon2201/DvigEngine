@@ -12,7 +12,7 @@ void DvigEngine::TextureMergerSystem::Init(deusize atlasWidth, deusize atlasHeig
     if (TextureMergerSystem::m_Atlas == DV_NULL)
     {
         // Initialize atlas size
-        if (atlasWidth == DV_NULL && atlasHeight == DV_NULL && atlasDepth == DV_NULL)
+        if (atlasWidth != DV_NULL && atlasHeight != DV_NULL && atlasDepth != DV_NULL)
         {
             TextureMergerSystem::m_AtlasWidth = atlasWidth;
             TextureMergerSystem::m_AtlasHeight = atlasHeight;
@@ -22,9 +22,9 @@ void DvigEngine::TextureMergerSystem::Init(deusize atlasWidth, deusize atlasHeig
         // Create array texture atlas
         GL4::GenTextures( 1, &TextureMergerSystem::m_Atlas );
         GL4::BindTexture( GL_TEXTURE_2D_ARRAY, TextureMergerSystem::m_Atlas );
-        GL4::TexStorage3D( GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, TextureMergerSystem::m_AtlasWidth, TextureMergerSystem::m_AtlasHeight, TextureMergerSystem::m_AtlasDepth );
-        GL4::TexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-        GL4::TexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        GL4::TexImage3D( GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, TextureMergerSystem::m_AtlasWidth, TextureMergerSystem::m_AtlasHeight, TextureMergerSystem::m_AtlasDepth, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr );
+        GL4::TexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+        GL4::TexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
         GL4::BindTexture( GL_TEXTURE_2D_ARRAY, 0 );
 
         // Create texture set
@@ -92,7 +92,9 @@ DvigEngine::deint32 DvigEngine::TextureMergerSystem::AddTexture(const deusize wi
                     textureAtlasIndex = TextureMergerSystem::m_Textures->Insert( &texture );
                     
                     // Populate array texture atlas
+                    GL4::BindTexture( GL_TEXTURE_2D_ARRAY, TextureMergerSystem::m_Atlas );
                     GL4::TexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, texture.m_X, texture.m_Y, texture.m_Z, texture.m_Width, texture.m_Height, atlasDepth, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+                    GL4::BindTexture( GL_TEXTURE_2D_ARRAY, 0 );
 
                     // Exit loops
                     goto exit_loop;
