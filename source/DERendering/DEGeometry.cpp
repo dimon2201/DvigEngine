@@ -288,6 +288,7 @@ void DvigEngine::GeometryComponent::Init(const char* meshPathOnDrive)
     engine->Delete( meshDataMemoryObject );
     engine->Delete( meshGeometryDataMemoryObject );
     engine->Delete( meshGeometryPositionDataMemoryObject );
+    engine->Delete( meshGeometryTexcoordDataMemoryObject );
     engine->Delete( meshGeometryNormalDataMemoryObject );
     engine->Delete( meshIndexDataMemoryObject );
 }

@@ -1,10 +1,11 @@
 #version 420
 
 layout (location = 0) in vec3 vsIn_Position;
-layout (location = 1) in vec3 vsIn_Texcoord;
+layout (location = 1) in vec2 vsIn_Texcoord;
 layout (location = 2) in vec3 vsIn_Normal;
 layout (location = 0) out vec3 vsOut_Position;
-layout (location = 1) out vec3 vsOut_Normal;
+layout (location = 1) out vec2 vsOut_Texcoord;
+layout (location = 2) out vec3 vsOut_Normal;
 
 struct UViewer {
     mat4 m_WorldSpaceMatrix;
@@ -32,6 +33,7 @@ layout (std140, binding = 0) uniform UBuffer {
 void main()
 {
     vsOut_Position = vsIn_Position;
+    vsOut_Texcoord = vsIn_Texcoord;
     vsOut_Normal = vsIn_Normal;
     
     int instanceIndex = gl_InstanceID;

@@ -1,7 +1,8 @@
 #version 420
 
 layout (location = 0) in vec3 vsOut_Position;
-layout (location = 1) in vec3 vsOut_Normal;
+layout (location = 1) in vec2 vsOut_Texcoord;
+layout (location = 2) in vec3 vsOut_Normal;
 layout (location = 0) out vec4 fsOut_FragColor;
 
 uniform mediump sampler2DArray u_TextureAtlas;
@@ -13,5 +14,5 @@ void main()
 
     vec4 color = texture2DArray(u_TextureAtlas, vec3(0.0));
 
-    fsOut_FragColor = vec4(vsOut_Normal.xyz, 1.0);
+    fsOut_FragColor = vec4(vsOut_Texcoord.xyy, 1.0);
 }
