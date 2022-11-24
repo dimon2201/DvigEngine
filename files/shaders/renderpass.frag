@@ -13,5 +13,5 @@ void main()
 
     vec4 color = texture2DArray(u_TextureAtlas, vec3(0.0));
 
-    fsOut_FragColor = vec4(color.xyz, 1.0);
+    fsOut_FragColor = vec4(vsOut_Normal.xyz, 1.0);
 }

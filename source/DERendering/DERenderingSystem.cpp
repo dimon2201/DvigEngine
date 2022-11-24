@@ -49,8 +49,10 @@ void DvigEngine::RenderingSystem::Init()
         DvigEngine::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, DvigEngine::RenderingSystem::m_GLGlobalIndexBuffer );
         DvigEngine::GL4::EnableVertexAttribArray( 0 );
         DvigEngine::GL4::EnableVertexAttribArray( 1 );
+        DvigEngine::GL4::EnableVertexAttribArray( 2 );
         DvigEngine::GL4::VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof(DvigEngine::GeometryVertex), (void*)0 );
-        DvigEngine::GL4::VertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, sizeof(DvigEngine::GeometryVertex), (void*)12 );
+        DvigEngine::GL4::VertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, sizeof(DvigEngine::GeometryVertex), (void*)12 );
+        DvigEngine::GL4::VertexAttribPointer( 2, 3, GL_FLOAT, GL_FALSE, sizeof(DvigEngine::GeometryVertex), (void*)20 );
         DvigEngine::GL4::BindVertexArray( 0 );
     }
 

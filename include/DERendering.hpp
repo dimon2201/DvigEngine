@@ -14,6 +14,7 @@ namespace DvigEngine
     {
         public:
             defloat32 m_Position[3];
+            defloat32 m_Texcoord[2];
             defloat32 m_Normal[3];
     };
 

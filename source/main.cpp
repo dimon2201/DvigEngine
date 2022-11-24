@@ -9,7 +9,7 @@
 int main()
 {
     DvigEngine::MemoryPoolInfo memoryPoolsData[2];
-    memoryPoolsData[0].m_ByteWidth = 128 * DV_MEMORY_MiB;
+    memoryPoolsData[0].m_ByteWidth = 196 * DV_MEMORY_MiB;
     memoryPoolsData[1].m_ByteWidth = 24 * DV_MEMORY_KiB;
 
     DvigEngine::EngineInputInfo engineInputData;

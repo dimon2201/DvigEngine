@@ -89,6 +89,11 @@ void DvigEngine::GeometryComponent::Init(const char* meshPathOnDrive)
     DvigEngine::MemoryObject* meshGeometryPositionDataMemoryObject = DvigEngine::Engine::Allocate( 0, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH );
     DvigEngine::defloat32* meshGeometryPositionData = meshGeometryPositionDataMemoryObject->Unwrap<DvigEngine::defloat32*>();
 
+    // Allocate geometry texcoord buffer
+    DvigEngine::deint32 meshTexcoordCount = 0;
+    DvigEngine::MemoryObject* meshGeometryTexcoordDataMemoryObject = DvigEngine::Engine::Allocate( 0, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH );
+    DvigEngine::defloat32* meshGeometryTexcoordData = meshGeometryTexcoordDataMemoryObject->Unwrap<DvigEngine::defloat32*>();
+
     // Allocate geometry normal buffer
     DvigEngine::deint32 meshNormalCount = 0;
     DvigEngine::MemoryObject* meshGeometryNormalDataMemoryObject = DvigEngine::Engine::Allocate( 0, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH );
@@ -141,6 +146,29 @@ void DvigEngine::GeometryComponent::Init(const char* meshPathOnDrive)
             meshGeometryPositionData[ meshPositionCount++ ] = xx;
             meshGeometryPositionData[ meshPositionCount++ ] = yy;
             meshGeometryPositionData[ meshPositionCount++ ] = zz;
+        }
+        else if (keyword[0] == 'v' && keyword[1] == 't' && keywordByteWidth == 2)
+        {
+            // Vertex
+            DvigEngine::destring nValue[3] = { {}, {}, {} };
+            DvigEngine::deisize nValueCursor[3] = {};
+            DvigEngine::deint32 curValueIndex = -1;
+            while (i < meshDataByteWidth && meshData[i] != '\n')
+            {
+                while (meshData[i] == ' ' || meshData[i] == '\t') { i += 1; }
+                if (meshData[i - 1] == ' ' || meshData[i - 1] == '\t') { curValueIndex += 1; }
+                nValue[curValueIndex][nValueCursor[curValueIndex]++] = meshData[i];
+                i += 1;
+            }
+            
+            // Convert strings to floats
+            char* end;
+            float xx = std::strtof( (const char*)&nValue[0], &end );
+            float yy = std::strtof( (const char*)&nValue[1], &end );
+
+            // Insert normal to buffer
+            meshGeometryTexcoordData[ meshTexcoordCount++ ] = xx;
+            meshGeometryTexcoordData[ meshTexcoordCount++ ] = yy;
         }
         else if (keyword[0] == 'v' && keyword[1] == 'n' && keywordByteWidth == 2)
         {
@@ -197,10 +225,13 @@ void DvigEngine::GeometryComponent::Init(const char* meshPathOnDrive)
 
             // Insert vertex to buffer
             meshIndexData[ meshIndexCount++ ] = position1 > 0 ? position1 - 1 : 0;
+            meshIndexData[ meshIndexCount++ ] = texcoord1 > 0 ? texcoord1 - 1 : 0;
             meshIndexData[ meshIndexCount++ ] = normal1 > 0 ? normal1 - 1 : 0;
             meshIndexData[ meshIndexCount++ ] = position2 > 0 ? position2 - 1 : 0;
+            meshIndexData[ meshIndexCount++ ] = texcoord2 > 0 ? texcoord2 - 1 : 0;
             meshIndexData[ meshIndexCount++ ] = normal2 > 0 ? normal2 - 1 : 0;
             meshIndexData[ meshIndexCount++ ] = position3 > 0 ? position3 - 1 : 0;
+            meshIndexData[ meshIndexCount++ ] = texcoord3 > 0 ? texcoord3 - 1 : 0;
             meshIndexData[ meshIndexCount++ ] = normal3 > 0 ? normal3 - 1 : 0;
         }
         else
@@ -212,17 +243,21 @@ void DvigEngine::GeometryComponent::Init(const char* meshPathOnDrive)
 
     // Setup geometry buffer
     meshVertexCount = 0;
-    const deisize actualVertexCount = meshIndexCount / 2;
+    const deisize actualVertexCount = meshIndexCount / 3;
     for (deint32 i = 0; i < actualVertexCount; ++i)
     {
-        const deint32 indexDataIndex = 2 * i;
+        const deint32 indexDataIndex = 3 * i;
         const deint32 indexPosition = meshIndexData[ indexDataIndex ];
-        const deint32 indexNormal = meshIndexData[ 1 + indexDataIndex ];
+        const deint32 indexTexcoord = meshIndexData[ 1 + indexDataIndex ];
+        const deint32 indexNormal = meshIndexData[ 2 + indexDataIndex ];
         const deint32 positionDataIndex = 3 * indexPosition;
+        const deint32 texcoordDataIndex = 2 * indexTexcoord;
         const deint32 normalDataIndex = 3 * indexNormal;
         meshGeometryData[ meshVertexCount ].m_Position[ 0 ] = meshGeometryPositionData[ positionDataIndex ];
         meshGeometryData[ meshVertexCount ].m_Position[ 1 ] = meshGeometryPositionData[ 1 + positionDataIndex ];
         meshGeometryData[ meshVertexCount ].m_Position[ 2 ] = meshGeometryPositionData[ 2 + positionDataIndex ];        
+        meshGeometryData[ meshVertexCount ].m_Texcoord[ 0 ] = meshGeometryTexcoordData[ texcoordDataIndex ];
+        meshGeometryData[ meshVertexCount ].m_Texcoord[ 1 ] = meshGeometryTexcoordData[ 1 + texcoordDataIndex ];
         meshGeometryData[ meshVertexCount ].m_Normal[ 0 ] = meshGeometryNormalData[ normalDataIndex ];
         meshGeometryData[ meshVertexCount ].m_Normal[ 1 ] = meshGeometryNormalData[ 1 + normalDataIndex ];
         meshGeometryData[ meshVertexCount ].m_Normal[ 2 ] = meshGeometryNormalData[ 2 + normalDataIndex ];        
