@@ -150,7 +150,7 @@ void DvigEngine::RenderingSystem::EndBatch()
 
     // Uniform texture atlas
     GL4::ActiveTexture( GL_TEXTURE2 );
-    GL4::BindTexture( GL_TEXTURE_2D, TextureMergerSystem::GetGLAtlas() );
+    GL4::BindTexture( GL_TEXTURE_2D_ARRAY, TextureMergerSystem::GetGLAtlas() );
     GL4::Uniform1i( GL4::GetUniformLocation( shaderProgram, "u_TextureAtlas" ), 2 );
     
     // Uniform buffer

@@ -29,6 +29,15 @@ int main()
     class AppWindow : public DvigEngine::IWindow {
         public:
             void Start() override final {
+                DvigEngine::deuchar texels[32] = 
+                {
+                    0,   0,   0,   255,
+                    255, 0,   0,   255,
+                    0,   255, 0,   255,
+                    0,   0,   255, 255,
+                };
+                auto idx1 = DvigEngine::TextureMergerSystem::AddTexture( 2, 2, (const void*)&texels[0] );
+
                 this->prevMouseX = -1.0;
                 this->prevMouseY = -1.0;
 
