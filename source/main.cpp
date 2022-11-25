@@ -93,12 +93,12 @@ int main()
                 shaderComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.frag" );
                 
-                matComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\textures\\texture.rx" );
+                matComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\textures\\stone.rx" );
                 geomComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\meshes\\statue.obj" );
                 transComp1->Init();
                 shaderComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.frag" );
-                matComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\textures\\texture.rx" );
+                matComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\textures\\obsidian.rx" );
                 geomComp2->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\meshes\\statue.obj" );
                 viewerTransComp->Init();
                 viewerViewerComp->Init();
@@ -118,7 +118,7 @@ int main()
                 node1->AddComponent <DvigEngine::GeometryComponent> ( geomComp1 );
                 node1->AddComponent <DvigEngine::TransformComponent> ( transComp1 );
                 node1->AddComponent <DvigEngine::ShaderComponent> ( shaderComp0 );
-                node2->AddComponent <DvigEngine::MaterialComponent> ( matComp1 );
+                node2->AddComponent <DvigEngine::MaterialComponent> ( matComp0 );
                 node2->AddComponent <DvigEngine::GeometryComponent> ( geomComp2 );
                 viewer->AddComponent <DvigEngine::TransformComponent> ( viewerTransComp );
                 viewer->AddComponent <DvigEngine::ViewerComponent> ( viewerViewerComp );

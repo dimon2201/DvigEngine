@@ -44,11 +44,13 @@ void main()
     uint instanceIndex = vsOut_InstanceIndex;
 
     uvec4 instDiffuseTextureInfo = u_Buffer.m_Instances[instanceIndex].m_DiffuseTextureInfo;
-    float diffuseTextureWidth = float(instDiffuseTextureInfo.y >> 16);
-    float diffuseTextureHeight = float(instDiffuseTextureInfo.z & 65535);
+    vec3 diffuseTexturePosition = vec3(instDiffuseTextureInfo.x & 65535, (instDiffuseTextureInfo.x >> 16), float(instDiffuseTextureInfo.y & 65535));
+    diffuseTexturePosition = diffuseTexturePosition * (1.0 / vec3(u_Buffer.m_Constants.m_TextureAtlasDimensions));
+    vec2 diffuseTextureSize = vec2(instDiffuseTextureInfo.y >> 16, instDiffuseTextureInfo.z & 65535);
 
-    vec2 textureTexelSize = vec2(diffuseTextureWidth, diffuseTextureHeight) * vec2(1.0 / 1024.0);
-    vec4 color = texture2DArray(u_TextureAtlas, vec3(vsOut_Texcoord * textureTexelSize, 0.0));
+    vec2 textureTexelSize = diffuseTextureSize * vec2(1.0 / 1024.0);
+    vec2 texcoord = diffuseTexturePosition.xy + (vsOut_Texcoord * textureTexelSize);
+    vec4 color = texture(u_TextureAtlas, vec3(texcoord, diffuseTexturePosition.z));
 
     fsOut_FragColor = vec4(color.xyz, 1.0);
 }

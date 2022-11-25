@@ -23,8 +23,8 @@ void DvigEngine::TextureMergerSystem::Init(deusize atlasWidth, deusize atlasHeig
         GL4::GenTextures( 1, &TextureMergerSystem::m_Atlas );
         GL4::BindTexture( GL_TEXTURE_2D_ARRAY, TextureMergerSystem::m_Atlas );
         GL4::TexImage3D( GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, TextureMergerSystem::m_AtlasWidth, TextureMergerSystem::m_AtlasHeight, TextureMergerSystem::m_AtlasDepth, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr );
-        GL4::TexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-        GL4::TexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+        GL4::TexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        GL4::TexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         GL4::BindTexture( GL_TEXTURE_2D_ARRAY, 0 );
 
         // Create texture set

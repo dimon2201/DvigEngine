@@ -256,6 +256,7 @@ void DvigEngine::RenderingSystem::Draw(INode* const node)
     DvigEngine::UniformConstantsData uniformConstantsData;
     void* constantsMemoryAddress = m_UniformSSBOBufferMemoryObject->Unwrap<void*>();
     uniformConstantsData.m_TextureAtlasDimensions = glm::uvec3( TextureMergerSystem::GetAtlasWidth(), TextureMergerSystem::GetAtlasHeight(), TextureMergerSystem::GetAtlasDepth() );
+    DvigEngine::Engine::MemoryCopy( constantsMemoryAddress, &uniformConstantsData, sizeof(UniformConstantsData) );
     DvigEngine::UniformViewerData uniformViewerData;
     void* viewerMemoryAddress = Ptr<void*>::Add( &constantsMemoryAddress, UniformConstantsData::m_GLAlignedByteWidth );
     DvigEngine::Engine::MemoryCopy( &uniformViewerData.m_WorldSpaceMatrix, &viewerTransform->m_WorldTranslationMatrix, sizeof(glm::mat4) );
@@ -272,6 +273,7 @@ void DvigEngine::RenderingSystem::Draw(INode* const node)
 
     // Send uniform buffer to GPU
     DvigEngine::GL4::BindBuffer( GL_SHADER_STORAGE_BUFFER, DvigEngine::RenderingSystem::m_GLSSBOUniformBuffer );
+    DvigEngine::GL4::BufferSubData( GL_SHADER_STORAGE_BUFFER, 0, sizeof(DvigEngine::UniformConstantsData), (const void*)&uniformConstantsData );
     DvigEngine::GL4::BufferSubData( GL_SHADER_STORAGE_BUFFER, UniformConstantsData::m_GLAlignedByteWidth, sizeof(DvigEngine::UniformViewerData), (const void*)&uniformViewerData );
     DvigEngine::GL4::BufferSubData( GL_SHADER_STORAGE_BUFFER, UniformConstantsData::m_GLAlignedByteWidth + sizeof(UniformViewerData) + RenderingSystem::m_NextBatchUniformBufferOffset, sizeof(DvigEngine::UniformBatchInstanceData), (const void*)instancesMemoryAddress );
     DvigEngine::GL4::BindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
