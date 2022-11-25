@@ -1,6 +1,6 @@
+#include "../../include/DEApplication.hpp"
 #include "../../include/DECore.hpp"
 #include "../../include/DERendering.hpp"
-#include "../../include/DEThirdPartyWindow.hpp"
 
 DvigEngine::Engine* DvigEngine::Engine::m_EngineInstance = nullptr;
 DvigEngine::deint32 DvigEngine::Engine::m_GlobalComponentIndex = 0;

@@ -1,5 +1,5 @@
 #include "../../include/DECore.hpp"
-#include "../../include/DvigEngineMacros.hpp"
+#include "../../include/macro/DvigEngineMacros.hpp"
 
 DvigEngine::deusize DvigEngine::String::CharactersCount(const destring op1)
 {

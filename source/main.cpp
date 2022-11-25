@@ -1,10 +1,9 @@
 #include "../include/DEApplication.hpp"
+#include "../include/DEAudio.hpp"
 #include "../include/DECore.hpp"
 #include "../include/DEGUI.hpp"
 #include "../include/DEOpenGL4.hpp"
 #include "../include/DERendering.hpp"
-#include "../include/DEThirdPartyMath.hpp"
-#include "../include/DEThirdPartyWindow.hpp"
 
 int main()
 {
@@ -38,6 +37,7 @@ int main()
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::MaterialComponent>();
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::ViewerComponent>();
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::PostProcessorComponent>();
+                DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::AudioSourceComponent>();
 
                 DvigEngine::defloat32 vertices[9] = {
                     -1.0f, -1.0f, -1.0f,
@@ -63,6 +63,7 @@ int main()
                 DvigEngine::ViewerComponent* viewerViewerComp;
                 DvigEngine::PostProcessorComponent* postProcessComp;
                 DvigEngine::ShaderComponent* postProcessShaderComp;
+                DvigEngine::AudioSourceComponent* audioSourceComp;
                 DvigEngine::INode* node0;
                 DvigEngine::INode* node1;
                 DvigEngine::INode* node2;
@@ -82,6 +83,7 @@ int main()
                 engine->Create <DvigEngine::ViewerComponent> ( &viewerViewerComp, "ViewerComponent_0" );
                 engine->Create <DvigEngine::ShaderComponent> ( &postProcessShaderComp, "MyPostProcessShaderComponent_0" );
                 engine->Create <DvigEngine::PostProcessorComponent> ( &postProcessComp, "MyPostProcessComponent_0" );
+                engine->Create <DvigEngine::AudioSourceComponent> ( &audioSourceComp, "MyAudioSourceComponent_0" );
                 engine->Create <DvigEngine::INode> ( &node0, "MyNode_0" );
                 engine->Create <DvigEngine::INode> ( &node1, "MyNode_1" );
                 engine->Create <DvigEngine::INode> ( &node2, "MyNode_2" );
@@ -105,6 +107,7 @@ int main()
                 postProcessShaderComp->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\postprocess.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\postprocess.frag" );
                 postProcessComp->Init();
+                audioSourceComp->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\sounds\\DASSIN6.wav" );
                 transComp1->SetPosition( 7.0f, 0.0f, 0.0f );
                 viewerViewerComp->SetPosition( 0.0f, 2.0f, 4.0f );
                 node0->Init();
@@ -115,6 +118,7 @@ int main()
                 node0->AddComponent <DvigEngine::TransformComponent> ( transComp0 );
                 node0->AddComponent <DvigEngine::ShaderComponent> ( shaderComp0 );
                 node0->AddComponent <DvigEngine::MaterialComponent> ( matComp0 );
+                node0->AddComponent <DvigEngine::AudioSourceComponent> ( audioSourceComp );
                 node1->AddComponent <DvigEngine::GeometryComponent> ( geomComp1 );
                 node1->AddComponent <DvigEngine::TransformComponent> ( transComp1 );
                 node1->AddComponent <DvigEngine::ShaderComponent> ( shaderComp0 );

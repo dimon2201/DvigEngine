@@ -2,7 +2,7 @@
 #define _DE_LIB_APPLICATION_H_
 
 #include "DECore.hpp"
-#include "DEThirdPartyMath.hpp"
+#include "thirdparty/DEThirdPartyMath.hpp"
 
 namespace DvigEngine
 {

@@ -2,8 +2,8 @@
 #define _DE_LIB_GUI_H_
 
 #include "DECore.hpp"
-#include "DEThirdPartyMath.hpp"
-#include "DEThirdPartyWindow.hpp"
+#include "thirdparty/DEThirdPartyMath.hpp"
+#include "thirdparty/DEThirdPartyWindow.hpp"
 
 namespace DvigEngine
 {

@@ -2,9 +2,9 @@
 #define _DE_LIB_RENDERING_H_
 
 #include "DECore.hpp"
-#include "DEThirdPartyGL.hpp"
-#include "DEThirdPartyMath.hpp"
-#include "DEThirdPartyWindow.hpp"
+#include "thirdparty/DEThirdPartyGL.hpp"
+#include "thirdparty/DEThirdPartyMath.hpp"
+#include "thirdparty/DEThirdPartyWindow.hpp"
 
 namespace DvigEngine
 {

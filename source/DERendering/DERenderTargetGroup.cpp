@@ -1,6 +1,5 @@
 #include "../../include/DEOpenGL4.hpp"
 #include "../../include/DERendering.hpp"
-#include "../../include/DEThirdPartyMath.hpp"
 
 void DvigEngine::RenderTargetGroup::Init(glm::uvec2& size)
 {

@@ -1,6 +1,7 @@
 #ifndef _DE_LIB_CORE_H_
 #define _DE_LIB_CORE_H_
 
+#include "macro/DvigEngineMacros.hpp"
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -9,8 +10,6 @@
 #include <typeinfo>
 #include <thread>
 #include <atomic>
-
-#include "DvigEngineMacros.hpp"
 
 namespace DvigEngine
 {

@@ -1,4 +1,6 @@
+#include "../../include/DEAudio.hpp"
 #include "../../include/DEGUI.hpp"
+#include "../../include/DEOpenAL.hpp"
 #include "../../include/DEOpenGL4.hpp"
 #include "../../include/DERendering.hpp"
 
@@ -21,9 +23,11 @@ void DvigEngine::IWindow::Init(Application* app, const char* caption, glm::uvec2
     if (DvigEngine::IWindow::m_IsGLInitialized == DV_FALSE)
     {
         // Init OpenGL and systems
+        DvigEngine::AL::Load();
         DvigEngine::GL4::Load();
         DvigEngine::RenderingSystem::Init();
         DvigEngine::TextureMergerSystem::Init( DV_NULL, DV_NULL, DV_NULL );
+        DvigEngine::AudioSystem::Init();
 
         // Create Render target group for window
         Engine* engine = Engine::GetClassInstance();
