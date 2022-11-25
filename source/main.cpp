@@ -88,18 +88,18 @@ int main()
                 engine->Create <DvigEngine::INode> ( &viewer, "Viewer_0" );
                 engine->Create <DvigEngine::INode> ( &nodePostProcess, "PostProcess_0" );
 
-                geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
+                geomComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\meshes\\statue.obj" );
                 transComp0->Init();
                 shaderComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.frag" );
                 
-                matComp0->Init();
-                geomComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
+                matComp0->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\textures\\texture.rx" );
+                geomComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\meshes\\statue.obj" );
                 transComp1->Init();
                 shaderComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.vert",
                                   "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\renderpass.frag" );
-                matComp1->Init();
-                geomComp2->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\statue.obj" );
+                matComp1->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\textures\\texture.rx" );
+                geomComp2->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\meshes\\statue.obj" );
                 viewerTransComp->Init();
                 viewerViewerComp->Init();
                 postProcessShaderComp->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\files\\shaders\\postprocess.vert",

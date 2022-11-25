@@ -18,6 +18,15 @@ namespace DvigEngine
             defloat32 m_Normal[3];
     };
 
+    class RXFileHeader
+    {
+        public:
+            deuchar Magic[8];
+            deuint64 ImageWidth;
+            deuint64 ImageHeight;
+            deuchar Reserved[8];
+    };
+
     class GeometryComponent : public IComponent
     {
         public:
@@ -89,7 +98,7 @@ namespace DvigEngine
     class MaterialComponent : public IComponent
     {
         public:
-            void Init();
+            void Init(const char* rxFilePathOnDrive);
             void Free() override final;
 
         public:
@@ -177,6 +186,15 @@ namespace DvigEngine
             static deint32 m_TargetPingPongIndex;
     };
 
+    class UniformConstantsData
+    {
+        public:
+            static deusize m_GLAlignedByteWidth;
+
+        public:
+            glm::uvec3 m_TextureAtlasDimensions;
+    };
+
     class UniformViewerData
     {
         public:
@@ -233,8 +251,8 @@ namespace DvigEngine
             static FixedSet* m_Batches;
             static debool m_IsBatchRecording;
             static deint32 m_NextBatchUniformBufferOffset;
-            static MemoryObject* m_UniformBufferMemoryObject;
-            static deuint32 m_GLUniformBuffer;
+            static MemoryObject* m_UniformSSBOBufferMemoryObject;
+            static deuint32 m_GLSSBOUniformBuffer;
     };
 
     class TextureMergerTexture

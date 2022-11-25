@@ -1,4 +1,5 @@
 #version 420
+#extension GL_ARB_shader_storage_buffer_object: require
 
 layout (location = 0) in vec3 vsIn_Position;
 layout (location = 1) in vec2 vsIn_Texcoord;
@@ -6,6 +7,11 @@ layout (location = 2) in vec3 vsIn_Normal;
 layout (location = 0) out vec3 vsOut_Position;
 layout (location = 1) out vec2 vsOut_Texcoord;
 layout (location = 2) out vec3 vsOut_Normal;
+layout (location = 3) out flat uint vsOut_InstanceIndex;
+
+struct UConstants {
+    uvec3 m_TextureAtlasDimensions;
+};
 
 struct UViewer {
     mat4 m_WorldSpaceMatrix;
@@ -26,7 +32,8 @@ struct UInputRenderTargets {
 uniform UInputRenderTargets u_InputRenderTargets;
 uniform mediump sampler2DArray u_TextureAtlas;
 
-layout (std140, binding = 0) uniform UBuffer {
+layout (std140, binding = 0) buffer UBuffer {
+    UConstants m_Constants;
     UViewer m_Viewer;
     UInstanceData m_Instances[256];
 } u_Buffer;
@@ -36,6 +43,7 @@ void main()
     vsOut_Position = vsIn_Position;
     vsOut_Texcoord = vsIn_Texcoord;
     vsOut_Normal = vsIn_Normal;
+    vsOut_InstanceIndex = gl_InstanceID;
     
     int instanceIndex = gl_InstanceID;
     vec3 scale = vec3(0.7);

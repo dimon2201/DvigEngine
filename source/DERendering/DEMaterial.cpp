@@ -1,17 +1,28 @@
 #include "../../include/DERendering.hpp"
+#include <fstream>
 
-void DvigEngine::MaterialComponent::Init()
+void DvigEngine::MaterialComponent::Init(const char* rxFilePathOnDrive)
 {
-    deuchar texels[32] = 
-    {
-        255, 255, 255, 255,
-        0, 0, 0, 255,
-        255, 255, 255, 255,
-        0, 0, 0, 255,
-    };
+    std::ifstream fileStream( &rxFilePathOnDrive[0], std::ios::binary );
 
-    deint32 textureIndex = TextureMergerSystem::AddTexture( 2, 2, (const void*)&texels[0] );
+    // Read RX header
+    RXFileHeader rxHeader;
+    fileStream.read((char*)&rxHeader, sizeof(RXFileHeader));
+    
+    // Create temporary pixel data buffer
+    MemoryObject* tempPixelDataMemoryObject = Engine::Allocate( 0, 4 * rxHeader.ImageWidth * rxHeader.ImageHeight );
+    const void* tempPixelData = tempPixelDataMemoryObject->Unwrap<const void*>();
+    fileStream.read((char*)tempPixelData, 4 * rxHeader.ImageWidth * rxHeader.ImageHeight);
+
+    // Close files
+    fileStream.close();
+
+    deint32 textureIndex = TextureMergerSystem::AddTexture( rxHeader.ImageWidth, rxHeader.ImageHeight, tempPixelData );
     this->m_DiffuseTexture = TextureMergerSystem::GetAtlasTexture( textureIndex );
+
+    // Delete temp memory
+    Engine* engine = Engine::GetClassInstance();
+    engine->Delete(tempPixelDataMemoryObject);
 }
 
 void DvigEngine::MaterialComponent::Free()
