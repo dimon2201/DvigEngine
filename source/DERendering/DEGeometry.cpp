@@ -72,7 +72,7 @@ void DvigEngine::GeometryComponent::Init(const char* meshPathOnDrive)
     std::ifstream meshFileStream( &meshPathOnDrive[0], std::ios::binary );
 
     meshFileStream.seekg(0, std::ios::end);
-    const deusize meshDataByteWidth = meshFileStream.tellg();
+    const deisize meshDataByteWidth = meshFileStream.tellg();
     meshFileStream.seekg(0, std::ios::beg);
 
     // Allocate temp memory object for mesh

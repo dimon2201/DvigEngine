@@ -12,7 +12,8 @@ namespace DvigEngine
 
     class IWindow : public IHelperObject
     {
-        DV_MACRO_FRIENDS(DvigEngine::Engine, DvigEngine::Application)
+        friend Engine;
+        friend Application;
 
         public:
             void Init(Application* app, const char* caption, glm::uvec2& size);
@@ -51,7 +52,8 @@ namespace DvigEngine
 
     class WindowStack
     {
-        DV_MACRO_FRIENDS(DvigEngine::Application, DvigEngine::IWindow)
+        friend Application;
+        friend IWindow;
 
         private:
             static void* m_GLFWWindows[DV_MAX_GUI_WINDOW_COUNT];

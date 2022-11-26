@@ -21,10 +21,12 @@ DvigEngine::deresult DvigEngine::String::CompareCharacters(const char* op1, cons
     //     return DV_FALSE;
     // }
 
+    const deisize iOpByteWidth = (const deisize)opByteWidth;
+
     deint32 cycle = 0;
-    while (op1[cycle] == op2[cycle] && ++cycle < opByteWidth);
+    while (op1[cycle] == op2[cycle] && ++cycle < iOpByteWidth);
     
-    if (cycle == opByteWidth) {
+    if (cycle == iOpByteWidth) {
         return DV_TRUE;
     } else {
         return DV_FALSE;

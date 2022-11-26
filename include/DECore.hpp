@@ -31,8 +31,8 @@ namespace DvigEngine
     typedef uint64_t            deuint64;
     typedef double              defloat64;
     #if defined(DV_MACRO_ARCH_32_BIT)
-        typedef int32           demachint;
-        typedef uint32          demachuint;
+        typedef deint32         demachint;
+        typedef deuint32        demachuint;
         typedef demachuint      demachword;
     #elif defined(DV_MACRO_ARCH_64_BIT)
         typedef deint64         demachint;
@@ -59,7 +59,7 @@ namespace DvigEngine
 
     class ICommon
     {
-        DV_MACRO_FRIENDS(Engine)
+        friend Engine;
 
         public:
             virtual ~ICommon() {}
@@ -95,12 +95,12 @@ namespace DvigEngine
 
     class IHelperObject : public ILayout
     {
-        DV_MACRO_FRIENDS(Engine)
+        friend Engine;
     };
 
     class MemoryObject
     {
-        DV_MACRO_FRIENDS(Engine)
+        friend Engine;
 
         public:
             DV_FUNCTION_INLINE void* GetAddress() { return (void*)((demachword)this + (demachword)sizeof(MemoryObject)); }
@@ -117,7 +117,7 @@ namespace DvigEngine
 
     class String : public IHelperObject
     {
-        DV_MACRO_FRIENDS(DvigEngine::Engine)
+        friend Engine;
 
         public:
             static deusize CharactersCount(const destring op1);
@@ -142,7 +142,7 @@ namespace DvigEngine
 
     class DynamicBuffer : public IHelperObject
     {
-        DV_MACRO_FRIENDS(DvigEngine::Engine)
+        friend Engine;
 
         public:
             DV_FUNCTION_INLINE deusize GetCapacity() { return m_Capacity; }
@@ -170,7 +170,7 @@ namespace DvigEngine
 
     class FixedSet : public IHelperObject
     {
-        DV_MACRO_FRIENDS(DvigEngine::Engine)
+        friend Engine;
 
         public:
             DV_FUNCTION_INLINE deusize GetCapacity() { return m_Capacity; }
@@ -216,7 +216,7 @@ namespace DvigEngine
 
     class HashMap : public IHelperObject
     {
-        DV_MACRO_FRIENDS(DvigEngine::Engine)
+        friend Engine;
 
         public:
             static deuint32 Hash(const destring input, const demachword bitMask);
@@ -259,7 +259,7 @@ namespace DvigEngine
 
     class MemoryPool : public IHelperObject
     {
-        DV_MACRO_FRIENDS(DvigEngine::Engine)
+        friend Engine;
 
         public:
             DV_FUNCTION_INLINE deuchar* GetLabel() { return &m_Label[0]; }
@@ -299,14 +299,14 @@ namespace DvigEngine
 
     class ThreadPoolSystem : public ISystem
     {
-        DV_MACRO_FRIENDS(DvigEngine::Engine)
+        friend Engine;
         DV_XMACRO_DECLARE_STATIC_CLASS(ThreadPoolSystem)
 
         public:
             static void Init();
             static void AddJob(deint32 threadIndex, depjob job, void* arguments, const deusize argumentCount);
             static void AddJobArray(deint32 threadIndex, depjob* jobs, const deusize jobCount, void* arguments, const deusize* argumentCounts);
-            static void DoJobs(demachword* arguments, deint32 threadIndex);
+            static void DoJobs(deint32 threadIndex);
             static void WaitForJobs();
             static void Terminate();
 
@@ -318,7 +318,7 @@ namespace DvigEngine
 
     class Registry
     {
-        DV_MACRO_FRIENDS(Engine)
+        friend Engine;
         DV_XMACRO_DECLARE_STATIC_CLASS(Registry)
 
         public:
@@ -334,7 +334,7 @@ namespace DvigEngine
 
     class INode : public ICommon
     {
-        DV_MACRO_FRIENDS(Engine)
+        friend Engine;
 
         public:
             void Init();
@@ -357,14 +357,13 @@ namespace DvigEngine
             void RemoveComponent(const char* USID);
             void RemoveHelperObject(const char* USID);
             template <typename T>
-            T* GetComponent(const char* USID)
+            T* GetComponent()
             {
                 const char* requestedTypeName = typeid(T).name();
                 // const char* componentUSID = USID;
-                const deusize capacity = m_Components->GetCapacity();
+                const deisize capacity = m_Components->GetCapacity();
                 IComponent** dataAddress = (IComponent**)m_Components->GetDataAddress();
                 IComponent* component = *dataAddress;
-                deisize offset = 0;
                 for (deint32 i = 0; i < capacity; ++i)
                 {
                     this->m_Components->Find(i * sizeof(DvigEngine::demachword), &component, sizeof(DvigEngine::demachword));

@@ -20,7 +20,6 @@ void DvigEngine::Application::RemoveWindow(deint32 index)
 DvigEngine::IWindow* DvigEngine::Application::GetWindow(const char* USID)
 {
     const deusize usidByteWidth = DvigEngine::String::CharactersCount( (const deuchar*)&USID[0] );
-    DvigEngine::deint32 cycle = 0;
     for (DvigEngine::deint32 i = 0; i < DV_MAX_GUI_WINDOW_COUNT; ++i)
     {
         if (DvigEngine::WindowStack::m_WindowInstances[i] == nullptr) { continue; }

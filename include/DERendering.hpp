@@ -181,9 +181,6 @@ namespace DvigEngine
             RenderTargetGroup* OutputRenderTargets;
             INode* Viewer;
             INode* PostProcessor;
-
-        private:
-            static deint32 m_TargetPingPongIndex;
     };
 
     class UniformConstantsData
@@ -224,7 +221,7 @@ namespace DvigEngine
 
     class RenderingSystem : public ISystem
     {
-        DV_MACRO_FRIENDS(Engine)
+        friend Engine;
         DV_XMACRO_DECLARE_STATIC_CLASS(RenderingSystem)
 
         public:
@@ -267,13 +264,13 @@ namespace DvigEngine
 
     class TextureMergerSystem : public ISystem
     {
-        DV_MACRO_FRIENDS(Engine)
+        friend Engine;
         DV_XMACRO_DECLARE_STATIC_CLASS(TextureMergerSystem)
 
         public:
             static void Init(deusize atlasWidth, deusize atlasHeight, deusize atlasDepth);
             static void Free();
-            static deint32 AddTexture(const deusize width, const deusize height, const void* pixels);
+            static deint32 AddTexture(const deisize width, const deisize height, const void* pixels);
             static void RemoveTexture(const deint32 index);
 
             DV_FUNCTION_INLINE static deuint32 GetGLAtlas() { return m_Atlas; }

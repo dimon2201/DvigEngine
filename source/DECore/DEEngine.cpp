@@ -166,11 +166,11 @@ DvigEngine::MemoryObject* DvigEngine::Engine::Allocate(deint32 memoryPoolIndex, 
     
     MemoryPool* memoryPool = (MemoryPool*)m_EngineInstance->GetMemoryPoolByIndex(memoryPoolIndex);
 	void* memoryPoolOffset = memoryPool->m_AddressOffset;
-	const deusize memoryPoolAllocationCount = memoryPool->m_AllocationCount;
 
 	MemoryObject* memoryObject = (MemoryObject*)memoryPoolOffset;
 	deint32 cursor;
-	for (cursor = 0; cursor < memoryPool->m_AllocationCount; ++cursor)
+    const deisize memoryPoolAllocationCount = memoryPool->m_AllocationCount;
+	for (cursor = 0; cursor < memoryPoolAllocationCount; ++cursor)
 	{
 		if ((memoryObject->m_FreeFlag & DV_TRUE) == DV_TRUE && memoryObject->m_AllocatedByteWidth > sizeof(MemoryObject) + byteWidth) {
 			break;
@@ -187,7 +187,7 @@ DvigEngine::MemoryObject* DvigEngine::Engine::Allocate(deint32 memoryPoolIndex, 
 	}
 	memoryObject->m_FreeFlag = DV_FALSE;
 
-	if (cursor == memoryPool->m_AllocationCount - 1) {
+	if (cursor == memoryPoolAllocationCount - 1) {
 		memoryPool->m_AllocationCount += 1;
 		memoryPool->m_OccupiedByteWidth += sizeof(MemoryObject);
 		MemoryObject* stubOffset = Ptr<MemoryObject*>::Add(&memoryObject, sizeof(MemoryObject) + memoryObject->m_ByteWidth);
@@ -238,7 +238,8 @@ void DvigEngine::Engine::MemoryCopy(void* dstAddress, const void* srcAddress, co
 {
     deuchar* const pDst = (deuchar* const)dstAddress;
     deuchar* const pSrc = (deuchar* const)srcAddress;
-    for (deint32 i = 0; i < byteWidth; ++i) {
+    const deisize iByteWidth = (const deisize)byteWidth;
+    for (deint32 i = 0; i < iByteWidth; ++i) {
         pDst[i] = pSrc[i];
     }
 }
@@ -247,7 +248,8 @@ void DvigEngine::Engine::MemoryMove(void* dstAddress, const void* srcAddress, co
 {
     deuchar* const pDst = (deuchar* const)dstAddress;
     deuchar* const pSrc = (deuchar* const)srcAddress;
-    for (deint32 i = 0; i < byteWidth; ++i) {
+    const deisize iByteWidth = (const deisize)byteWidth;
+    for (deint32 i = 0; i < iByteWidth; ++i) {
         pDst[i] = pSrc[i];
     }
 }
@@ -255,7 +257,8 @@ void DvigEngine::Engine::MemoryMove(void* dstAddress, const void* srcAddress, co
 void DvigEngine::Engine::MemorySet(void* dstAddress, const demachword value, const deusize byteWidth)
 {
     deuchar* const pDst = (deuchar* const)dstAddress;
-    for (deint32 i = 0; i < byteWidth; ++i) {
+    const deisize iByteWidth = (const deisize)byteWidth;
+    for (deint32 i = 0; i < iByteWidth; ++i) {
         pDst[i] = (deuchar)value;
     }
 }

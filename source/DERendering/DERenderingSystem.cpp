@@ -69,7 +69,6 @@ void DvigEngine::RenderingSystem::Init()
     if (m_UniformSSBOBufferMemoryObject == nullptr)
     {
         // On-Heap buffer
-        DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
         m_UniformSSBOBufferMemoryObject = DvigEngine::Engine::Allocate( 0, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH );
 
         // GL buffer
@@ -187,7 +186,7 @@ void DvigEngine::RenderingSystem::EndRenderPass()
         // Render full-screen quad
         INode* postp = RenderingSystem::m_CurRenderPass->PostProcessor;
         if (postp == nullptr) { return; }
-        ShaderComponent* postShader = postp->GetComponent<ShaderComponent>(nullptr);
+        ShaderComponent* postShader = postp->GetComponent<ShaderComponent>();
         if (postShader == nullptr) { return; }
         deuint32 shaderProgram = postShader->m_GLProgram;
         
@@ -220,14 +219,14 @@ void DvigEngine::RenderingSystem::Draw(INode* const node)
     if (RenderingSystem::m_CurRenderPass == nullptr) { return; }
     DvigEngine::INode* viewer = RenderingSystem::m_CurRenderPass->Viewer;
     if (viewer == nullptr) { return; }
-    DvigEngine::TransformComponent* viewerTransform = viewer->GetComponent<DvigEngine::TransformComponent>(nullptr);
-    DvigEngine::ViewerComponent* viewerViewer = viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr);
+    DvigEngine::TransformComponent* viewerTransform = viewer->GetComponent<DvigEngine::TransformComponent>();
+    DvigEngine::ViewerComponent* viewerViewer = viewer->GetComponent<DvigEngine::ViewerComponent>();
     if (viewerTransform == nullptr || viewerViewer == nullptr) { return; }
 
-    DvigEngine::GeometryComponent* nodeGeometry = node->GetComponent<DvigEngine::GeometryComponent>(nullptr);
-    DvigEngine::TransformComponent* nodeTransform = node->GetComponent<DvigEngine::TransformComponent>(nullptr);
-    DvigEngine::ShaderComponent* nodeShader = node->GetComponent<DvigEngine::ShaderComponent>(nullptr);
-    DvigEngine::MaterialComponent* nodeMaterial = node->GetComponent<DvigEngine::MaterialComponent>(nullptr);
+    DvigEngine::GeometryComponent* nodeGeometry = node->GetComponent<DvigEngine::GeometryComponent>();
+    DvigEngine::TransformComponent* nodeTransform = node->GetComponent<DvigEngine::TransformComponent>();
+    DvigEngine::ShaderComponent* nodeShader = node->GetComponent<DvigEngine::ShaderComponent>();
+    DvigEngine::MaterialComponent* nodeMaterial = node->GetComponent<DvigEngine::MaterialComponent>();
     if (nodeGeometry == nullptr || nodeTransform == nullptr || nodeShader == nullptr || nodeMaterial == nullptr) { return; }
 
     // Create new batch if needed

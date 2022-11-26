@@ -42,20 +42,20 @@ void DvigEngine::TextureMergerSystem::Free()
     engine->Delete( TextureMergerSystem::m_Textures->GetMemoryObject() );
 }
 
-DvigEngine::deint32 DvigEngine::TextureMergerSystem::AddTexture(const deusize width, const deusize height, const void* pixels)
+DvigEngine::deint32 DvigEngine::TextureMergerSystem::AddTexture(const deisize width, const deisize height, const void* pixels)
 {
     if (TextureMergerSystem::m_Atlas == DV_NULL) { return DV_NULL; }
 
     // Insert texture to atlas
-    const deusize atlasWidth = TextureMergerSystem::m_AtlasWidth;
-    const deusize atlasHeight = TextureMergerSystem::m_AtlasHeight;
-    const deusize atlasDepth = TextureMergerSystem::m_AtlasDepth;
+    const deisize atlasWidth = TextureMergerSystem::m_AtlasWidth;
+    const deisize atlasHeight = TextureMergerSystem::m_AtlasHeight;
+    const deisize atlasDepth = TextureMergerSystem::m_AtlasDepth;
     if (width > atlasWidth || height > atlasHeight || pixels == nullptr) { return DV_NULL; }
 
     // Search for free space
     deint32 textureAtlasIndex = DV_NULL;
-    const deusize textureWidth = width;
-    const deusize textureHeight = height;
+    const deisize textureWidth = width;
+    const deisize textureHeight = height;
     for (deint32 zz = 0; zz < atlasDepth; ++zz)
     {
         for (deint32 yy = 0; yy < atlasHeight - height; ++yy)
@@ -64,16 +64,16 @@ DvigEngine::deint32 DvigEngine::TextureMergerSystem::AddTexture(const deusize wi
             {
                 // Run through all textures
                 debool isIntersecting = DV_FALSE;
-                for (deint32 idx = 0; idx < TextureMergerSystem::m_Textures->GetCapacity(); ++idx)
+                for (deint32 idx = 0; idx < (deint32)TextureMergerSystem::m_Textures->GetCapacity(); ++idx)
                 {
                     TextureMergerTexture* getTexture = TextureMergerSystem::m_Textures->Find<TextureMergerTexture*>(idx);
 
                     // Check if intersects
-                    if ( (getTexture->m_X <= (xx + textureWidth)) &&
-                         ((getTexture->m_X + getTexture->m_Width) >= xx) &&
-                         (getTexture->m_Y <= (yy + textureHeight)) &&
-                         ((getTexture->m_Y + getTexture->m_Height) >= yy) &&
-                         (getTexture->m_Z == zz) )
+                    if ( ((deint32)getTexture->m_X <= (deint32)(xx + textureWidth)) &&
+                         ((deint32)(getTexture->m_X + getTexture->m_Width) >= xx) &&
+                         ((deint32)getTexture->m_Y <= (deint32)(yy + textureHeight)) &&
+                         ((deint32)(getTexture->m_Y + getTexture->m_Height) >= yy) &&
+                         ((deint32)getTexture->m_Z == zz) )
                     {
                         isIntersecting = DV_TRUE;
                     }
@@ -111,7 +111,7 @@ DvigEngine::deint32 DvigEngine::TextureMergerSystem::AddTexture(const deusize wi
 
 void DvigEngine::TextureMergerSystem::RemoveTexture(const deint32 index)
 {
-    if (index == DV_NULL || index >= TextureMergerSystem::m_Textures->GetCapacity()) { return; }
+    if (index == (deint32)DV_NULL || index >= (deint32)TextureMergerSystem::m_Textures->GetCapacity()) { return; }
 
     TextureMergerSystem::m_Textures->Remove( index );
 }

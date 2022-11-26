@@ -19,6 +19,16 @@
                                                         (DV_ENGINE_VERSION_MINOR << 8) | \
                                                         (DV_ENGINE_VERSION_RELEASE))
 
+#if defined(_WIN32) || defined(_WIN64)
+    // Windows OS
+    #define DV_MACRO_OS_VALUE                           "Windows"
+    #define DV_MACRO_OS_WINDOWS
+#elif defined(unix) || defined(__unix) || defined(__unix__)
+    // Unix OS
+    #define DV_MACRO_OS_VALUE                           "Unix"
+    #define DV_MACRO_OS_UNIX
+#endif
+
 #if defined(__ILP32__) || defined(__arm__) || defined(_M_ARM) || defined(__i386__) || defined(_M_IX86) || defined(_X86_)
     // 32-bit architecture
     #define DV_MACRO_ARCH_VALUE                         32
@@ -97,7 +107,7 @@
         T(T&&) = delete; \
         T& operator=(T&&) = delete; \
         void operator=(const T&) = delete; \
-        void* operator new(deuint64) = delete; \
+        void* operator new(size_t) = delete; \
 
 #define DV_XMACRO_DECLARE_COMMON_CLASS(T) \
     public: \
@@ -130,7 +140,7 @@
         T(T&&) = delete; \
         T& operator=(T&&) = delete; \
         void operator=(const T&) = delete; \
-        void* operator new(deuint64) = delete; \
+        void* operator new(size_t) = delete; \
         static MemoryObject* m_MemoryObject; \
         static T* m_Instance;
 

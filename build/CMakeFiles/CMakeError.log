@@ -1,0 +1,196 @@
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler:  
+Build flags: 
+Id flags:  
+
+The output was:
+1
+Microsoft (R) Build Engine ўҐабЁЁ 15.9.21+g9802d43bc3 ¤«п .NET Framework
+(C) Љ®аЇ®а жЁп Њ ©Єа®б®дв (Microsoft Corporation). ‚бҐ Їа ў  § йЁйҐ­л.
+
+‘Ў®аЄ  ­ з в  26.11.2022 19:18:41.
+Џа®ҐЄв "C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj" ў г§«Ґ 1 (жҐ«ҐўлҐ ®ЎкҐЄвл Ї® г¬®«з ­Ёо).
+PrepareForBuild:
+  ‘®§¤ ­ЁҐ Є в «®Ј  "Debug\".
+  ‘®§¤ ­ЁҐ Є в «®Ј  "Debug\CompilerIdC.tlog\".
+InitializeBuildStatus:
+  ‘®§¤ ­ЁҐ "Debug\CompilerIdC.tlog\unsuccessfulbuild", в Є Є Є Ўл«® § ¤ ­® "AlwaysCreate".
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\bin\HostX86\x86\CL.exe /c /nologo /W0 /WX- /diagnostics:classic /Od /Oy- /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue CMakeCCompilerId.c
+  Program
+c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: C:\Program: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  Files
+c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Files: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  Microsoft
+c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: (x86)\Microsoft: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  Visual
+c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Visual: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  cl.exe
+c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\bin\Hostx86\x86\cl.exe: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  CMakeCCompilerId.c
+  ‘®§¤ ­ЁҐ Є®¤ ...
+‘Ў®аЄ  Їа®ҐЄв  "C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj" § ўҐаиҐ­  (жҐ«ҐўлҐ ®ЎкҐЄвл Ї® г¬®«з ­Ёо) б ®иЁЎЄ®©.
+
+ЋиЁЎЄ  бЎ®аЄЁ.
+
+"C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj" (жҐ«Ґў®© ®ЎкҐЄв Ї® г¬®«з ­Ёо) (1) ->
+(ClCompile Є®­Ґз­л© ®ЎкҐЄв) -> 
+  c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: C:\Program: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Files: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: (x86)\Microsoft: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Visual: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\bin\Hostx86\x86\cl.exe: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+
+    ЏаҐ¤гЇаҐ¦¤Ґ­Ё©: 0
+    ЋиЁЎ®Є: 5
+
+Џа®и«® ўаҐ¬Ґ­Ё 00:00:03.00
+
+
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler:  
+Build flags: 
+Id flags:  
+
+The output was:
+1
+Microsoft (R) Build Engine ўҐабЁЁ 15.9.21+g9802d43bc3 ¤«п .NET Framework
+(C) Љ®аЇ®а жЁп Њ ©Єа®б®дв (Microsoft Corporation). ‚бҐ Їа ў  § йЁйҐ­л.
+
+‘Ў®аЄ  ­ з в  26.11.2022 19:18:44.
+Џа®ҐЄв "C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj" ў г§«Ґ 1 (жҐ«ҐўлҐ ®ЎкҐЄвл Ї® г¬®«з ­Ёо).
+PrepareForBuild:
+  ‘®§¤ ­ЁҐ Є в «®Ј  "Debug\".
+  ‘®§¤ ­ЁҐ Є в «®Ј  "Debug\CompilerIdC.tlog\".
+InitializeBuildStatus:
+  ‘®§¤ ­ЁҐ "Debug\CompilerIdC.tlog\unsuccessfulbuild", в Є Є Є Ўл«® § ¤ ­® "AlwaysCreate".
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\bin\HostX86\x86\CL.exe /c /nologo /W0 /WX- /diagnostics:classic /Od /Oy- /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue CMakeCCompilerId.c
+  Program
+c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: C:\Program: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  Files
+c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Files: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  Microsoft
+c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: (x86)\Microsoft: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  Visual
+c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Visual: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  cl.exe
+c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\bin\Hostx86\x86\cl.exe: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  CMakeCCompilerId.c
+  ‘®§¤ ­ЁҐ Є®¤ ...
+‘Ў®аЄ  Їа®ҐЄв  "C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj" § ўҐаиҐ­  (жҐ«ҐўлҐ ®ЎкҐЄвл Ї® г¬®«з ­Ёо) б ®иЁЎЄ®©.
+
+ЋиЁЎЄ  бЎ®аЄЁ.
+
+"C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj" (жҐ«Ґў®© ®ЎкҐЄв Ї® г¬®«з ­Ёо) (1) ->
+(ClCompile Є®­Ґз­л© ®ЎкҐЄв) -> 
+  c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: C:\Program: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Files: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: (x86)\Microsoft: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Visual: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+  c1 : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\bin\Hostx86\x86\cl.exe: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdC\CompilerIdC.vcxproj]
+
+    ЏаҐ¤гЇаҐ¦¤Ґ­Ё©: 0
+    ЋиЁЎ®Є: 5
+
+Џа®и«® ўаҐ¬Ґ­Ё 00:00:00.54
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler:  
+Build flags: 
+Id flags:  
+
+The output was:
+1
+Microsoft (R) Build Engine ўҐабЁЁ 15.9.21+g9802d43bc3 ¤«п .NET Framework
+(C) Љ®аЇ®а жЁп Њ ©Єа®б®дв (Microsoft Corporation). ‚бҐ Їа ў  § йЁйҐ­л.
+
+‘Ў®аЄ  ­ з в  26.11.2022 19:18:45.
+Џа®ҐЄв "C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj" ў г§«Ґ 1 (жҐ«ҐўлҐ ®ЎкҐЄвл Ї® г¬®«з ­Ёо).
+PrepareForBuild:
+  ‘®§¤ ­ЁҐ Є в «®Ј  "Debug\".
+  ‘®§¤ ­ЁҐ Є в «®Ј  "Debug\CompilerIdCXX.tlog\".
+InitializeBuildStatus:
+  ‘®§¤ ­ЁҐ "Debug\CompilerIdCXX.tlog\unsuccessfulbuild", в Є Є Є Ўл«® § ¤ ­® "AlwaysCreate".
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\bin\HostX86\x86\CL.exe /c /nologo /W0 /WX- /diagnostics:classic /Od /Oy- /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc141.pdb" /Gd /TP /analyze- /FC /errorReport:queue CMakeCXXCompilerId.cpp
+  Program
+c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: C:\Program: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  Files
+c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Files: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  Microsoft
+c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: (x86)\Microsoft: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  Visual
+c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Visual: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  cl.exe
+c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\bin\Hostx86\x86\cl.exe: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  CMakeCXXCompilerId.cpp
+  ‘®§¤ ­ЁҐ Є®¤ ...
+‘Ў®аЄ  Їа®ҐЄв  "C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj" § ўҐаиҐ­  (жҐ«ҐўлҐ ®ЎкҐЄвл Ї® г¬®«з ­Ёо) б ®иЁЎЄ®©.
+
+ЋиЁЎЄ  бЎ®аЄЁ.
+
+"C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj" (жҐ«Ґў®© ®ЎкҐЄв Ї® г¬®«з ­Ёо) (1) ->
+(ClCompile Є®­Ґз­л© ®ЎкҐЄв) -> 
+  c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: C:\Program: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Files: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: (x86)\Microsoft: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Visual: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\bin\Hostx86\x86\cl.exe: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+
+    ЏаҐ¤гЇаҐ¦¤Ґ­Ё©: 0
+    ЋиЁЎ®Є: 5
+
+Џа®и«® ўаҐ¬Ґ­Ё 00:00:01.39
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler:  
+Build flags: 
+Id flags:  
+
+The output was:
+1
+Microsoft (R) Build Engine ўҐабЁЁ 15.9.21+g9802d43bc3 ¤«п .NET Framework
+(C) Љ®аЇ®а жЁп Њ ©Єа®б®дв (Microsoft Corporation). ‚бҐ Їа ў  § йЁйҐ­л.
+
+‘Ў®аЄ  ­ з в  26.11.2022 19:18:47.
+Џа®ҐЄв "C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj" ў г§«Ґ 1 (жҐ«ҐўлҐ ®ЎкҐЄвл Ї® г¬®«з ­Ёо).
+PrepareForBuild:
+  ‘®§¤ ­ЁҐ Є в «®Ј  "Debug\".
+  ‘®§¤ ­ЁҐ Є в «®Ј  "Debug\CompilerIdCXX.tlog\".
+InitializeBuildStatus:
+  ‘®§¤ ­ЁҐ "Debug\CompilerIdCXX.tlog\unsuccessfulbuild", в Є Є Є Ўл«® § ¤ ­® "AlwaysCreate".
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\bin\HostX86\x86\CL.exe /c /nologo /W0 /WX- /diagnostics:classic /Od /Oy- /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc141.pdb" /Gd /TP /analyze- /FC /errorReport:queue CMakeCXXCompilerId.cpp
+  Program
+c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: C:\Program: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  Files
+c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Files: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  Microsoft
+c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: (x86)\Microsoft: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  Visual
+c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Visual: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  cl.exe
+c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\bin\Hostx86\x86\cl.exe: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  CMakeCXXCompilerId.cpp
+  ‘®§¤ ­ЁҐ Є®¤ ...
+‘Ў®аЄ  Їа®ҐЄв  "C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj" § ўҐаиҐ­  (жҐ«ҐўлҐ ®ЎкҐЄвл Ї® г¬®«з ­Ёо) б ®иЁЎЄ®©.
+
+ЋиЁЎЄ  бЎ®аЄЁ.
+
+"C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj" (жҐ«Ґў®© ®ЎкҐЄв Ї® г¬®«з ­Ёо) (1) ->
+(ClCompile Є®­Ґз­л© ®ЎкҐЄв) -> 
+  c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: C:\Program: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Files: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: (x86)\Microsoft: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Visual: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+  c1xx : fatal error C1083: ЌҐ г¤ Ґвбп ®вЄалвм д ©« Ёбв®з­ЁЄ: Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\bin\Hostx86\x86\cl.exe: No such file or directory, [C:\Users\USER100\Documents\GitHub\DvigEngine\build\CMakeFiles\3.23.0-rc1\CompilerIdCXX\CompilerIdCXX.vcxproj]
+
+    ЏаҐ¤гЇаҐ¦¤Ґ­Ё©: 0
+    ЋиЁЎ®Є: 5
+
+Џа®и«® ўаҐ¬Ґ­Ё 00:00:00.46
+
+

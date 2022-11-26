@@ -3,33 +3,10 @@
 
 #include "DECore.hpp"
 #include "DEMath.hpp"
-#include "thirdparty/DEThirdPartyAL.hpp"
+#include "thirdparty/DEThirdPartyAudio.hpp"
 
 namespace DvigEngine
 {
-    // From 'ffainelli.github.io/openal-example/'
-    DV_FUNCTION_INLINE static ALenum to_al_format(deuint16 channels, deuint16 samples)
-    {
-        debool stereo = (channels > 1);
-
-        switch (samples) {
-            case 16:
-                if (stereo) {
-                    return AL_FORMAT_STEREO16;
-                } else {
-                    return AL_FORMAT_MONO16;
-                }
-            case 8:
-                if (stereo) {
-                    return AL_FORMAT_STEREO8;
-                } else {
-                    return AL_FORMAT_MONO8;
-                }
-            default:
-                return -1;
-        }
-    }
-
     class WAVFileHeader
     {
         public:
@@ -53,15 +30,6 @@ namespace DvigEngine
         public:
             void Init(const char* wavFilePathOnDrive);
             void Free() override final;
-
-            DV_FUNCTION_INLINE defloat32 GetVolume() { ALfloat value = 0; alGetSourcef(this->m_ALSource, AL_GAIN, &value); return value; }
-            DV_FUNCTION_INLINE void SetVolume(defloat32 value) { alSourcef(this->m_ALSource, AL_GAIN, value); }
-
-        public:
-            ALuint m_ALSource;
-            
-        private:
-            ALuint m_ALBuffer;
     };
 
     class AudioSystem : public ISystem
@@ -72,10 +40,6 @@ namespace DvigEngine
             static void Init();
             static void Free();
             static void Play(INode* const node);
-
-        private:
-            static ALCdevice* m_Device;
-            static ALCcontext* m_Context;
     };
 }
 

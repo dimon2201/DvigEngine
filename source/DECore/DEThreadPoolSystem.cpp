@@ -7,14 +7,14 @@ DvigEngine::ThreadPoolThreadData DvigEngine::ThreadPoolSystem::m_ThreadQueueData
 void DvigEngine::ThreadPoolSystem::Init()
 {
     DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
-    const deusize requestedThreadCount = engine->GetData()->m_RequestedThreadCount;
+    const deisize requestedThreadCount = engine->GetData()->m_RequestedThreadCount;
 
     DvigEngine::ThreadPoolSystem::m_IsRunning.store(DV_TRUE);
     DvigEngine::ThreadPoolSystem::m_ThreadCursor = 0;
     for (deint32 i = 0; i < requestedThreadCount; ++i)
     {
         DvigEngine::ThreadPoolSystem::m_ThreadQueueData[i].m_Thread = std::thread(
-            &DvigEngine::ThreadPoolSystem::DoJobs, nullptr, i
+            &DvigEngine::ThreadPoolSystem::DoJobs, i
         );
         DvigEngine::ThreadPoolSystem::m_ThreadQueueData[i].m_JobCount = 0;
     }
@@ -24,14 +24,14 @@ void DvigEngine::ThreadPoolSystem::AddJob(deint32 threadIndex, depjob job, void*
 {
     // Get supported CPU thread count
     DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
-    const deusize requestedThreadCount = engine->GetData()->m_RequestedThreadCount;
+    const deisize requestedThreadCount = engine->GetData()->m_RequestedThreadCount;
     if (DvigEngine::ThreadPoolSystem::m_ThreadCursor >= requestedThreadCount) {
         DvigEngine::ThreadPoolSystem::m_ThreadCursor = 0;
     }
 
     // Assign thread index
     deint32 curThreadIndex = threadIndex;
-    if (curThreadIndex == DV_NULL || curThreadIndex < 0 || curThreadIndex >= requestedThreadCount) {
+    if (curThreadIndex == (deint32)DV_NULL || curThreadIndex < 0 || curThreadIndex >= requestedThreadCount) {
         curThreadIndex = DvigEngine::ThreadPoolSystem::m_ThreadCursor;
         // Increment thread cursor
         DvigEngine::ThreadPoolSystem::m_ThreadCursor += 1;
@@ -58,14 +58,14 @@ void DvigEngine::ThreadPoolSystem::AddJobArray(deint32 threadIndex, depjob* jobs
 {
     // Get supported CPU thread count
     DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
-    const deusize requestedThreadCount = engine->GetData()->m_RequestedThreadCount;
+    const deisize requestedThreadCount = engine->GetData()->m_RequestedThreadCount;
     if (DvigEngine::ThreadPoolSystem::m_ThreadCursor >= requestedThreadCount) {
         DvigEngine::ThreadPoolSystem::m_ThreadCursor = 0;
     }
 
     // Assign thread index
     deint32 curThreadIndex = threadIndex;
-    if (curThreadIndex == DV_NULL || curThreadIndex < 0 || curThreadIndex >= requestedThreadCount) {
+    if (curThreadIndex == (deint32)DV_NULL || curThreadIndex < 0 || curThreadIndex >= requestedThreadCount) {
         curThreadIndex = DvigEngine::ThreadPoolSystem::m_ThreadCursor;
     }
 
@@ -77,7 +77,7 @@ void DvigEngine::ThreadPoolSystem::AddJobArray(deint32 threadIndex, depjob* jobs
 
     deint32 jobIndex;
     demachword* argumentsOffsetAddress = (demachword*)arguments;
-    for (deint32 i = 0; i < jobCount; ++i)
+    for (deint32 i = 0; i < (deint32)jobCount; ++i)
     {
         jobIndex = DvigEngine::ThreadPoolSystem::m_ThreadQueueData[curThreadIndex].m_JobCount;
 
@@ -102,7 +102,7 @@ void DvigEngine::ThreadPoolSystem::AddJobArray(deint32 threadIndex, depjob* jobs
         }
 
         // Increment thread index
-        if (threadIndex == DV_NULL || threadIndex < 0 || threadIndex >= requestedThreadCount) {
+        if (threadIndex == (deint32)DV_NULL || threadIndex < 0 || threadIndex >= requestedThreadCount) {
             // Check
             DvigEngine::ThreadPoolSystem::m_ThreadCursor += 1;
             if (DvigEngine::ThreadPoolSystem::m_ThreadCursor >= requestedThreadCount) {
@@ -113,7 +113,7 @@ void DvigEngine::ThreadPoolSystem::AddJobArray(deint32 threadIndex, depjob* jobs
     }
 }
 
-void DvigEngine::ThreadPoolSystem::DoJobs(demachword* arguments, deint32 threadIndex)
+void DvigEngine::ThreadPoolSystem::DoJobs(deint32 threadIndex)
 {
     while (DvigEngine::ThreadPoolSystem::m_IsRunning.load() == DV_TRUE)
     {
@@ -121,7 +121,7 @@ void DvigEngine::ThreadPoolSystem::DoJobs(demachword* arguments, deint32 threadI
             continue;
         }
 
-        for (deint32 i = 0; i < DvigEngine::ThreadPoolSystem::m_ThreadQueueData[threadIndex].m_JobCount; ++i)
+        for (deint32 i = 0; i < (deint32)DvigEngine::ThreadPoolSystem::m_ThreadQueueData[threadIndex].m_JobCount; ++i)
         {
             DvigEngine::ThreadPoolSystem::m_ThreadQueueData[i].m_IsRunning.store(DV_TRUE);
             demachword* jobArguments = &DvigEngine::ThreadPoolSystem::m_ThreadQueueData[threadIndex].m_Jobs[i].m_Arguments[0];
@@ -137,7 +137,7 @@ void DvigEngine::ThreadPoolSystem::DoJobs(demachword* arguments, deint32 threadI
 void DvigEngine::ThreadPoolSystem::WaitForJobs()
 {
     DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
-    const deusize requestedThreadCount = engine->GetData()->m_RequestedThreadCount;
+    const deisize requestedThreadCount = (const deisize)engine->GetData()->m_RequestedThreadCount;
 
     for (deint32 i = 0; i < requestedThreadCount; ++i) {
         while (DvigEngine::ThreadPoolSystem::m_ThreadQueueData[i].m_IsRunning.load() == DV_TRUE);
@@ -148,7 +148,7 @@ void DvigEngine::ThreadPoolSystem::WaitForJobs()
 void DvigEngine::ThreadPoolSystem::Terminate()
 {
     auto lambdaCall = [](demachword* arguments, deint32 jobIndex) {
-        DvigEngine::ThreadPoolSystem::m_IsRunning.store(DV_FALSE);
+        DvigEngine::ThreadPoolSystem::m_IsRunning.store(DV_FALSE | (jobIndex + arguments[0] == 0 ? 0 : 1));
     };
     DvigEngine::ThreadPoolSystem::AddJob( 0, lambdaCall, nullptr, 0 );
 }

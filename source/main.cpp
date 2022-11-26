@@ -39,15 +39,6 @@ int main()
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::PostProcessorComponent>();
                 DvigEngine::Engine::GetClassInstance()->RegisterComponent<DvigEngine::AudioSourceComponent>();
 
-                DvigEngine::defloat32 vertices[9] = {
-                    -1.0f, -1.0f, -1.0f,
-                    0.0f, 1.0f, -1.0f,
-                    1.0f, -1.0f, -1.0f
-                };
-                DvigEngine::deuint32 indices[3] = {
-                    0, 1, 2
-                };
-
                 DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
 
                 DvigEngine::GeometryComponent* geomComp0;
@@ -138,11 +129,9 @@ int main()
                 DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
                 DvigEngine::Application* app = this->GetApplication();
                 DvigEngine::INode* myNode_0 = (DvigEngine::INode*)engine->GetExistingInstance( "MyNode_0" );
-                myNode_0->GetComponent<DvigEngine::TransformComponent>(nullptr)->SetPosition( 0.0f, 0.0f, 0.0f );
-                myNode_0->GetComponent<DvigEngine::TransformComponent>(nullptr)->SetRotationEuler( 0.0f, fRot, 0.0f );
-                myNode_0->GetComponent<DvigEngine::TransformComponent>(nullptr)->SetScale( 1.0f, 1.0f, 1.0f );
-                DvigEngine::INode* myNode_1 = (DvigEngine::INode*)engine->GetExistingInstance( "MyNode_1" );
-                DvigEngine::ShaderComponent* myNode_0_Shader = (DvigEngine::ShaderComponent*)myNode_0->GetComponent<DvigEngine::ShaderComponent>(nullptr);
+                myNode_0->GetComponent<DvigEngine::TransformComponent>()->SetPosition( 0.0f, 0.0f, 0.0f );
+                myNode_0->GetComponent<DvigEngine::TransformComponent>()->SetRotationEuler( 0.0f, fRot, 0.0f );
+                myNode_0->GetComponent<DvigEngine::TransformComponent>()->SetScale( 1.0f, 1.0f, 1.0f );
 
                 DvigEngine::IWindow* myWindow = app->GetWindow( "MyTestWindow_0" );
                 int windowWidth = 0;
@@ -150,7 +139,7 @@ int main()
                 glfwGetFramebufferSize( (GLFWwindow*)myWindow->GetGLFWWindow(), &windowWidth, &windowHeight );
 
                 DvigEngine::INode* viewer = (DvigEngine::INode*)engine->GetExistingInstance( "Viewer_0" );
-                viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->SetPerspectiveProjection( 65.0f, 640.0f/480.0f, 0.1f, 100.0f );
+                viewer->GetComponent<DvigEngine::ViewerComponent>()->SetPerspectiveProjection( 65.0f, 640.0f/480.0f, 0.1f, 100.0f );
 
                 DvigEngine::RenderPassInfo renderPass;
                 renderPass.Type = DvigEngine::RenderPassType::FRAMEBUFFER;
@@ -185,16 +174,16 @@ int main()
                 myWindow->CaptureKeyState('C');
 
                 if (myWindow->GetKeyState('W') == GLFW_PRESS) {
-                    viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->Move( 0.1f/60.0f );
+                    viewer->GetComponent<DvigEngine::ViewerComponent>()->Move( 0.1f/60.0f );
                 }
                 if (myWindow->GetKeyState('S') == GLFW_PRESS) {
-                    viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->Move( -0.1f/60.0f );
+                    viewer->GetComponent<DvigEngine::ViewerComponent>()->Move( -0.1f/60.0f );
                 }
                 if (myWindow->GetKeyState('A') == GLFW_PRESS) {
-                    viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->Strafe( 0.1f/60.0f );
+                    viewer->GetComponent<DvigEngine::ViewerComponent>()->Strafe( 0.1f/60.0f );
                 }
                 if (myWindow->GetKeyState('D') == GLFW_PRESS) {
-                    viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr)->Strafe( -(0.1f/60.0f) );
+                    viewer->GetComponent<DvigEngine::ViewerComponent>()->Strafe( -(0.1f/60.0f) );
                 }
                 if (myWindow->GetKeyState('C') == GLFW_PRESS) {
                     exit(0);
@@ -229,7 +218,7 @@ int main()
                     double deltaY = mouseY - this->prevMouseY;
                     DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
                     DvigEngine::INode* viewer = (DvigEngine::INode*)engine->GetExistingInstance( "Viewer_0" );
-                    DvigEngine::ViewerComponent* viewerViewer = viewer->GetComponent<DvigEngine::ViewerComponent>(nullptr);
+                    DvigEngine::ViewerComponent* viewerViewer = viewer->GetComponent<DvigEngine::ViewerComponent>();
                     
                     demfloat rotX = viewerViewer->GetRotationX();
                     demfloat rotY = viewerViewer->GetRotationY();
@@ -269,38 +258,6 @@ int main()
     
     DvigEngine::ThreadPoolSystem::Terminate();
     DvigEngine::ThreadPoolSystem::WaitForJobs();
-    
-    /*
-        Node "House"
-          GeometryComponent
-        Node "House"
-          GeometryComponent
-
-        Draw()
-          Bind vertex buffer
-          Bind uniform buffer
-
-        renderSys = RenderingSystem::Instance
-        renderSys -> BeginBatch()
-          renderSys -> Draw()
-        renderSys -> EndBatch()
-    */
-
-    /*
-        DvigEngine Info
-        - Everything is based on objects
-        - Object is something that has INTERNAL data and FUNCTIONALITY that operates on INTERNAL data
-        - Component is a piece of data
-        - System is an object that does not have external data but rather FUNCTIONALITY on SOMEWHAT data
-        - HelperObject is an object that combines both INTERNAL data and FUNCTIONALITY on INTERNAL data
-
-        Node
-         Node
-          GeometryComponent
-          ScriptComponent
-         Node
-          GeometryComponent
-    */
 
     std::cout << "Success!" << std::endl;
 

@@ -117,7 +117,7 @@ DvigEngine::deint32 DvigEngine::HashMap::Insert(const char* key, void* value)
         // Possible collision
         // Check if set contains our value
         const deint32 foundEntryIndex = this->m_Entries.FindValue( &insertedPair );
-        if (foundEntryIndex == DV_NULL)
+        if (foundEntryIndex == (const deint32)DV_NULL)
         {
             // Set does not contain value
             // Insert value to the set
