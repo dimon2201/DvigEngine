@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DEApplication\DEApplication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DECore\DECollection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DECore\DEEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DECore\DEDebug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DECore\DEHashedCollection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DECore\DEINode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DECore\DEStringSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DEGUI\DEIWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DERendering\DED3D11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DERendering\DEGeometry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DERendering\DERenderingSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DERendering\DERenderTargetGroup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DERendering\DEShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DERendering\DETransform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\source\DERendering\DEViewer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\USER100\Documents\GitHub\DvigEngine2\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{E5E4785D-19F4-3DA9-B6EF-E462F048BA42}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

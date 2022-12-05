@@ -1,15 +1,22 @@
-#include "../../include/DEAudio.hpp"
-#include "../../include/DEGUI.hpp"
-#include "../../include/DEOpenGL4.hpp"
-#include "../../include/DERendering.hpp"
+#ifndef _DE_LIB_IWINDOW_H_
+#define _DE_LIB_IWINDOW_H_
 
-DvigEngine::debool DvigEngine::IWindow::m_IsGLInitialized = DV_FALSE;
+#include "../../include/dvigengine/DED3D11.hpp"
+#include "../../include/dvigengine/DEGUI.hpp"
+#include "../../include/dvigengine/DERendering.hpp"
 
+DvigEngine::boolean DvigEngine::IWindow::m_IsInitialized = DVIG_FALSE;
 void* DvigEngine::WindowStack::m_GLFWWindows[] = {};
 DvigEngine::IWindow* DvigEngine::WindowStack::m_WindowInstances[] = {};
 
 void DvigEngine::IWindow::Init(Application* app, const char* caption, glm::uvec2& size)
 {
+    if (m_IsInitialized == DVIG_FALSE) {
+        glfwInit();
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    }
+
     // Create GLFW window
     GLFWwindow* window = glfwCreateWindow(size.x, size.y, &caption[0], NULL, NULL);
     glfwMakeContextCurrent(window);
@@ -19,34 +26,37 @@ void DvigEngine::IWindow::Init(Application* app, const char* caption, glm::uvec2
 
     // Init OpenGL procedures and Engine systems
     // Create Framebuffer
-    if (DvigEngine::IWindow::m_IsGLInitialized == DV_FALSE)
+    if (DvigEngine::IWindow::m_IsInitialized == DVIG_FALSE)
     {
+        D3D11::Init( glfwGetWin32Window(window), size );
+        RenderingSystem::Init();
+
         // Init OpenGL and systems
-        DvigEngine::GL4::Load();
-        DvigEngine::RenderingSystem::Init();
-        DvigEngine::TextureMergerSystem::Init( DV_NULL, DV_NULL, DV_NULL );
-        DvigEngine::AudioSystem::Init();
+        // DvigEngine::GL4::Init();
+        // DvigEngine::D3D11::Init( glfwGetWin32Window(window), size );
+        // DvigEngine::RenderingSystem::Init();
+        // DvigEngine::TextureMergerSystem::Init( DV_NULL, DV_NULL, DV_NULL );
+        // DvigEngine::AudioSystem::Init();
 
         // Create Render target group for window
-        Engine* engine = Engine::GetClassInstance();
-        engine->Create( &this->m_RenderTargetGroup, "_RenderTargetGroup" );
-        this->m_RenderTargetGroup->Init(size);
+        // this->m_RenderTargetGroup = Engine::GetClassInstance()->Create<RenderTargetGroup>( "_RenderTargetGroup" );
+        // this->m_RenderTargetGroup->Init(nullptr, nullptr, size);
     }
 
-    DV_ASSERT_PTR(window);
+    DVIG_ASSERT( (window != nullptr), DebugResult::NULL_POINTER );
 
     // Assign to member variables
     this->m_App = app;
     this->m_GLFWWindow = window;
-    for (deint32 i = 0; i < 256; ++i) {
+    for (sint32 i = 0; i < 256; ++i) {
         this->m_GLFWKeyStates[i] = GLFW_RELEASE;
     }
 
     // Add to global stack
-    deint32 cycle = 0;
-    while (DvigEngine::WindowStack::m_GLFWWindows[cycle] != nullptr && ++cycle < DV_MAX_GUI_WINDOW_COUNT);
+    sint32 cycle = 0;
+    while (DvigEngine::WindowStack::m_GLFWWindows[cycle] != nullptr && ++cycle < DVIG_MAX_GUI_WINDOW_COUNT);
 
-    DV_ASSERT( (cycle < DV_MAX_GUI_WINDOW_COUNT) );
+    DVIG_ASSERT( (cycle < DVIG_MAX_GUI_WINDOW_COUNT), DebugResult::EXCEEDED_MAX_COUNT_WINDOW );
 
     DvigEngine::WindowStack::m_GLFWWindows[cycle] = this->m_GLFWWindow;
     DvigEngine::WindowStack::m_WindowInstances[cycle] = this;
@@ -57,37 +67,20 @@ void DvigEngine::IWindow::Init(Application* app, const char* caption, glm::uvec2
     this->Start();
 }
 
-void DvigEngine::IWindow::Free()
-{
-    DvigEngine::Engine* engine = this->GetEngine();
-
-    if (this->m_UserData != nullptr) {
-        engine->Delete( this->m_UserData );
-    }
-
-    glfwSetKeyCallback( this->m_GLFWWindow, nullptr );
-    glfwDestroyWindow(this->m_GLFWWindow);
-    this->m_GLFWWindow = nullptr;
-    this->m_WindowIndex = DV_NULL;
-
-    engine->Delete( this->m_RenderTargetGroup->GetMemoryObject() );
-    engine->Delete( this->GetMemoryObject() );
-}
-
 void DvigEngine::IWindow::Wait()
 {
-    deint32 cycle = 0;
-    deusize presentWindowCount = 0;
+    sint32 cycle = 0;
+    usize presentWindowCount = 0;
     do
     {
         // Count non-zero windows
         presentWindowCount = 0;
-        for (deint32 i = 0; i < DV_MAX_GUI_WINDOW_COUNT; ++i) {
+        for (sint32 i = 0; i < DVIG_MAX_GUI_WINDOW_COUNT; ++i) {
             if (DvigEngine::WindowStack::m_GLFWWindows[i] != nullptr) { presentWindowCount += 1; }
         }
 
         // Wrap cycle value
-        if (cycle >= DV_MAX_GUI_WINDOW_COUNT) { cycle = 0; }
+        if (cycle >= DVIG_MAX_GUI_WINDOW_COUNT) { cycle = 0; }
 
         // Get windows
         GLFWwindow** pGLFWWindow = (GLFWwindow**)&DvigEngine::WindowStack::m_GLFWWindows[cycle];
@@ -102,7 +95,7 @@ void DvigEngine::IWindow::Wait()
         {
             windowInstance->Update();
 
-            glfwSwapBuffers( *pGLFWWindow );
+            D3D11::GetSwapChain()->Present( 0, 0 );
             glfwPollEvents();
         }
         else
@@ -115,7 +108,4 @@ void DvigEngine::IWindow::Wait()
     } while (presentWindowCount > 0);
 }
 
-void DvigEngine::IWindow::CaptureKeyState(int key)
-{
-    this->m_GLFWKeyStates[key] = glfwGetKey( this->m_GLFWWindow, key );
-}
+#endif

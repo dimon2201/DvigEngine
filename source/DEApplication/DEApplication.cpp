@@ -1,6 +1,5 @@
-#include "../../include/DEApplication.hpp"
-#include "../../include/DEGUI.hpp"
-#include "../../include/DERendering.hpp"
+#include "../../include/dvigengine/DEApplication.hpp"
+#include "../../include/dvigengine/DEGUI.hpp"
 
 void DvigEngine::Application::Init()
 {
@@ -9,22 +8,23 @@ void DvigEngine::Application::Init()
 
 void DvigEngine::Application::Free()
 {
-    this->GetEngine()->Delete( this->GetMemoryObject() );
+    Engine::GetClassInstance()->MemoryDelete( this->GetMemoryObject() );
 }
 
-void DvigEngine::Application::RemoveWindow(deint32 index)
+void DvigEngine::Application::RemoveWindow(sint32 index)
 {
-    if (DvigEngine::WindowStack::m_WindowInstances[index] != nullptr) { DvigEngine::WindowStack::m_WindowInstances[index]->Free(); }
+    // if (DvigEngine::WindowStack::m_WindowInstances[index] != nullptr) { DvigEngine::WindowStack::m_WindowInstances[index]->Free(); }
 }
 
 DvigEngine::IWindow* DvigEngine::Application::GetWindow(const char* USID)
 {
-    const deusize usidByteWidth = DvigEngine::String::CharactersCount( (const deuchar*)&USID[0] );
-    for (DvigEngine::deint32 i = 0; i < DV_MAX_GUI_WINDOW_COUNT; ++i)
+    const usize usidByteWidth = StringSystem::GetByteWidth( &USID[0] );
+    for (sint32 i = 0; i < DVIG_MAX_GUI_WINDOW_COUNT; ++i)
     {
-        if (DvigEngine::WindowStack::m_WindowInstances[i] == nullptr) { continue; }
-        if (DvigEngine::String::CompareCharacters( (const char*)&DvigEngine::WindowStack::m_WindowInstances[i]->GetUSID()[0],
-                                                    &USID[0], usidByteWidth) == DV_TRUE) {
+        if (WindowStack::m_WindowInstances[i] == nullptr) { continue; }
+        if (StringSystem::GetStringsEqual( (const char*)&DvigEngine::WindowStack::m_WindowInstances[i]->GetUSID()[0],
+                                            &USID[0]
+            ) == DVIG_TRUE) {
             return DvigEngine::WindowStack::m_WindowInstances[i];
         }
     }
@@ -32,10 +32,10 @@ DvigEngine::IWindow* DvigEngine::Application::GetWindow(const char* USID)
     return nullptr;
 }
 
-DvigEngine::deusize DvigEngine::Application::GetWindowCount()
+DvigEngine::usize DvigEngine::Application::GetWindowCount()
 {
-    deusize windowCount = 0;
-    for (DvigEngine::deint32 i = 0; i < DV_MAX_GUI_WINDOW_COUNT; ++i)
+    usize windowCount = 0;
+    for (sint32 i = 0; i < DVIG_MAX_GUI_WINDOW_COUNT; ++i)
     {
         if (DvigEngine::WindowStack::m_WindowInstances[i] != nullptr) {
             windowCount += 1;

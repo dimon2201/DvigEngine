@@ -1,28 +1,29 @@
-#include "../../include/DEOpenGL4.hpp"
-#include "../../include/DERendering.hpp"
+#include "../../include/dvigengine/DED3D11.hpp"
+#include "../../include/dvigengine/DERendering.hpp"
 
-void DvigEngine::RenderTargetGroup::Init(glm::uvec2& size)
+void DvigEngine::RenderTargetGroup::Init(void* const colorTexture, void* const depthTexture, glm::uvec2& size)
 {
-    GL4::GenTextures( 2, &this->m_RenderTargets[0] );
-    GL4::BindTexture( GL_TEXTURE_2D, this->m_RenderTargets[0] ); // color
-    GL4::TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, (deisize)size.x, (deisize)size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr );
-    GL4::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-    GL4::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-    GL4::BindTexture( GL_TEXTURE_2D, this->m_RenderTargets[1] ); // depth
-    GL4::TexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, (deisize)size.x, (deisize)size.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr );
-    GL4::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-    GL4::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-    GL4::BindTexture( GL_TEXTURE_2D, 0 );
-    GL4::GenFramebuffers( 1, &this->m_Framebuffer );
-    GL4::BindFramebuffer( GL_FRAMEBUFFER, this->m_Framebuffer );
-    GL4::FramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->m_RenderTargets[0], 0 );
-    GL4::FramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->m_RenderTargets[1], 0 );
-    GL4::BindFramebuffer( GL_FRAMEBUFFER, 0 );
+    if (colorTexture == nullptr) {
+        this->m_ColorRenderTarget = D3D11::CreateTexture2D( size.x, size.y, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_RENDER_TARGET, nullptr );
+    } else {
+        this->m_ColorRenderTarget = (ID3D11Texture2D*)colorTexture;
+    }
+    
+    if (depthTexture == nullptr) {
+        this->m_DepthRenderTarget = D3D11::CreateTexture2D( size.x, size.y, DXGI_FORMAT_R32_TYPELESS, D3D11_BIND_DEPTH_STENCIL, nullptr );
+    } else {
+        this->m_DepthRenderTarget = (ID3D11Texture2D*)depthTexture;
+    }
+    
+    D3D11::CreateRenderTargetViews( this->m_ColorRenderTarget, this->m_DepthRenderTarget, &this->m_RenderTargetView, &this->m_DepthStencilView );
 }
 
 void DvigEngine::RenderTargetGroup::Free()
 {
-    GL4::DeleteTextures( 2, &this->m_RenderTargets[0] );
-    GL4::DeleteFramebuffers( 1, &this->m_Framebuffer );
-    this->GetEngine()->Delete( this->GetMemoryObject() );
+    D3D11::DeleteTexture( this->m_ColorRenderTarget );
+    D3D11::DeleteTexture( this->m_DepthRenderTarget );
+    this->m_RenderTargetView->Release();
+    this->m_DepthStencilView->Release();
+
+    Engine::GetClassInstance()->MemoryDelete( this->GetMemoryObject() );
 }

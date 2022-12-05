@@ -1,6 +1,8 @@
-#ifndef _DE_LIB_THIRD_PARTY_WINDOW_H_
-#define _DE_LIB_THIRD_PARTY_WINDOW_H_
+#ifndef _DE_LIB_THIRDPARTY_WINDOW_H_
+#define _DE_LIB_THIRDPARTY_WINDOW_H_
 
+#define GLFW_EXPOSE_NATIVE_WIN32
 #include "../../thirdparty/glfw/include/GLFW/glfw3.h"
+#include "../../thirdparty/glfw/include/GLFW/glfw3native.h"
 
 #endif

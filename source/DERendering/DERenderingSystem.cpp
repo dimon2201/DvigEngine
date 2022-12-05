@@ -1,290 +1,173 @@
-#include "../../include/DERendering.hpp"
-#include "../../include/DEOpenGL4.hpp"
+#include "../../include/dvigengine/DED3D11.hpp"
+#include "../../include/dvigengine/DERendering.hpp"
 
+ID3D11Buffer* DvigEngine::RenderingSystem::m_GlobalVertexBuffer = nullptr;
+ID3D11Buffer* DvigEngine::RenderingSystem::m_GlobalIndexBuffer = nullptr;
+ID3D11Buffer* DvigEngine::RenderingSystem::m_GlobalUniformBuffer = nullptr;
+ID3D11Buffer* DvigEngine::RenderingSystem::m_GlobalConstantBuffer = nullptr;
+ID3D11ShaderResourceView* DvigEngine::RenderingSystem::m_GlobalUniformBufferView = nullptr;
+DvigEngine::sint32 DvigEngine::RenderingSystem::m_GlobalVertexBufferOffset = 0;
+DvigEngine::sint32 DvigEngine::RenderingSystem::m_GlobalIndexBufferOffset = 0;
 DvigEngine::RenderPassInfo* DvigEngine::RenderingSystem::m_CurRenderPass = nullptr;
-DvigEngine::FixedSet* DvigEngine::RenderingSystem::m_Batches = nullptr;
-DvigEngine::debool DvigEngine::RenderingSystem::m_IsBatchRecording = DV_FALSE;
-DvigEngine::deint32 DvigEngine::RenderingSystem::m_NextBatchUniformBufferOffset = 0;
-DvigEngine::MemoryObject* DvigEngine::RenderingSystem::m_UniformSSBOBufferMemoryObject = nullptr;
-DvigEngine::deuint32 DvigEngine::RenderingSystem::m_GLSSBOUniformBuffer = DV_NULL;
-DvigEngine::DynamicBuffer* DvigEngine::RenderingSystem::m_GlobalGeometryBuffer = nullptr;
-DvigEngine::DynamicBuffer* DvigEngine::RenderingSystem::m_GlobalIndexBuffer = nullptr;
-DvigEngine::deuint32 DvigEngine::RenderingSystem::m_GLGlobalGeometryBuffer = DV_NULL;
-DvigEngine::deuint32 DvigEngine::RenderingSystem::m_GLGlobalIndexBuffer = DV_NULL;
-DvigEngine::deuint32 DvigEngine::RenderingSystem::m_GLVAO = DV_NULL;
-
-DvigEngine::deusize DvigEngine::UniformConstantsData::m_GLAlignedByteWidth = 16;
-
-DvigEngine::deusize DvigEngine::UniformBatchInstanceData::m_GLAlignedByteWidth = sizeof(DvigEngine::UniformBatchInstanceData);
+DvigEngine::Collection* DvigEngine::RenderingSystem::m_Batches = nullptr;
+DvigEngine::uint32 DvigEngine::RenderingSystem::m_GlobalInstanceCount = 0;
+ID3D11DepthStencilState* DvigEngine::RenderingSystem::m_DepthStencilState = nullptr;
 
 void DvigEngine::RenderingSystem::Init()
 {
-    DvigEngine::Engine* engine = DvigEngine::Engine::GetClassInstance();
-
-    // Create global geometry and index buffers
-    // VAO, Frame buffer only if needed
-    if (DvigEngine::RenderingSystem::m_GlobalGeometryBuffer == nullptr)
+    if (RenderingSystem::m_GlobalVertexBuffer == nullptr)
     {
-        engine->Create<DvigEngine::DynamicBuffer>( &RenderingSystem::m_GlobalGeometryBuffer, "_GlobalGeometryBuffer" );
-        RenderingSystem::m_GlobalGeometryBuffer->Init( 0, 1024 );
-        engine->Create<DvigEngine::DynamicBuffer>( &RenderingSystem::m_GlobalIndexBuffer, "_GlobalIndexBuffer" );
-        RenderingSystem::m_GlobalIndexBuffer->Init( 0, 1024 );
-
-        // GL vertex buffer
-        DvigEngine::GL4::GenBuffers( 1, &RenderingSystem::m_GLGlobalGeometryBuffer );
-        DvigEngine::GL4::BindBuffer( GL_ARRAY_BUFFER, RenderingSystem::m_GLGlobalGeometryBuffer );
-        DvigEngine::GL4::BufferData( GL_ARRAY_BUFFER, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH, nullptr, GL_DYNAMIC_DRAW );
-        DvigEngine::GL4::BindBuffer( GL_ARRAY_BUFFER, 0 );
-
-        // GL index buffer
-        DvigEngine::GL4::GenBuffers( 1, &RenderingSystem::m_GLGlobalIndexBuffer );
-        DvigEngine::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, RenderingSystem::m_GLGlobalIndexBuffer );
-        DvigEngine::GL4::BufferData( GL_ELEMENT_ARRAY_BUFFER, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH, nullptr, GL_DYNAMIC_DRAW );
-        DvigEngine::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
-
-        // VAO
-        DvigEngine::GL4::GenVertexArrays( 1, &DvigEngine::RenderingSystem::m_GLVAO );
-
-        // Bind VAO here
-        DvigEngine::GL4::BindVertexArray( DvigEngine::RenderingSystem::m_GLVAO );
-        DvigEngine::GL4::BindBuffer( GL_ARRAY_BUFFER, DvigEngine::RenderingSystem::m_GLGlobalGeometryBuffer );
-        DvigEngine::GL4::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, DvigEngine::RenderingSystem::m_GLGlobalIndexBuffer );
-        DvigEngine::GL4::EnableVertexAttribArray( 0 );
-        DvigEngine::GL4::EnableVertexAttribArray( 1 );
-        DvigEngine::GL4::EnableVertexAttribArray( 2 );
-        DvigEngine::GL4::VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof(DvigEngine::GeometryVertex), (void*)0 );
-        DvigEngine::GL4::VertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, sizeof(DvigEngine::GeometryVertex), (void*)12 );
-        DvigEngine::GL4::VertexAttribPointer( 2, 3, GL_FLOAT, GL_FALSE, sizeof(DvigEngine::GeometryVertex), (void*)20 );
-        DvigEngine::GL4::BindVertexArray( 0 );
+        RenderingSystem::m_GlobalVertexBuffer = D3D11::CreateBuffer( D3D11_USAGE_DYNAMIC, D3D11_BIND_VERTEX_BUFFER, D3D11_CPU_ACCESS_WRITE, 0, 0, nullptr, DVIG_MAX_GFX_BUFFER_BYTE_WIDTH );
+        RenderingSystem::m_GlobalIndexBuffer = D3D11::CreateBuffer( D3D11_USAGE_DYNAMIC, D3D11_BIND_INDEX_BUFFER, D3D11_CPU_ACCESS_WRITE, 0, 0, nullptr, DVIG_MAX_GFX_BUFFER_BYTE_WIDTH );
+        RenderingSystem::m_GlobalUniformBuffer = D3D11::CreateBuffer( D3D11_USAGE_DYNAMIC, D3D11_BIND_SHADER_RESOURCE, D3D11_CPU_ACCESS_WRITE, D3D11_RESOURCE_MISC_BUFFER_STRUCTURED, sizeof(mfloat), nullptr, DVIG_MAX_GFX_BUFFER_BYTE_WIDTH );
+        RenderingSystem::m_GlobalConstantBuffer = D3D11::CreateBuffer( D3D11_USAGE_DEFAULT, D3D11_BIND_CONSTANT_BUFFER, 0, 0, 0, nullptr, 2 * 64 );
+        RenderingSystem::m_GlobalUniformBufferView = D3D11::CreateShaderResourceView( RenderingSystem::m_GlobalUniformBuffer, DVIG_MAX_GFX_BUFFER_BYTE_WIDTH );
+        RenderingSystem::m_Batches = Engine::GetClassInstance()->Create<Collection>("_EngineRenderingSystemBatchCollection");
+        RenderingSystem::m_Batches->Init( sizeof(RenderBatchInfo), 0 );
     }
 
-    // Create batch set if needed
-    if (m_Batches == nullptr)
-    {
-        engine->Create<DvigEngine::FixedSet>( &m_Batches, "_RenderingSystemBatchSet" );
-        m_Batches->Init( 0, 1024, sizeof(BatchData) );
-    }
-
-    // Create uniform buffer instance if needed
-    if (m_UniformSSBOBufferMemoryObject == nullptr)
-    {
-        // On-Heap buffer
-        m_UniformSSBOBufferMemoryObject = DvigEngine::Engine::Allocate( 0, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH );
-
-        // GL buffer
-        DvigEngine::GL4::GenBuffers( 1, &m_GLSSBOUniformBuffer );
-        DvigEngine::GL4::BindBuffer( GL_SHADER_STORAGE_BUFFER, m_GLSSBOUniformBuffer );
-        DvigEngine::GL4::BufferData( GL_SHADER_STORAGE_BUFFER, DV_MAX_GL_DEFAULT_BUFFER_BYTE_WIDTH, nullptr, GL_DYNAMIC_DRAW );
-        DvigEngine::GL4::BindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
-    }
-
-    // Bind vertex and index buffer
+    RenderingSystem::m_DepthStencilState = D3D11::CreateDepthStencilState();
 }
 
 void DvigEngine::RenderingSystem::Free()
 {
-    Engine* engine = Engine::GetClassInstance();
-
-    engine->Delete(RenderingSystem::m_GlobalGeometryBuffer->GetMemoryObject());
-    engine->Delete(RenderingSystem::m_GlobalIndexBuffer->GetMemoryObject());
-    GL4::DeleteBuffers( 1, &RenderingSystem::m_GLGlobalGeometryBuffer );
-    GL4::DeleteBuffers( 1, &RenderingSystem::m_GLGlobalIndexBuffer );
-    engine->Delete( RenderingSystem::m_Batches->GetMemoryObject() );
-    engine->Delete( m_UniformSSBOBufferMemoryObject );
-    GL4::DeleteBuffers( 1, &RenderingSystem::m_GLSSBOUniformBuffer );
+    RenderingSystem::m_Batches->Free();
 }
 
-void DvigEngine::RenderingSystem::Viewport(deint32 x, deint32 y, deisize width, deisize height)
+void DvigEngine::RenderingSystem::Viewport(mfloat x, mfloat y, mfloat width, mfloat height)
 {
-    GL4::Viewport( x, y, width, height );
+    D3D11_VIEWPORT viewports[1];
+    viewports[0].TopLeftX = x;
+    viewports[0].TopLeftY = y;
+    viewports[0].Width = width;
+    viewports[0].Height = height;
+    viewports[0].MinDepth = 0.0f;
+    viewports[0].MaxDepth = 1.0f;
+    D3D11::m_DeviceContext->RSSetViewports( 1, &viewports[0] );
 }
 
-void DvigEngine::RenderingSystem::PaintBackground(demfloat red, demfloat green, demfloat blue, demfloat alpha)
+void DvigEngine::RenderingSystem::ClearBackground(mfloat red, mfloat green, mfloat blue, mfloat alpha)
 {
-    GL4::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-    GL4::ClearColor( red, green, blue, alpha );
+    const FLOAT color[] = { red, green, blue, alpha };
+    D3D11::m_DeviceContext->ClearRenderTargetView( RenderingSystem::m_CurRenderPass->OutputRenderTargets->GetD3DRenderTargetView(), &color[0] );
+    D3D11::m_DeviceContext->ClearDepthStencilView( RenderingSystem::m_CurRenderPass->OutputRenderTargets->GetD3DDepthStencilView(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
-void DvigEngine::RenderingSystem::BeginRenderPass(RenderPassInfo* renderPassInfo)
+void DvigEngine::RenderingSystem::BeginRenderPass(const RenderPassInfo* renderPass)
 {
-    RenderingSystem::m_CurRenderPass = renderPassInfo;
-
-    // Bind framebuffer
+    RenderingSystem::m_CurRenderPass = (RenderPassInfo*)renderPass;
+    RenderingSystem::m_GlobalInstanceCount = 0;
+    
     if (RenderingSystem::m_CurRenderPass->OutputRenderTargets != nullptr)
     {
-        // Bind output attachments
-        GL4::BindFramebuffer( GL_FRAMEBUFFER, RenderingSystem::m_CurRenderPass->OutputRenderTargets->GetGLFramebuffer() );
+        ID3D11RenderTargetView* rtViews[1] = { RenderingSystem::m_CurRenderPass->OutputRenderTargets->GetD3DRenderTargetView() };
+        ID3D11DepthStencilView* dpViews[1] = { RenderingSystem::m_CurRenderPass->OutputRenderTargets->GetD3DDepthStencilView() };
+        D3D11::m_DeviceContext->OMSetRenderTargets( 1, &rtViews[0], dpViews[0] );
     }
     else
     {
-        GL4::BindFramebuffer( GL_FRAMEBUFFER, 0 );
+        RenderingSystem::m_CurRenderPass->OutputRenderTargets = D3D11::m_ScreenRenderTargetGroup;
+        ID3D11RenderTargetView* rtViews[1] = { RenderingSystem::m_CurRenderPass->OutputRenderTargets->GetD3DRenderTargetView() };
+        ID3D11DepthStencilView* dpViews[1] = { RenderingSystem::m_CurRenderPass->OutputRenderTargets->GetD3DDepthStencilView() };
+        D3D11::m_DeviceContext->OMSetRenderTargets( 1, &rtViews[0], dpViews[0] );
+        D3D11::m_DeviceContext->OMSetDepthStencilState( RenderingSystem::m_DepthStencilState, 0 );
+        mfloat color[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+        D3D11::m_DeviceContext->ClearRenderTargetView( rtViews[0], &color[0] );
+        D3D11::m_DeviceContext->ClearDepthStencilView( dpViews[0], D3D11_CLEAR_DEPTH , 1.0f, 0 );
     }
-
-    // Clear uniform buffer
-    RenderingSystem::m_NextBatchUniformBufferOffset = 0;
-
-    // Clear batch set
-    RenderingSystem::m_Batches->Clear();
-
-    // Map uniform buffer here
 }
 
 void DvigEngine::RenderingSystem::BeginBatch()
 {
-    // Start command recording
-    m_IsBatchRecording = DV_TRUE;
+    RenderBatchInfo batch;
+    batch.StartVertex = DVIG_NULL;
+    batch.StartIndex = DVIG_NULL;
+    batch.StartInstance = DVIG_NULL;
+
+    RenderingSystem::m_Batches->Insert( &batch, "new" );
+    RenderingSystem::m_GlobalInstanceCount = 0;
+}
+
+void DvigEngine::RenderingSystem::Draw(INode* node)
+{
+    RenderBatchInfo* lastBatch = (RenderBatchInfo*)RenderingSystem::m_Batches->FindAt( RenderingSystem::m_Batches->GetCount() - 1 );
+    if (lastBatch == nullptr) { return; }
+    
+    if (lastBatch->StartVertex == DVIG_NULL)
+    {
+        // Populate batch info
+        GeometryComponent* geometry = (GeometryComponent*)node->FindChildInstanceByType<GeometryComponent>();
+        ShaderComponent* shader = (ShaderComponent*)node->FindChildInstanceByType<ShaderComponent>();
+        if (geometry == nullptr || shader == nullptr) { return; }
+
+        lastBatch->Geometry = geometry;
+        lastBatch->Shader = shader;
+        lastBatch->StartVertex = geometry->m_GeometryBufferOffset;
+        lastBatch->StartIndex = geometry->m_IndexBufferOffset;
+        lastBatch->StartIndex = RenderingSystem::m_GlobalInstanceCount;
+        lastBatch->InstanceCount = 0;
+    }
+
+    // Populate constant buffer
+    ViewerComponent* viewer = (ViewerComponent*)RenderingSystem::m_CurRenderPass->Viewer->FindChildInstanceByType<ViewerComponent>();
+    if (viewer == nullptr) { return; }
+
+    for (int i = 0; i < D3D11::m_DebugInfoQueue->GetNumStoredMessages(); ++i)
+        {
+            SIZE_T messageByteWidth = 0;
+            D3D11::m_DebugInfoQueue->GetMessage( i, nullptr, &messageByteWidth );
+            D3D11_MESSAGE* message = (D3D11_MESSAGE*)malloc( messageByteWidth );
+            D3D11::m_DebugInfoQueue->GetMessage( i, message, &messageByteWidth );
+            std::cout << message->pDescription << std::endl;
+            free( message );
+        }
+
+    glm::mat4 mats[2];
+    Engine::GetClassInstance()->MemoryCopy( &mats[0], &viewer->m_ViewSpaceMatrix[0][0], sizeof(glm::mat4) );
+    Engine::GetClassInstance()->MemoryCopy( &mats[1], &viewer->m_ProjectionSpaceMatrix[0][0], sizeof(glm::mat4) );
+    D3D11::WriteToConstantBuffer( RenderingSystem::m_GlobalConstantBuffer, &mats[0] );
+
+    // Populate uniform buffer
+    TransformComponent* transform = (TransformComponent*)node->FindChildInstanceByType<TransformComponent>();
+    if (transform == nullptr) { return; }
+
+    const sint32 offset = RenderingSystem::m_GlobalInstanceCount * sizeof(RenderBatchInstanceInfo);
+    D3D11::WriteToBuffer( RenderingSystem::m_GlobalUniformBuffer, &transform->m_Position[0], offset, sizeof(RenderBatchInstanceInfo) );
+
+    lastBatch->InstanceCount += 1;
+    RenderingSystem::m_GlobalInstanceCount += 1;
 }
 
 void DvigEngine::RenderingSystem::EndBatch()
 {
-    // Extract last batch
-    const deusize batchSetCapacity = DvigEngine::RenderingSystem::m_Batches->GetCapacity();
-    const DvigEngine::BatchData* lastBatch = DvigEngine::RenderingSystem::m_Batches->Find<const DvigEngine::BatchData*>( batchSetCapacity - 1 );
+    RenderBatchInfo* lastBatch = (RenderBatchInfo*)RenderingSystem::m_Batches->FindAt( RenderingSystem::m_Batches->GetCount() - 1 );
+    if (lastBatch == nullptr || lastBatch->StartVertex == DVIG_NULL) { return; }
 
-    // Extract data from batch
-    DvigEngine::GeometryComponent* geometry = lastBatch->m_GeometryComponent;
-    const deusize geometryIndexCount = geometry->m_IndexCount;
-    DvigEngine::deuint32 shaderProgram = lastBatch->m_ShaderComponent->m_GLProgram;
-
-    // Finish uniform buffer population
-    // Make a draw call
-    // Bind VAO here
-    DvigEngine::GL4::BindVertexArray( DvigEngine::RenderingSystem::m_GLVAO );
-    DvigEngine::GL4::UseProgram( shaderProgram );
-
-    // Uniform texture atlas
-    GL4::ActiveTexture( GL_TEXTURE2 );
-    GL4::BindTexture( GL_TEXTURE_2D_ARRAY, TextureMergerSystem::GetGLAtlas() );
-    GL4::Uniform1i( GL4::GetUniformLocation( shaderProgram, "u_TextureAtlas" ), 2 );
-    GL4::ActiveTexture( GL_TEXTURE0 );
-    
-    // SSBO Uniform buffer
-    // DvigEngine::deuint32 ubufferIndex = DvigEngine::GL4::GetUniformBlockIndex( shaderProgram, "UBuffer" );
-    // DvigEngine::GL4::UniformBlockBinding( shaderProgram, ubufferIndex, 0 );
-    DvigEngine::GL4::BindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, DvigEngine::RenderingSystem::m_GLSSBOUniformBuffer );
-    
-    // Input render targets
-    if (RenderingSystem::m_CurRenderPass->InputRenderTargets != nullptr)
-    {
-        GL4::ActiveTexture( GL_TEXTURE0 );
-        GL4::BindTexture( GL_TEXTURE_2D, RenderingSystem::m_CurRenderPass->InputRenderTargets->GetGLColorRenderTarget() );
-        GL4::ActiveTexture( GL_TEXTURE1 );
-        GL4::BindTexture( GL_TEXTURE_2D, RenderingSystem::m_CurRenderPass->InputRenderTargets->GetGLDepthRenderTarget() );
-        GL4::ActiveTexture( GL_TEXTURE0 );
-        GL4::Uniform1i( GL4::GetUniformLocation( shaderProgram, "u_InputRenderTargets.m_Color" ), 0 );
-        GL4::Uniform1i( GL4::GetUniformLocation( shaderProgram, "u_InputRenderTargets.m_Depth" ), 1 );
-    }
+    // Bind D3D11 pipeline
+    ID3D11Buffer* vertexBuffers[1] = { RenderingSystem::m_GlobalVertexBuffer };
+    const UINT strides[1] = { 32 };
+    const UINT offsets[1] = { 0 };
+    ID3D11Buffer* constantBuffers[1] = { RenderingSystem::m_GlobalConstantBuffer };
+    ID3D11ShaderResourceView* shaderResources[1] = { RenderingSystem::m_GlobalUniformBufferView };
+    D3D11::m_DeviceContext->IASetInputLayout( lastBatch->Shader->m_InputLayout );
+    D3D11::m_DeviceContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+    D3D11::m_DeviceContext->IASetVertexBuffers( 0, 1, &vertexBuffers[0], &strides[0], &offsets[0] );
+    D3D11::m_DeviceContext->IASetIndexBuffer( RenderingSystem::m_GlobalIndexBuffer, DXGI_FORMAT_R32_UINT, 0 );
+    D3D11::m_DeviceContext->VSSetShader( lastBatch->Shader->m_VertexShader, nullptr, 0 );
+    D3D11::m_DeviceContext->VSSetConstantBuffers( 0, 1, &constantBuffers[0] );
+    D3D11::m_DeviceContext->VSSetShaderResources( 0, 1, &shaderResources[0] );
+    D3D11::m_DeviceContext->PSSetShader( lastBatch->Shader->m_PixelShader, nullptr, 0 );
 
     // Draw
-    DvigEngine::GL4::DrawElementsInstanced( GL_TRIANGLES, geometryIndexCount, GL_UNSIGNED_INT, nullptr, lastBatch->m_InstanceCount );
+    D3D11::m_DeviceContext->DrawIndexedInstanced( lastBatch->Geometry->m_IndexCount, lastBatch->InstanceCount,
+        0, 0, 0
+    );
 }
 
 void DvigEngine::RenderingSystem::EndRenderPass()
 {
-    if (RenderingSystem::m_CurRenderPass->Type == RenderPassType::SCREEN_FINAL)
-    {
-        // Render full-screen quad
-        INode* postp = RenderingSystem::m_CurRenderPass->PostProcessor;
-        if (postp == nullptr) { return; }
-        ShaderComponent* postShader = postp->GetComponent<ShaderComponent>();
-        if (postShader == nullptr) { return; }
-        deuint32 shaderProgram = postShader->m_GLProgram;
-        
-        GL4::UseProgram( postShader->m_GLProgram );
-
-        // Input render targets
-        if (RenderingSystem::m_CurRenderPass->InputRenderTargets != nullptr)
-        {
-            GL4::ActiveTexture( GL_TEXTURE0 );
-            GL4::BindTexture( GL_TEXTURE_2D, RenderingSystem::m_CurRenderPass->InputRenderTargets->GetGLColorRenderTarget() );
-            GL4::ActiveTexture( GL_TEXTURE1 );
-            GL4::BindTexture( GL_TEXTURE_2D, RenderingSystem::m_CurRenderPass->InputRenderTargets->GetGLDepthRenderTarget() );
-            GL4::Uniform1i( GL4::GetUniformLocation( shaderProgram, "u_InputRenderTargets.m_Color" ), 0 );
-            GL4::Uniform1i( GL4::GetUniformLocation( shaderProgram, "u_InputRenderTargets.m_Depth" ), 1 );
-        }
-
-        // Issue draw call
-        GL4::BindFramebuffer( GL_FRAMEBUFFER, 0 );
-        GL4::DrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
-    }
-
-    // Unbind framebuffer
-    GL4::BindFramebuffer( GL_FRAMEBUFFER, 0 );
-
     RenderingSystem::m_CurRenderPass = nullptr;
-}
 
-void DvigEngine::RenderingSystem::Draw(INode* const node)
-{
-    if (RenderingSystem::m_CurRenderPass == nullptr) { return; }
-    DvigEngine::INode* viewer = RenderingSystem::m_CurRenderPass->Viewer;
-    if (viewer == nullptr) { return; }
-    DvigEngine::TransformComponent* viewerTransform = viewer->GetComponent<DvigEngine::TransformComponent>();
-    DvigEngine::ViewerComponent* viewerViewer = viewer->GetComponent<DvigEngine::ViewerComponent>();
-    if (viewerTransform == nullptr || viewerViewer == nullptr) { return; }
-
-    DvigEngine::GeometryComponent* nodeGeometry = node->GetComponent<DvigEngine::GeometryComponent>();
-    DvigEngine::TransformComponent* nodeTransform = node->GetComponent<DvigEngine::TransformComponent>();
-    DvigEngine::ShaderComponent* nodeShader = node->GetComponent<DvigEngine::ShaderComponent>();
-    DvigEngine::MaterialComponent* nodeMaterial = node->GetComponent<DvigEngine::MaterialComponent>();
-    if (nodeGeometry == nullptr || nodeTransform == nullptr || nodeShader == nullptr || nodeMaterial == nullptr) { return; }
-
-    // Create new batch if needed
-    if (m_IsBatchRecording == DV_TRUE)
-    {
-        DvigEngine::BatchData batch;
-        batch.m_InstanceCount = 1;
-        batch.m_GeometryComponent = nodeGeometry;
-        batch.m_ShaderComponent = nodeShader;
-        batch.m_UniformBufferOffset = DvigEngine::RenderingSystem::m_NextBatchUniformBufferOffset;
-        DvigEngine::RenderingSystem::m_Batches->Insert( &batch );
-
-        // Only first is recorded
-        m_IsBatchRecording = DV_FALSE;
-    }
-    else
-    {
-        // Get last batch and increment its
-        // instance count
-        const deusize batchSetCapacity = DvigEngine::RenderingSystem::m_Batches->GetCapacity();
-        DvigEngine::BatchData* lastBatch = DvigEngine::RenderingSystem::m_Batches->Find<DvigEngine::BatchData*>( batchSetCapacity - 1 );
-        lastBatch->m_InstanceCount += 1;
-    }
-
-    // Populate uniform buffer
-    DvigEngine::UniformConstantsData uniformConstantsData;
-    void* constantsMemoryAddress = m_UniformSSBOBufferMemoryObject->Unwrap<void*>();
-    uniformConstantsData.m_TextureAtlasDimensions = glm::uvec3( TextureMergerSystem::GetAtlasWidth(), TextureMergerSystem::GetAtlasHeight(), TextureMergerSystem::GetAtlasDepth() );
-    DvigEngine::Engine::MemoryCopy( constantsMemoryAddress, &uniformConstantsData, sizeof(UniformConstantsData) );
-    DvigEngine::UniformViewerData uniformViewerData;
-    void* viewerMemoryAddress = Ptr<void*>::Add( &constantsMemoryAddress, UniformConstantsData::m_GLAlignedByteWidth );
-    DvigEngine::Engine::MemoryCopy( &uniformViewerData.m_WorldSpaceMatrix, &viewerTransform->m_WorldTranslationMatrix, sizeof(glm::mat4) );
-    DvigEngine::Engine::MemoryCopy( &uniformViewerData.m_ViewSpaceMatrix, &viewerViewer->m_ViewSpaceMatrix, sizeof(glm::mat4) );
-    DvigEngine::Engine::MemoryCopy( &uniformViewerData.m_ProjectionSpaceMatrix, &viewerViewer->m_ProjectionSpaceMatrix, sizeof(glm::mat4) );
-    DvigEngine::Engine::MemoryCopy( viewerMemoryAddress, &uniformViewerData, sizeof(DvigEngine::UniformViewerData) );
-    DvigEngine::UniformBatchInstanceData uniformBatchInstance;
-    uniformBatchInstance.m_DiffuseTextureInfo.x = nodeMaterial->m_DiffuseTexture->m_X | (nodeMaterial->m_DiffuseTexture->m_Y << 16);
-    uniformBatchInstance.m_DiffuseTextureInfo.y = nodeMaterial->m_DiffuseTexture->m_Z | (nodeMaterial->m_DiffuseTexture->m_Width << 16);
-    uniformBatchInstance.m_DiffuseTextureInfo.z = nodeMaterial->m_DiffuseTexture->m_Height;
-    void* instancesMemoryAddress = DvigEngine::Ptr<void*>::Add( &viewerMemoryAddress, UniformConstantsData::m_GLAlignedByteWidth + sizeof(UniformViewerData) + RenderingSystem::m_NextBatchUniformBufferOffset );
-    DvigEngine::Engine::MemoryCopy( &uniformBatchInstance.m_TransformMatrix, &nodeTransform->m_WorldSpaceMatrix, sizeof(glm::mat4) );
-    DvigEngine::Engine::MemoryCopy( instancesMemoryAddress, &uniformBatchInstance, sizeof(DvigEngine::UniformBatchInstanceData) );
-
-    // Send uniform buffer to GPU
-    DvigEngine::GL4::BindBuffer( GL_SHADER_STORAGE_BUFFER, DvigEngine::RenderingSystem::m_GLSSBOUniformBuffer );
-    DvigEngine::GL4::BufferSubData( GL_SHADER_STORAGE_BUFFER, 0, sizeof(DvigEngine::UniformConstantsData), (const void*)&uniformConstantsData );
-    DvigEngine::GL4::BufferSubData( GL_SHADER_STORAGE_BUFFER, UniformConstantsData::m_GLAlignedByteWidth, sizeof(DvigEngine::UniformViewerData), (const void*)&uniformViewerData );
-    DvigEngine::GL4::BufferSubData( GL_SHADER_STORAGE_BUFFER, UniformConstantsData::m_GLAlignedByteWidth + sizeof(UniformViewerData) + RenderingSystem::m_NextBatchUniformBufferOffset, sizeof(DvigEngine::UniformBatchInstanceData), (const void*)instancesMemoryAddress );
-    DvigEngine::GL4::BindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
-
-    // Increase uniform buffer offset
-    DvigEngine::RenderingSystem::m_NextBatchUniformBufferOffset += DvigEngine::UniformBatchInstanceData::m_GLAlignedByteWidth;
-}
-
-void DvigEngine::RenderingSystem::ClearGeometryAndIndexBuffers()
-{
-    DV_ASSERT_PTR(DvigEngine::RenderingSystem::m_GlobalGeometryBuffer)
-
-    DvigEngine::RenderingSystem::m_GlobalGeometryBuffer->Free();
-    DvigEngine::RenderingSystem::m_GlobalGeometryBuffer = nullptr;
+    // Clear batches
+    RenderingSystem::m_Batches->Clear();
 }
