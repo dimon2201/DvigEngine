@@ -3,6 +3,7 @@ struct VSIn {
 	float2 texcoord				: DE_TEXCOORD;
 	float3 normalLocalSpace		: DE_NORMAL;
 	uint vertexIndex			: SV_VertexID;
+	uint instanceIndex			: SV_InstanceID;
 };
 
 struct VSOut {
@@ -12,20 +13,21 @@ struct VSOut {
 };
 
 struct Instance {
-	float value;
+	float4x4 m_WorldSpaceMatrix;
 };
 
-cbuffer BufferViewer : register(b0)
-{
+cbuffer BufferViewer : register(b0) {
 	float4x4 m_ViewSpaceMatrix;
 	float4x4 m_ProjectionSpaceMatrix;
 };
-StructuredBuffer<Instance> u_Buffer : register( t0 );
+StructuredBuffer<Instance> u_BufferInstance : register( t0 );
 
 VSOut vs_main(VSIn vsIn)
 {
+	float4 positionWorldSpace = mul(u_BufferInstance[vsIn.instanceIndex].m_WorldSpaceMatrix, float4(vsIn.positionLocalSpace, 1.0));
+
 	VSOut vsOut;
-	vsOut.positionClipSpace = mul(m_ProjectionSpaceMatrix, mul(m_ViewSpaceMatrix, float4(vsIn.positionLocalSpace, 1.0)));
+	vsOut.positionClipSpace = mul(m_ProjectionSpaceMatrix, mul(m_ViewSpaceMatrix, positionWorldSpace));
 	// vsOut.positionClipSpace.x += u_Buffer[0].value;
 	//vsOut.texcoord = vsIn.texcoord;
 	vsOut.normalLocalSpace = vsIn.normalLocalSpace;

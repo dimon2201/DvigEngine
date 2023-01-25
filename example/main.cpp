@@ -1,9 +1,9 @@
 #include <iostream>
-#include "../include/dvigengine/DEApplication.hpp"
-#include "../include/dvigengine/DECore.hpp"
-#include "../include/dvigengine/DED3D11.hpp"
-#include "../include/dvigengine/DEGUI.hpp"
-#include "../include/dvigengine/DERendering.hpp"
+#include "../include/DvigEngine/Application.hpp"
+#include "../include/DvigEngine/Core.hpp"
+#include "../include/DvigEngine/D3D11.hpp"
+#include "../include/DvigEngine/GUI.hpp"
+#include "../include/DvigEngine/Rendering.hpp"
 
 using DvigEngine::cpuword;
 using DvigEngine::EngineInfo;
@@ -12,12 +12,15 @@ using DvigEngine::MemoryObject;
 using DvigEngine::Application;
 using DvigEngine::IWindow;
 using DvigEngine::RenderPassInfo;
+using DvigEngine::RenderBatchInfo;
 using DvigEngine::RenderingSystem;
 using DvigEngine::GeometryComponent;
 using DvigEngine::TransformComponent;
 using DvigEngine::ShaderComponent;
 using DvigEngine::ViewerComponent;
-using DvigEngine::INode;
+using DvigEngine::Node;
+using DvigEngine::Component;
+using DvigEngine::ISystem;
 
 int main()
 {
@@ -29,10 +32,23 @@ int main()
     Engine engine(&engineInfo);
     Engine* pEngine = Engine::GetClassInstance();
 
+    class MySystem : public ISystem
+    {
+        public:
+            DVIG_FUNCTION_INLINE void UpdateComponent(Component* component) override final
+            {
+                if (dynamic_cast<TransformComponent*>(component) != nullptr)
+                {
+                    TransformComponent* transform = (TransformComponent*)component;
+                    transform->SetScale( 0.5f, 0.5f, 0.5f );
+                }
+            }
+    };
+
     class MyWindow : public IWindow
     {
         public:
-            void Free() override final
+            void Free()
             {
 
             }
@@ -42,18 +58,20 @@ int main()
                 Engine* engine = Engine::GetClassInstance();
 
                 this->m_Geometry = engine->Create<GeometryComponent>("NewGeometryComponent");
-                this->m_Geometry->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine2\\file\\meshes\\statue.obj" );
-                this->m_Transform = engine->Create<TransformComponent>("NewTransformComponent");
-                this->m_Transform->Init();
-                this->m_Transform->SetPosition( 0.5f, 0.0f, 0.0f );
+                this->m_Geometry->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\file\\meshes\\statue.obj" );
+
+                this->m_Transform1 = engine->Create<TransformComponent>("NewTransformComponent1");
+                this->m_Transform1->Init();
+                this->m_Transform1->SetPosition( 0.0f, 0.0f, 0.0f );
+                this->m_Transform1->SetScale( 1.0f, 1.0f, 1.0f );
+                this->m_Transform2 = engine->Create<TransformComponent>("NewTransformComponent2");
+                this->m_Transform2->Init();
+                this->m_Transform2->SetPosition( 12.0f, 0.0f, 0.0f );
+                this->m_Transform2->SetScale( 1.0f, 1.0f, 1.0f );
                 this->m_Shader = engine->Create<ShaderComponent>("NewShaderComponent");
-                this->m_Shader->Init( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine2\\file\\shaders" );
-            
-                this->m_Node = engine->Create<INode>("NewNode");
-                this->m_Node->Init();
-                this->m_Node->InsertChildInstance( this->m_Geometry );
-                this->m_Node->InsertChildInstance( this->m_Transform );
-                this->m_Node->InsertChildInstance( this->m_Shader );
+                this->m_Shader->Init();
+                this->m_Shader->SetVertexShader( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\file\\shaders\\renderpass_vertex.ext" );
+                this->m_Shader->SetPixelShader( "C:\\Users\\USER100\\Documents\\GitHub\\DvigEngine\\file\\shaders\\renderpass_pixel.ext" );
 
                 this->m_ViewerTransform = engine->Create<TransformComponent>("NewViewerTransformComponent");
                 this->m_ViewerTransform->Init();
@@ -64,28 +82,44 @@ int main()
                 this->m_ViewerViewer->SetRotationEuler( 0.0f, 0.0f, 0.0f );
                 this->m_ViewerViewer->SetPerspectiveProjection( 65.0f, 640.0f/480.0f, 0.01f, 100.0f );
             
-                this->m_Node = engine->Create<INode>("NewNode");
-                this->m_Node->Init();
-                this->m_Node->InsertChildInstance( this->m_Geometry );
-                this->m_Node->InsertChildInstance( this->m_Transform );
-                this->m_Node->InsertChildInstance( this->m_Shader );
+                this->m_Node1 = engine->Create<Node>("NewNode1");
+                this->m_Node1->Init();
+                this->m_Node1->AddChild( this->m_Geometry );
+                this->m_Node1->AddChild( this->m_Transform1 );
+                this->m_Node1->AddChild( this->m_Shader );
+                this->m_Node2 = engine->Create<Node>("NewNode2");
+                this->m_Node2->Init();
+                this->m_Node2->AddChild( this->m_Geometry );
+                this->m_Node2->AddChild( this->m_Transform2 );
+                this->m_Node2->AddChild( this->m_Shader );
 
-                this->m_NodeViewer = engine->Create<INode>("NewViewerNode");
+                this->m_NodeViewer = engine->Create<Node>("NewViewerNode");
                 this->m_NodeViewer->Init();
-                this->m_NodeViewer->InsertChildInstance( this->m_ViewerTransform );
-                this->m_NodeViewer->InsertChildInstance( this->m_ViewerViewer );
+                this->m_NodeViewer->AddChild( this->m_ViewerTransform );
+                this->m_NodeViewer->AddChild( this->m_ViewerViewer );
+
+                MySystem sys;
+                sys.Update();
             }
             
             void Update() override final
             {
+                Engine* engine = Engine::GetClassInstance();
+
                 RenderPassInfo renderPass;
                 renderPass.InputRenderTargets = nullptr;
                 renderPass.OutputRenderTargets = nullptr;
                 renderPass.Viewer = this->m_NodeViewer;
+
+                RenderBatchInfo batch;
+                batch.Geometry = engine->FindExistingInstance<GeometryComponent>( "NewGeometryComponent" );
+                batch.Shader = engine->FindExistingInstance<ShaderComponent>( "NewShaderComponent" );
+
                 RenderingSystem::BeginRenderPass( &renderPass );
                 RenderingSystem::Viewport( 0.0f, 0.0f, 640.0f, 480.0f );
-                RenderingSystem::BeginBatch();
-                RenderingSystem::Draw( this->m_Node );
+                RenderingSystem::BeginBatch( &batch );
+                RenderingSystem::Draw( this->m_Node1 );
+                RenderingSystem::Draw( this->m_Node2 );
                 RenderingSystem::EndBatch();
                 RenderingSystem::EndRenderPass();
 
@@ -101,17 +135,19 @@ int main()
                 if (this->GetKeyState('S') == GLFW_PRESS) { this->m_ViewerViewer->Move( -0.15f ); }
                 if (this->GetKeyState('D') == GLFW_PRESS) { this->m_ViewerViewer->Strafe( 0.15f ); }
 
-                this->m_ViewerViewer->DoMouseLook( this );
+                // this->m_ViewerViewer->DoMouseLook( this );
             }
 
         private:
             GeometryComponent* m_Geometry;
-            TransformComponent* m_Transform;
+            TransformComponent* m_Transform1;
+            TransformComponent* m_Transform2;
             ShaderComponent* m_Shader;
-            INode* m_Node;
+            Node* m_Node1;
+            Node* m_Node2;
             TransformComponent* m_ViewerTransform;
             ViewerComponent* m_ViewerViewer;
-            INode* m_NodeViewer;
+            Node* m_NodeViewer;
     };
     
     glm::uvec2 windowDimensions = glm::uvec2( 640u, 480u );

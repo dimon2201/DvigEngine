@@ -11,26 +11,27 @@ else()
 endif()
 
 add_library(DvigEngine_v10_00 STATIC
-	source/DEApplication/DEApplication.cpp
-	source/DECore/DECollection.cpp
-	source/DECore/DEEngine.cpp
-	source/DECore/DEDebug.cpp
-	source/DECore/DEHashedCollection.cpp
-	source/DECore/DEINode.cpp
-	source/DECore/DEStringSystem.cpp
-	source/DEGUI/DEIWindow.cpp
-	source/DERendering/DED3D11.cpp
-	source/DERendering/DEGeometry.cpp
-	source/DERendering/DERenderingSystem.cpp
-	source/DERendering/DERenderTargetGroup.cpp
-	source/DERendering/DEShader.cpp
-	source/DERendering/DETransform.cpp
-	source/DERendering/DEViewer.cpp
+	Source/Application/Application.cpp
+	Source/Core/Collection.cpp
+	Source/Core/Engine.cpp
+	Source/Core/Debug.cpp
+	Source/Core/HashedCollection.cpp
+	Source/Core/ISystem.cpp
+	Source/Core/Node.cpp
+	Source/Core/StringSystem.cpp
+	Source/GUI/IWindow.cpp
+	Source/Rendering/D3D11.cpp
+	Source/Rendering/Geometry.cpp
+	Source/Rendering/RenderingSystem.cpp
+	Source/Rendering/RenderTargetGroup.cpp
+	Source/Rendering/Shader.cpp
+	Source/Rendering/Transform.cpp
+	Source/Rendering/Viewer.cpp
 )
 
-#include_directories(${CMAKE_SOURCE_DIR}/thirdparty/XAudio2/include)
-link_directories(${CMAKE_SOURCE_DIR}/thirdparty/glfw/lib)
-#link_directories(${CMAKE_SOURCE_DIR}/thirdparty/XAudio2/lib)
+#include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/XAudio2/include)
+link_directories(${CMAKE_SOURCE_DIR}/ThirdParty/glfw/lib)
+#link_directories(${CMAKE_SOURCE_DIR}/ThirdParty/XAudio2/lib)
 
 if (MSVC)
 	target_link_libraries(DvigEngine_v10_00 d3d11.lib)
@@ -39,7 +40,7 @@ if (MSVC)
 endif()
 
 add_executable(DvigEngine
-    example/main.cpp
+    Example/main.cpp
 )
 
 target_link_libraries(DvigEngine DvigEngine_v10_00)
